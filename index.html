@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic HR - JD to Twitter</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2em; background: #f7f7f7; }
+        .container { max-width: 600px; margin: auto; background: #fff; padding: 2em; border-radius: 8px; box-shadow: 0 2px 8px #0001; }
+        button { padding: 0.5em 1.5em; font-size: 1em; border-radius: 4px; border: none; background: #1da1f2; color: #fff; cursor: pointer; }
+        button:disabled { background: #aaa; }
+        input, textarea { width: 100%; padding: 0.5em; margin: 0.5em 0 1em 0; border-radius: 4px; border: 1px solid #ccc; }
+        .hidden { display: none; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Agentic HR - Post JD to Twitter/X</h2>
+        <div id="auth-section">
+            <button id="login-btn">Login with X (Twitter)</button>
+            <button id="logout-btn" class="hidden">Logout</button>
+            <span id="auth-status"></span>
+        </div>
+        <div id="workflow-section" class="hidden">
+            <form id="jd-form">
+                <label for="role">Role:</label>
+                <input type="text" id="role" name="role" required>
+                <button type="submit">Generate JD</button>
+            </form>
+            <div id="jd-result" class="hidden">
+                <h4>Generated Job Description:</h4>
+                <textarea id="jd-text" rows="8" readonly></textarea>
+                <div id="approval-section">
+                    <button id="approve-btn">Approve</button>
+                    <button id="reject-btn">Reject & Regenerate</button>
+                </div>
+            </div>
+            <div id="post-section" class="hidden">
+                <button id="post-btn">Post JD to Twitter</button>
+            </div>
+            <div id="post-status"></div>
+        </div>
+    </div>
+    <script>
+        let currentRole = '';
+        let currentJD = '';
+        async function checkAuth() {
+            const res = await fetch('/check-auth');
+            const data = await res.json();
+            if (data.authenticated) {
+                document.getElementById('auth-status').textContent = 'Logged in!';
+                document.getElementById('login-btn').classList.add('hidden');
+                document.getElementById('logout-btn').classList.remove('hidden');
+                document.getElementById('workflow-section').classList.remove('hidden');
+            } else {
+                document.getElementById('auth-status').textContent = 'Not logged in.';
+                document.getElementById('login-btn').classList.remove('hidden');
+                document.getElementById('logout-btn').classList.add('hidden');
+                document.getElementById('workflow-section').classList.add('hidden');
+            }
+        }
+        document.getElementById('login-btn').onclick = () => {
+            window.location.href = '/login';
+        };
+        document.getElementById('logout-btn').onclick = () => {
+            window.location.href = '/logout';
+        };
+        document.getElementById('jd-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const role = document.getElementById('role').value;
+            currentRole = role;
+            document.getElementById('jd-result').classList.add('hidden');
+            document.getElementById('post-section').classList.add('hidden');
+            document.getElementById('post-status').textContent = '';
+            const res = await fetch('/generate-jd', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ role })
+            });
+            const data = await res.json();
+            if (data.job_description) {
+                currentJD = data.job_description;
+                document.getElementById('jd-text').value = data.job_description;
+                document.getElementById('jd-result').classList.remove('hidden');
+                document.getElementById('approval-section').classList.remove('hidden');
+                document.getElementById('post-section').classList.add('hidden');
+            } else {
+                document.getElementById('post-status').textContent = data.error || 'Failed to generate JD.';
+                document.getElementById('post-status').className = 'error';
+            }
+        };
+        document.getElementById('approve-btn').onclick = async (e) => {
+            e.preventDefault();
+            document.getElementById('post-status').textContent = '';
+            const res = await fetch('/approve-jd', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ role: currentRole, job_description: currentJD, approval: true })
+            });
+            const data = await res.json();
+            if (data.job_description) {
+                // Approval step, ready to post
+                document.getElementById('post-section').classList.remove('hidden');
+                document.getElementById('approval-section').classList.add('hidden');
+            } else if (data.error) {
+                document.getElementById('post-status').textContent = data.error;
+                document.getElementById('post-status').className = 'error';
+            }
+        };
+        document.getElementById('reject-btn').onclick = async (e) => {
+            e.preventDefault();
+            document.getElementById('post-status').textContent = '';
+            // Regenerate JD for the same role
+            const res = await fetch('/approve-jd', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ role: currentRole, job_description: currentJD, approval: false })
+            });
+            const data = await res.json();
+            if (data.job_description) {
+                currentJD = data.job_description;
+                document.getElementById('jd-text').value = data.job_description;
+                document.getElementById('post-section').classList.add('hidden');
+                document.getElementById('approval-section').classList.remove('hidden');
+            } else if (data.error) {
+                document.getElementById('post-status').textContent = data.error;
+                document.getElementById('post-status').className = 'error';
+            }
+        };
+        document.getElementById('post-btn').onclick = async (e) => {
+            e.preventDefault();
+            document.getElementById('post-status').textContent = 'Posting to Twitter...';
+            document.getElementById('post-status').className = '';
+            const res = await fetch('/post-jd', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ role: currentRole, job_description: currentJD })
+            });
+            const data = await res.json();
+            if (data.post_status === 'success' && data.tweet_ids) {
+                let links = data.tweet_ids.map(
+                    (id, idx) => `<a href="https://twitter.com/i/web/status/${id}" target="_blank">Tweet ${idx+1}</a>`
+                ).join(' | ');
+                document.getElementById('post-status').innerHTML = 'JD posted as a thread!<br>' + links;
+                document.getElementById('post-status').className = 'success';
+                document.getElementById('post-section').classList.add('hidden');
+            } else {
+                document.getElementById('post-status').textContent = data.error || 'Failed to post JD.';
+                document.getElementById('post-status').className = 'error';
+            }
+        };
+        window.onload = checkAuth;
+    </script>
+</body>
+</html>
