@@ -18,3 +18,5 @@ wheels/
 credentials.json
 google_calendar_credentials.json
 GOOGLE_CALENDAR_SECRET.json
+
+google_calendar_token.pickle
