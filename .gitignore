@@ -9,3 +9,12 @@ wheels/
 # Virtual environments
 .venv
 .env
+
+
+*credentials*.json
+*secret*.json
+
+
+credentials.json
+google_calendar_credentials.json
+GOOGLE_CALENDAR_SECRET.json

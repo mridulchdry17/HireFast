@@ -41,6 +41,24 @@
                 <button id="post-btn">Post JD to LinkedIn</button>
             </div>
             <div id="post-status"></div>
+            <!-- New: HR Workflow Automation Section -->
+            <div id="hr-automation-section" class="hidden">
+                <h4>Automated Resume Screening</h4>
+                
+                <!-- Google Calendar Authentication Section -->
+                <div id="google-calendar-section">
+                    <h5>📅 Google Calendar Integration</h5>
+                    <div id="calendar-auth-status">Not authenticated with Google Calendar</div>
+                    <button id="google-calendar-auth-btn">🔐 Authenticate Google Calendar</button>
+                    <div id="calendar-auth-result"></div>
+                </div>
+                
+                <button id="select-best-btn">Select Best Candidates</button>
+                <div id="best-candidates-section" class="hidden">
+                    <h4>Top 2 Candidates Selected</h4>
+                    <div id="best-candidates-list"></div>
+                </div>
+            </div>
         </div>
     </div>
     <script>
@@ -159,12 +177,258 @@
                  document.getElementById('post-status').innerHTML = successMessage;
                  document.getElementById('post-status').className = 'success';
                  document.getElementById('post-section').classList.add('hidden');
+                 // Show HR automation section after successful post
+                 document.getElementById('hr-automation-section').classList.remove('hidden');
              } else {
                  document.getElementById('post-status').textContent = data.error || 'Failed to post JD.';
                  document.getElementById('post-status').className = 'error';
              }
         };
-        window.onload = checkAuth;
+        // --- HR Automation JS ---
+        document.getElementById('select-best-btn').onclick = async (e) => {
+            e.preventDefault();
+            document.getElementById('best-candidates-section').classList.add('hidden');
+            document.getElementById('best-candidates-list').innerHTML = 'Selecting best candidates...';
+            // Use the job description from the textarea
+            const job_description = document.getElementById('jd-text').value;
+            // Call backend endpoint to select best candidates
+            const res = await fetch('/select-best-resumes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ job_description })
+            });
+            const data = await res.json();
+            if (data.best_candidate) {
+                let html = '';
+                
+                // Show all top candidates
+                if (data.all_top_candidates && data.all_top_candidates.length > 0) {
+                    data.all_top_candidates.forEach((candidateData, idx) => {
+                        const candidate = candidateData.applicant;
+                        const isBest = idx === 0;
+                        const borderColor = isBest ? '#4CAF50' : '#2196F3';
+                        const bgColor = isBest ? '#f9f9f9' : '#f0f8ff';
+                        const title = isBest ? '🏆 BEST CANDIDATE' : `🥈 CANDIDATE #${idx + 1}`;
+                        
+                        html += `<div style="margin-bottom:1em;padding:1em;border:2px solid ${borderColor};border-radius:6px;background-color:${bgColor};">
+                            <h3 style="color:${borderColor};margin-top:0;">${title}</h3>
+                            <b>Name:</b> ${candidate.name || 'N/A'}<br>
+                            <b>Email:</b> ${candidate.email || 'N/A'}<br>
+                            <b>College:</b> ${candidate.college || 'N/A'}<br>
+                            <b>Intro:</b> ${candidate.intro || 'N/A'}<br>
+                            <b>Resume File ID:</b> ${candidate.resume_file_id || 'N/A'}<br>
+                            <b>Similarity Score:</b> ${candidateData.similarity_score ? candidateData.similarity_score.toFixed(3) : 'N/A'}
+                            <br><br>
+                            <button onclick="scheduleInterview('${candidate.email}', '${candidate.name}')" style="background-color: #FF9800; margin-right: 10px;">
+                                📅 Schedule Interview
+                            </button>
+                            <button onclick="viewResume('${candidate.resume_file_id}')" style="background-color: #9C27B0;">
+                                📄 View Resume
+                            </button>
+                        </div>`;
+                    });
+                }
+                
+                document.getElementById('best-candidates-list').innerHTML = html;
+                document.getElementById('best-candidates-section').classList.remove('hidden');
+            } else if (data.error) {
+                document.getElementById('best-candidates-list').innerHTML = `Error: ${data.error}`;
+                document.getElementById('best-candidates-section').classList.remove('hidden');
+            } else {
+                document.getElementById('best-candidates-list').innerHTML = 'No candidates found.';
+                document.getElementById('best-candidates-section').classList.remove('hidden');
+            }
+        };
+        
+        // Function to schedule interview with better UI
+        async function scheduleInterview(candidateEmail, candidateName) {
+            // Create modal for better date/time input
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+            `;
+            
+            const modalContent = document.createElement('div');
+            modalContent.style.cssText = `
+                background: white;
+                padding: 2em;
+                border-radius: 8px;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                max-width: 400px;
+                width: 90%;
+            `;
+            
+            // Get current date and time for defaults
+            const now = new Date();
+            const tomorrow = new Date(now);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const defaultDate = tomorrow.toISOString().split('T')[0];
+            const defaultTime = '14:00';
+            
+            modalContent.innerHTML = `
+                <h3 style="margin-top: 0; color: #0077b5;">📅 Schedule Interview</h3>
+                <p><strong>Candidate:</strong> ${candidateName}</p>
+                <p><strong>Email:</strong> ${candidateEmail}</p>
+                
+                <div style="margin: 1em 0;">
+                    <label for="interview-date" style="display: block; margin-bottom: 0.5em; font-weight: bold;">Interview Date:</label>
+                    <input type="date" id="interview-date" value="${defaultDate}" style="width: 100%; padding: 0.5em; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+                
+                <div style="margin: 1em 0;">
+                    <label for="interview-time" style="display: block; margin-bottom: 0.5em; font-weight: bold;">Interview Time:</label>
+                    <input type="time" id="interview-time" value="${defaultTime}" style="width: 100%; padding: 0.5em; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+                
+                <div style="margin: 1em 0;">
+                    <label for="interviewer-email" style="display: block; margin-bottom: 0.5em; font-weight: bold;">Interviewer Email (optional):</label>
+                    <input type="email" id="interviewer-email" placeholder="interviewer@company.com" style="width: 100%; padding: 0.5em; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+                
+                <div style="margin-top: 2em; text-align: right;">
+                    <button id="cancel-btn" style="background: #ccc; margin-right: 1em;">Cancel</button>
+                    <button id="schedule-btn" style="background: #0077b5;">Schedule Interview</button>
+                </div>
+            `;
+            
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+            
+            // Handle cancel
+            document.getElementById('cancel-btn').onclick = () => {
+                document.body.removeChild(modal);
+            };
+            
+            // Handle schedule
+            document.getElementById('schedule-btn').onclick = async () => {
+                const interviewDate = document.getElementById('interview-date').value;
+                const interviewTime = document.getElementById('interview-time').value;
+                const interviewerEmail = document.getElementById('interviewer-email').value;
+                
+                if (!interviewDate || !interviewTime) {
+                    alert('Please provide both date and time.');
+                    return;
+                }
+                
+                // Show loading state
+                document.getElementById('schedule-btn').textContent = 'Scheduling...';
+                document.getElementById('schedule-btn').disabled = true;
+                
+                try {
+                    const res = await fetch('/schedule-interview', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            candidate_email: candidateEmail,
+                            candidate_name: candidateName,
+                            interview_date: interviewDate,
+                            interview_time: interviewTime,
+                            interviewer_email: interviewerEmail || ''
+                        })
+                    });
+                    
+                    const data = await res.json();
+                    if (data.status === 'success') {
+                        let message = `✅ ${data.message}\n\n📅 Date: ${interviewDate}\n⏰ Time: ${interviewTime}`;
+                        if (data.event_link) {
+                            message += `\n\n🔗 Calendar Event: ${data.event_link}`;
+                        }
+                        alert(message);
+                        document.body.removeChild(modal);
+                    } else {
+                        alert(`❌ Error: ${data.error}`);
+                    }
+                } catch (error) {
+                    alert(`❌ Error scheduling interview: ${error.message}`);
+                } finally {
+                    document.getElementById('schedule-btn').textContent = 'Schedule Interview';
+                    document.getElementById('schedule-btn').disabled = false;
+                }
+            };
+        }
+        
+        // Function to view resume
+        function viewResume(fileId) {
+            // Open the resume in a new tab
+            window.open(`/view-resume/${fileId}`, '_blank');
+        }
+        
+        // Google Calendar Authentication Functions
+        async function checkGoogleCalendarAuth() {
+            try {
+                const res = await fetch('/check-google-calendar-auth');
+                const data = await res.json();
+                
+                const statusElement = document.getElementById('calendar-auth-status');
+                const authBtn = document.getElementById('google-calendar-auth-btn');
+                
+                if (data.authenticated) {
+                    statusElement.textContent = '✅ Authenticated with Google Calendar';
+                    statusElement.style.color = 'green';
+                    authBtn.textContent = '🔄 Re-authenticate Google Calendar';
+                    authBtn.style.background = '#FF9800';
+                } else {
+                    statusElement.textContent = '❌ Not authenticated with Google Calendar';
+                    statusElement.style.color = 'red';
+                    authBtn.textContent = '🔐 Authenticate Google Calendar';
+                    authBtn.style.background = '#0077b5';
+                }
+            } catch (error) {
+                console.error('Error checking Google Calendar auth:', error);
+            }
+        }
+        
+        async function authenticateGoogleCalendar() {
+            const authBtn = document.getElementById('google-calendar-auth-btn');
+            const resultElement = document.getElementById('calendar-auth-result');
+            
+            authBtn.textContent = 'Authenticating...';
+            authBtn.disabled = true;
+            resultElement.textContent = '';
+            
+            try {
+                const res = await fetch('/google-calendar-auth');
+                const data = await res.json();
+                
+                if (data.status === 'success') {
+                    resultElement.textContent = '✅ ' + data.message;
+                    resultElement.style.color = 'green';
+                    await checkGoogleCalendarAuth(); // Refresh status
+                } else if (data.error) {
+                    resultElement.textContent = '❌ ' + data.error;
+                    resultElement.style.color = 'red';
+                    
+                    if (data.instructions) {
+                        resultElement.innerHTML += '<br><br><strong>Setup Instructions:</strong><ul>' + 
+                            data.instructions.map(instruction => `<li>${instruction}</li>`).join('') + 
+                            '</ul>';
+                    }
+                }
+            } catch (error) {
+                resultElement.textContent = '❌ Error: ' + error.message;
+                resultElement.style.color = 'red';
+            } finally {
+                authBtn.textContent = '🔐 Authenticate Google Calendar';
+                authBtn.disabled = false;
+            }
+        }
+        
+        // Add event listeners
+        document.getElementById('google-calendar-auth-btn').onclick = authenticateGoogleCalendar;
+        
+        window.onload = function() {
+            checkAuth();
+            checkGoogleCalendarAuth();
+        };
     </script>
 </body>
 </html>

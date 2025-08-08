@@ -1,1 +1,12 @@
 langgraph
+flask
+python-dotenv
+langchain-groq
+langchain
+langchain-community
+scikit-learn
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+google-api-python-client
+requests
