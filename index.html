@@ -1,251 +1,1580 @@
 
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agentic HR - JD to LinkedIn</title>
+    <title>HR Automator</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        body { font-family: Arial, sans-serif; margin: 2em; background: #f7f7f7; }
-        .container { max-width: 600px; margin: auto; background: #fff; padding: 2em; border-radius: 8px; box-shadow: 0 2px 8px #0001; }
-        button { padding: 0.5em 1.5em; font-size: 1em; border-radius: 4px; border: none; background: #0077b5; color: #fff; cursor: pointer; }
-        button:disabled { background: #aaa; }
-        input, textarea { width: 100%; padding: 0.5em; margin: 0.5em 0 1em 0; border-radius: 4px; border: 1px solid #ccc; }
-        .hidden { display: none; }
-        .success { color: green; }
-        .error { color: red; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #10b981 0%, #3b82f6 100%);
+            height: 8px;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .status-pill {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-completed {
+            background: #10b981;
+            color: white;
+        }
+        
+        .status-current {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .status-pending {
+            background: #8b5cf6;
+            color: white;
+        }
+        
+        .page-section {
+            display: none;
+        }
+        
+        .page-section.active {
+            display: block;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .bounce-in {
+            animation: bounceIn 0.6s ease-out;
+        }
+        
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .workflow-nav {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 40;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 2rem;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        }
+        
+        .workflow-step {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            margin: 0 0.5rem;
+            border-radius: 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .workflow-step.completed {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .workflow-step.current {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+        }
+        
+        .workflow-step.pending {
+            background: rgba(148, 163, 184, 0.2);
+            color: #94a3b8;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+        }
+        
+        .workflow-step:hover:not(.pending) {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+        
+        .workflow-step .step-icon {
+            margin-right: 0.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .floating-action {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 50;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 50%;
+            width: 4rem;
+            height: 4rem;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        .floating-action:hover {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.6);
+        }
+        
+        .success-toast {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            z-index: 60;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 15px 35px rgba(16, 185, 129, 0.4);
+            transform: translateX(400px);
+            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        .success-toast.show {
+            transform: translateX(0);
+        }
+        
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        
+        .progress-ring-circle {
+            transition: stroke-dasharray 0.5s ease;
+        }
+        
+        .pulse-glow {
+            animation: pulseGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.4); }
+            100% { box-shadow: 0 0 40px rgba(102, 126, 234, 0.8); }
+        }
+        
+        .floating-card {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .gradient-border {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 2px;
+            border-radius: 1rem;
+        }
+        
+        .gradient-border > div {
+            background: #1e293b;
+            border-radius: 0.875rem;
+            padding: 1.5rem;
+        }
+        
+        .hover-lift {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .hover-lift:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+        }
+        
+        /* Enhanced form input styling */
+        input[type="text"], input[type="email"], input[type="date"], input[type="time"] {
+            color: white !important;
+            -webkit-text-fill-color: white !important;
+            font-weight: 500;
+        }
+        
+        input[type="text"]::placeholder, input[type="email"]::placeholder {
+            color: #6b7280 !important;
+            -webkit-text-fill-color: #6b7280 !important;
+        }
+        
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+        
+        input[type="date"]::-webkit-datetime-edit,
+        input[type="time"]::-webkit-datetime-edit {
+            color: white !important;
+        }
+        
+        input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+        input[type="time"]::-webkit-datetime-edit-fields-wrapper {
+            color: white !important;
+        }
+        
+        /* Focus effects for form inputs */
+        input[type="text"]:focus, input[type="email"]:focus, 
+        input[type="date"]:focus, input[type="time"]:focus {
+            outline: none;
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+            transform: scale(1.02);
+            transition: all 0.2s ease;
+        }
+        
+        /* Enhanced input backgrounds */
+        input[type="text"], input[type="email"], input[type="date"], input[type="time"] {
+            background: rgba(31, 41, 55, 0.8) !important;
+            backdrop-filter: blur(10px);
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Agentic HR - Post JD to LinkedIn</h2>
-        <div id="auth-section">
-            <button id="login-btn">Login with LinkedIn</button>
-            <button id="logout-btn" class="hidden">Logout</button>
-            <span id="auth-status"></span>
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-effect">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-building text-white text-sm"></i>
+                    </div>
+                    <span class="text-xl font-bold gradient-text">HR Automator</span>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#" onclick="showPage('landing')" class="text-gray-300 hover:text-white transition-colors">Home</a>
+                    <a href="#" onclick="showPage('dashboard')" class="text-gray-300 hover:text-white transition-colors">Dashboard</a>
+                    <a href="#" onclick="showPage('auth')" class="text-gray-300 hover:text-white transition-colors">Connect</a>
+                    <a href="#" onclick="showPage('jd')" class="text-gray-300 hover:text-white transition-colors">Job Description</a>
+                    <a href="#" onclick="showPage('candidates')" class="text-gray-300 hover:text-white transition-colors">Candidates</a>
+                    <a href="#" onclick="showPage('interviews')" class="text-gray-300 hover:text-white transition-colors">Interviews</a>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <button id="login-btn" onclick="login()" class="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105">
+                        Get Started
+                    </button>
+                    <button id="logout-btn" onclick="logout()" class="hidden px-6 py-2 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-700 transition-all duration-300">
+                        Logout
+                    </button>
+                </div>
+            </div>
         </div>
-        <div id="workflow-section" class="hidden">
-            <form id="jd-form">
-                <label for="role">Role:</label>
-                <input type="text" id="role" name="role" required>
-                <button type="submit">Generate JD</button>
-            </form>
-            <div id="jd-result" class="hidden">
-                <h4>Generated Job Description:</h4>
-                <textarea id="jd-text" rows="8" readonly></textarea>
-                <div id="approval-section">
-                    <button id="approve-btn">Approve</button>
-                    <button id="reject-btn">Reject & Regenerate</button>
+    </nav>
+
+    <!-- Landing Page -->
+    <div id="landing-page" class="page-section active">
+        <!-- Hero Section -->
+        <section class="pt-32 pb-20 px-4">
+            <div class="max-w-6xl mx-auto text-center">
+                <h1 class="text-6xl md:text-7xl font-bold mb-8 leading-tight">
+                    <span class="text-blue-400">Automate Your</span>
+                    <span class="text-purple-400">Hiring Process</span>
+                </h1>
+                <p class="text-xl md:text-2xl text-gray-300 mb-12 max-w-4xl mx-auto leading-relaxed">
+                    From job posting to interview scheduling - let AI handle your HR workflow while you focus on building great teams.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
+                    <button onclick="showPage('dashboard')" class="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-lg font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-2xl pulse-glow hover-lift">
+                        Start Automating →
+                    </button>
+                    <button onclick="showPage('jd')" class="px-8 py-4 border-2 border-gray-600 text-gray-300 text-lg font-semibold rounded-xl hover:bg-gray-800 hover:border-gray-500 transition-all duration-300">
+                        View Demo
+                    </button>
                 </div>
             </div>
-            <div id="post-section" class="hidden">
-                <button id="post-btn">Post JD to LinkedIn</button>
-            </div>
-            <div id="post-status"></div>
-            <!-- New: HR Workflow Automation Section -->
-            <div id="hr-automation-section" class="hidden">
-                <h4>Automated Resume Screening</h4>
+        </section>
+
+        <!-- Features Section -->
+        <section class="py-20 px-4">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-4xl md:text-5xl font-bold text-center mb-16">Powerful Features</h2>
+                <p class="text-xl text-gray-400 text-center mb-16 max-w-3xl mx-auto">
+                    Everything you need to streamline your hiring process
+                </p>
                 
-                <!-- Google Calendar Authentication Section -->
-                <div id="google-calendar-section">
-                    <h5>📅 Google Calendar Integration</h5>
-                    <div id="calendar-auth-status">Not authenticated with Google Calendar</div>
-                    <button id="google-calendar-auth-btn">🔐 Authenticate Google Calendar</button>
-                    <div id="calendar-auth-result"></div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div class="glass-effect rounded-2xl p-8 text-center card-hover floating-card">
+                        <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                            <i class="fas fa-file-alt text-white text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-4">AI Job Description Generator</h3>
+                        <p class="text-gray-400">Create compelling job descriptions optimized for LinkedIn in seconds</p>
+                    </div>
+                    
+                    <div class="glass-effect rounded-2xl p-8 text-center card-hover">
+                        <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                            <i class="fas fa-users text-white text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-4">Smart Candidate Matching</h3>
+                        <p class="text-gray-400">AI-powered resume analysis to find the perfect candidates</p>
+                    </div>
+                    
+                    <div class="glass-effect rounded-2xl p-8 text-center card-hover">
+                        <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                            <i class="fas fa-calendar-plus text-white text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-4">Automated Interview Scheduling</h3>
+                        <p class="text-gray-400">Seamlessly schedule interviews with Google Calendar integration</p>
+                    </div>
+                    
+                    <div class="glass-effect rounded-2xl p-8 text-center card-hover">
+                        <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                            <i class="fas fa-bolt text-white text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-4">LinkedIn Auto-Posting</h3>
+                        <p class="text-gray-400">Post job descriptions directly to LinkedIn with one click</p>
+                    </div>
                 </div>
-                
-                <button id="select-best-btn">Select Best Candidates</button>
-                <div id="best-candidates-section" class="hidden">
-                    <h4>Top 2 Candidates Selected</h4>
-                    <div id="best-candidates-list"></div>
+            </div>
+        </section>
+
+        <!-- Why Choose Section -->
+        <section class="py-20 px-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="grid lg:grid-cols-2 gap-16 items-center">
+                    <div>
+                        <h2 class="text-4xl md:text-5xl font-bold mb-8">Why Choose HR Automator?</h2>
+                        <p class="text-xl text-gray-400 mb-12 leading-relaxed">
+                            Transform your hiring process with enterprise-grade automation that scales with your business needs.
+                        </p>
+                        
+                        <div class="space-y-6">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-check text-white text-sm"></i>
+                                </div>
+                                <span class="text-lg text-gray-300">Reduce hiring time by 70%</span>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-check text-white text-sm"></i>
+                                </div>
+                                <span class="text-lg text-gray-300">Improve candidate quality with AI matching</span>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-check text-white text-sm"></i>
+                                </div>
+                                <span class="text-lg text-gray-300">Automate repetitive HR tasks</span>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-check text-white text-sm"></i>
+                                </div>
+                                <span class="text-lg text-gray-300">Scale your hiring process effortlessly</span>
+                            </div>
+                        </div>
+                        
+                        <button onclick="showPage('dashboard')" class="mt-12 px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-lg font-semibold rounded-xl hover:from-purple-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105">
+                            Get Started Today
+                        </button>
+                    </div>
+                    
+                    <div class="glass-effect rounded-2xl p-8 text-center">
+                        <h3 class="text-2xl font-bold mb-6">Ready to Transform Your HR?</h3>
+                        <p class="text-gray-400 mb-8">Join thousands of companies already using HR Automator</p>
+                        
+                        <div class="grid grid-cols-2 gap-8">
+                            <div>
+                                <div class="text-4xl font-bold text-blue-400 mb-2">70%</div>
+                                <div class="text-gray-400">Time Saved</div>
+                            </div>
+                            <div>
+                                <div class="text-4xl font-bold text-purple-400 mb-2">10x</div>
+                                <div class="text-gray-400">Faster Hiring</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="py-20 px-4">
+            <div class="max-w-4xl mx-auto text-center">
+                <div class="gradient-bg rounded-3xl p-16">
+                    <h2 class="text-4xl md:text-5xl font-bold mb-8">Ready to Automate Your Hiring?</h2>
+                    <p class="text-xl text-gray-200 mb-12 opacity-90">
+                        Start your free trial today and see how HR Automator can transform your recruitment process.
+                    </p>
+                    <button onclick="showPage('dashboard')" class="px-10 py-5 bg-black text-white text-xl font-semibold rounded-2xl hover:bg-gray-900 transition-all duration-300 transform hover:scale-105">
+                        Start Free Trial →
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Dashboard Page -->
+    <div id="dashboard-page" class="page-section">
+        <div class="pt-32 pb-20 px-4">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-16">
+                    <h1 class="text-5xl font-bold mb-4">HR Dashboard</h1>
+                    <p class="text-xl text-gray-400">Manage your automated hiring workflow</p>
+                    <button onclick="showPage('landing')" class="mt-6 px-6 py-3 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-800 hover:border-gray-500 transition-all duration-300">
+                        Back to Home
+                    </button>
+                </div>
+
+                <!-- Key Metrics -->
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+                    <div class="glass-effect rounded-2xl p-8 text-center card-hover">
+                        <div class="text-4xl font-bold text-blue-400 mb-2">12</div>
+                        <div class="text-gray-400 mb-2">Active Job Posts</div>
+                        <div class="text-sm text-green-400">+3 this week</div>
+                    </div>
+                    <div class="glass-effect rounded-2xl p-8 text-center card-hover">
+                        <div class="text-4xl font-bold text-blue-400 mb-2">47</div>
+                        <div class="text-gray-400 mb-2">Applications</div>
+                        <div class="text-sm text-green-400">+12 today</div>
+                    </div>
+                    <div class="glass-effect rounded-2xl p-8 text-center card-hover">
+                        <div class="text-4xl font-bold text-blue-400 mb-2">8</div>
+                        <div class="text-gray-400 mb-2">Interviews Scheduled</div>
+                        <div class="text-sm text-green-400">+2 this week</div>
+                    </div>
+                    <div class="glass-effect rounded-2xl p-8 text-center card-hover">
+                        <div class="text-4xl font-bold text-blue-400 mb-2">24h</div>
+                        <div class="text-gray-400 mb-2">Time Saved</div>
+                        <div class="text-sm text-gray-400">This month</div>
+                    </div>
+                </div>
+
+                <!-- Hiring Workflow -->
+                <div class="glass-effect rounded-2xl p-8 mb-16">
+                    <div class="flex items-center mb-6">
+                        <i class="fas fa-bolt text-blue-400 text-2xl mr-3"></i>
+                        <h2 class="text-2xl font-bold">Hiring Workflow</h2>
+                    </div>
+                    <p class="text-gray-400 mb-8">Complete each step to automate your hiring process</p>
+                    
+                    <div class="mb-8">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-sm font-medium">Progress</span>
+                            <span class="text-sm font-medium">25% Complete</span>
+                        </div>
+                        <div class="relative">
+                            <div class="w-full bg-gray-700 rounded-full h-3">
+                                <div class="progress-bar rounded-full h-3 transition-all duration-1000 ease-out" style="width: 25%"></div>
+                            </div>
+                            <div class="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-white text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="bg-green-900/30 border border-green-500/30 rounded-xl p-6 relative">
+                            <div class="absolute top-4 right-4">
+                                <i class="fas fa-check text-green-400"></i>
+                            </div>
+                            <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mb-4">
+                                <i class="fas fa-bolt text-white"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold mb-2">Authentication</h3>
+                            <p class="text-gray-400 text-sm mb-4">Connect LinkedIn & Google Calendar</p>
+                            <div class="status-pill status-completed">completed</div>
+                            <button class="mt-4 text-green-400 hover:text-green-300 transition-colors">View →</button>
+                        </div>
+                        
+                        <div class="bg-blue-900/30 border border-blue-500/30 rounded-xl p-6 relative">
+                            <div class="absolute top-4 right-4">
+                                <i class="fas fa-clock text-blue-400"></i>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mb-4">
+                                <i class="fas fa-file-alt text-white"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold mb-2">Job Description</h3>
+                            <p class="text-gray-400 text-sm mb-4">Create & approve job posting</p>
+                            <div class="status-pill status-current">current</div>
+                            <button onclick="showPage('jd')" class="mt-4 text-blue-400 hover:text-blue-300 transition-colors">Continue →</button>
+                        </div>
+                        
+                        <div class="bg-gray-800/50 border border-gray-600/30 rounded-xl p-6 relative">
+                            <div class="absolute top-4 right-4">
+                                <i class="fas fa-exclamation text-purple-400"></i>
+                            </div>
+                            <div class="w-12 h-12 bg-gray-600 rounded-xl flex items-center justify-center mb-4">
+                                <i class="fas fa-users text-white"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold mb-2">Candidate Selection</h3>
+                            <p class="text-gray-400 text-sm mb-4">Review & select candidates</p>
+                            <div class="status-pill status-pending">pending</div>
+                            <button onclick="showPage('candidates')" class="mt-4 text-gray-400 hover:text-gray-300 transition-colors">View →</button>
+                        </div>
+                        
+                        <div class="bg-gray-800/50 border border-gray-600/30 rounded-xl p-6 relative">
+                            <div class="absolute top-4 right-4">
+                                <i class="fas fa-exclamation text-purple-400"></i>
+                            </div>
+                            <div class="w-12 h-12 bg-gray-600 rounded-xl flex items-center justify-center mb-4">
+                                <i class="fas fa-calendar text-white"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold mb-2">Interview Scheduling</h3>
+                            <p class="text-gray-400 text-sm mb-4">Schedule interviews automatically</p>
+                            <div class="status-pill status-pending">pending</div>
+                            <button onclick="showPage('interviews')" class="mt-4 text-gray-400 hover:text-gray-300 transition-colors">View →</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions & Recent Activity -->
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="glass-effect rounded-2xl p-8">
+                        <h3 class="text-xl font-semibold mb-6">Quick Actions</h3>
+                        <div class="space-y-4">
+                            <button onclick="showPage('jd')" class="w-full text-left p-4 bg-gray-800/50 rounded-lg hover:bg-gray-700/50 transition-colors">
+                                <i class="fas fa-plus text-blue-400 mr-3"></i>
+                                Create New Job Description
+                            </button>
+                            <button onclick="showPage('candidates')" class="w-full text-left p-4 bg-gray-800/50 rounded-lg hover:bg-gray-700/50 transition-colors">
+                                <i class="fas fa-search text-green-400 mr-3"></i>
+                                Screen Candidates
+                            </button>
+                            <button onclick="showPage('interviews')" class="w-full text-left p-4 bg-gray-800/50 rounded-lg hover:bg-gray-700/50 transition-colors">
+                                <i class="fas fa-calendar-plus text-purple-400 mr-3"></i>
+                                Schedule Interview
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-effect rounded-2xl p-8">
+                        <h3 class="text-xl font-semibold mb-6">Recent Activity</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center space-x-3 p-3 bg-gray-800/30 rounded-lg">
+                                <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+                                <span class="text-sm text-gray-400">Job posted for Frontend Developer</span>
+                            </div>
+                            <div class="flex items-center space-x-3 p-3 bg-gray-800/30 rounded-lg">
+                                <div class="w-2 h-2 bg-blue-400 rounded-full"></div>
+                                <span class="text-sm text-gray-400">3 new applications received</span>
+                            </div>
+                            <div class="flex items-center space-x-3 p-3 bg-gray-800/30 rounded-lg">
+                                <div class="w-2 h-2 bg-purple-400 rounded-full"></div>
+                                <span class="text-sm text-gray-400">Interview scheduled with Sarah Johnson</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Job Description Page -->
+    <div id="jd-page" class="page-section">
+        <div class="pt-32 pb-20 px-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-12">
+                    <h1 class="text-5xl font-bold mb-4">Create Job Description</h1>
+                    <p class="text-xl text-gray-400">Generate AI-powered job descriptions optimized for LinkedIn</p>
+                </div>
+
+                <!-- Progress Steps -->
+                <div class="flex justify-center mb-12">
+                    <div class="flex items-center space-x-8">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-white"></i>
+                            </div>
+                            <span class="ml-3 text-green-400 font-medium">1 Authentication</span>
+                        </div>
+                        <div class="w-16 h-1 bg-blue-500"></div>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                                <span class="text-white font-bold">2</span>
+                            </div>
+                            <span class="ml-3 text-blue-400 font-medium">2 Job Description</span>
+                        </div>
+                        <div class="w-16 h-1 bg-gray-600"></div>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
+                                <span class="text-gray-400 font-bold">3</span>
+                            </div>
+                            <span class="ml-3 text-gray-400 font-medium">3 Candidate Selection</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid lg:grid-cols-2 gap-8">
+                    <!-- Job Role Input -->
+                    <div class="glass-effect rounded-2xl p-8">
+                        <div class="flex items-center mb-6">
+                            <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fas fa-file-alt text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold">Job Role</h3>
+                                <p class="text-gray-400">Enter the role you want to hire for</p>
+                            </div>
+                        </div>
+                        
+                        <form id="jd-form">
+                            <div class="mb-6">
+                                <label for="role" class="block text-lg font-medium mb-3 text-gray-300">Job Title / Role</label>
+                                <input type="text" id="role" name="role" required 
+                                       placeholder="e.g., Senior Frontend Developer, Data Scientist, Marketing Manager" 
+                                       class="w-full px-4 py-3 bg-gray-800/30 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <button type="submit" class="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-green-600 text-white text-lg font-semibold rounded-xl hover:from-blue-700 hover:to-green-700 transition-all duration-300 transform hover:scale-105">
+                                <i class="fas fa-sparkles mr-2"></i> Generate Job Description
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Generated Job Description -->
+                    <div class="glass-effect rounded-2xl p-8">
+                        <div class="flex items-center mb-6">
+                            <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fas fa-file-alt text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold">Generated Job Description</h3>
+                                <p class="text-gray-400">AI-generated job description optimized for LinkedIn</p>
+                            </div>
+                        </div>
+                        
+                        <div id="jd-result" class="hidden">
+                            <div class="bg-gray-800/30 rounded-lg p-6 text-white min-h-[300px]">
+                                <p id="jd-text" class="text-lg leading-relaxed"></p>
+                            </div>
+                            
+                            <div id="approval-section" class="mt-6 flex gap-3">
+                                <button id="approve-btn" class="flex-1 px-6 py-3 bg-green-600 text-white text-lg font-semibold rounded-xl hover:bg-green-700 transition-all duration-300">
+                                    <i class="fas fa-check mr-2"></i> Approve & Post
+                                </button>
+                                <button id="reject-btn" class="flex-1 px-6 py-3 bg-red-600 text-white text-lg font-semibold rounded-xl hover:bg-red-700 transition-all duration-300">
+                                    <i class="fas fa-redo mr-2"></i> Regenerate
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="jd-placeholder" class="text-center py-16">
+                            <div class="w-20 h-20 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-sparkles text-gray-500 text-3xl"></i>
+                            </div>
+                            <p class="text-gray-500 text-lg mb-2">No job description generated yet</p>
+                            <p class="text-gray-600">Enter a job role and click "Generate Job Description" to get started</p>
+                        </div>
+                        
+                        <div id="post-section" class="hidden mt-6">
+                            <button id="post-btn" class="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-lg font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300">
+                                <i class="fas fa-linkedin mr-2"></i> Post to LinkedIn
+                            </button>
+                        </div>
+                        
+                        <div id="post-status" class="mt-6 p-4 rounded-lg text-white text-lg hidden"></div>
+                        
+                        <!-- Next Step Navigation -->
+                        <div id="next-step-section" class="hidden mt-8 p-6 bg-gradient-to-r from-green-900/30 to-blue-900/30 rounded-2xl border border-green-500/30">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-rocket text-white text-2xl"></i>
+                                </div>
+                                <h3 class="text-2xl font-bold mb-2 text-white">🎉 Job Posted Successfully!</h3>
+                                <p class="text-gray-300 mb-6">Ready to find the perfect candidates? Let's screen some resumes!</p>
+                                <button onclick="showPage('candidates')" class="px-8 py-4 bg-gradient-to-r from-green-500 to-blue-500 text-white text-lg font-semibold rounded-xl hover:from-green-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-105">
+                                    <i class="fas fa-users mr-2"></i> Screen Candidates →
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Candidates Page -->
+    <div id="candidates-page" class="page-section">
+        <div class="pt-32 pb-20 px-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-12">
+                    <h1 class="text-5xl font-bold mb-4">Candidate Selection</h1>
+                    <p class="text-xl text-gray-400">AI-powered resume screening to find the best candidates</p>
+                </div>
+
+                <!-- Progress Steps -->
+                <div class="flex justify-center mb-12">
+                    <div class="flex items-center space-x-8">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-white"></i>
+                            </div>
+                            <span class="ml-3 text-green-400 font-medium">1 Authentication</span>
+                        </div>
+                        <div class="w-16 h-1 bg-green-500"></div>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-white"></i>
+                            </div>
+                            <span class="ml-3 text-green-400 font-medium">2 Job Description</span>
+                        </div>
+                        <div class="w-16 h-1 bg-blue-500"></div>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                                <span class="text-white font-bold">3</span>
+                            </div>
+                            <span class="ml-3 text-blue-400 font-medium">3 Candidate Selection</span>
+                        </div>
+                        <div class="w-16 h-1 bg-gray-600"></div>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
+                                <span class="text-gray-400 font-bold">4</span>
+                            </div>
+                            <span class="ml-3 text-gray-400 font-medium">4 Interview Scheduling</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-effect rounded-2xl p-8 mb-8">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center mr-4">
+                            <i class="fas fa-search text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold">Resume Screening</h3>
+                            <p class="text-gray-400">Use AI to automatically screen resumes and select the best candidates</p>
+                        </div>
+                    </div>
+                    
+                    <button id="select-best-btn" class="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-lg font-semibold rounded-xl hover:from-purple-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105">
+                        <i class="fas fa-search mr-2"></i> Screen Candidates
+                    </button>
+                </div>
+                
+                <div id="best-candidates-section" class="hidden">
+                    <h3 class="text-3xl font-bold mb-8 text-center">Top Candidates</h3>
+                    <div id="best-candidates-list" class="space-y-6"></div>
+                    
+                    <!-- Next Step Navigation -->
+                    <div class="mt-12 p-8 bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded-2xl border border-purple-500/30 text-center">
+                        <div class="w-20 h-20 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <i class="fas fa-calendar-plus text-white text-3xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3 text-white">🚀 Great Candidates Found!</h3>
+                        <p class="text-gray-300 mb-6">Now let's schedule interviews with your top picks. Ready to automate your calendar?</p>
+                        <button onclick="showPage('interviews')" class="px-8 py-4 bg-gradient-to-r from-purple-500 to-blue-500 text-white text-lg font-semibold rounded-xl hover:from-purple-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-105">
+                            <i class="fas fa-calendar-plus mr-2"></i> Schedule Interviews →
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interviews Page -->
+    <div id="interviews-page" class="page-section">
+        <div class="pt-32 pb-20 px-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-12">
+                    <h1 class="text-5xl font-bold mb-4">Interview Scheduling</h1>
+                    <p class="text-xl text-gray-400">Automated interview scheduling with Google Calendar integration</p>
+                </div>
+
+                <!-- Progress Steps -->
+                <div class="flex justify-center mb-12">
+                    <div class="flex items-center space-x-8">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-white"></i>
+                            </div>
+                            <span class="ml-3 text-green-400 font-medium">1 Authentication</span>
+                        </div>
+                        <div class="w-16 h-1 bg-green-500"></div>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-white"></i>
+                            </div>
+                            <span class="ml-3 text-green-400 font-medium">2 Job Description</span>
+                        </div>
+                        <div class="w-16 h-1 bg-green-500"></div>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-white"></i>
+                            </div>
+                            <span class="ml-3 text-green-400 font-medium">3 Candidate Selection</span>
+                        </div>
+                        <div class="w-16 h-1 bg-blue-500"></div>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                                <span class="text-white font-bold">4</span>
+                            </div>
+                            <span class="ml-3 text-blue-400 font-medium">4 Interview Scheduling</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid lg:grid-cols-2 gap-8">
+                    <!-- Schedule Interview -->
+                    <div class="glass-effect rounded-2xl p-8">
+                        <div class="flex items-center mb-6">
+                            <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fas fa-calendar-plus text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold">Schedule Interview</h3>
+                                <p class="text-gray-400">Create a calendar event and send invite to candidate</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-800/30 rounded-lg p-4 mb-6">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                                    <span class="text-white font-bold">JD</span>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-white">John Doe</p>
+                                    <p class="text-gray-400 text-sm">john.doe@example.com</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2 text-gray-300">Candidate Name</label>
+                                <input type="text" id="candidate-name" value="John Doe" 
+                                       class="w-full px-4 py-3 bg-gray-800/30 border border-gray-700 rounded-lg text-white text-lg font-medium" 
+                                       style="color: white !important; -webkit-text-fill-color: white !important;">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2 text-gray-300">Candidate Email</label>
+                                <input type="email" id="candidate-email" value="john.doe@example.com" 
+                                       class="w-full px-4 py-3 bg-gray-800/30 border border-gray-700 rounded-lg text-white text-lg font-medium" 
+                                       style="color: white !important; -webkit-text-fill-color: white !important;">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2 text-gray-300">Interview Date</label>
+                                    <input type="date" id="interview-date" 
+                                           class="w-full px-4 py-3 bg-gray-800/30 border border-gray-700 rounded-lg text-white text-lg font-medium" 
+                                           style="color: white !important; -webkit-text-fill-color: white !important;">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2 text-gray-300">Interview Time</label>
+                                    <input type="time" id="interview-time" 
+                                           class="w-full px-4 py-3 bg-gray-800/30 border border-gray-700 rounded-lg text-white text-lg font-medium" 
+                                           style="color: white !important; -webkit-text-fill-color: white !important;">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2 text-gray-300">Interviewer Email (Optional)</label>
+                                <input type="email" id="interviewer-email" placeholder="interviewer@company.com" 
+                                       class="w-full px-4 py-3 bg-gray-800/30 border border-gray-700 rounded-lg text-white text-lg font-medium placeholder-gray-500" 
+                                       style="color: white !important; -webkit-text-fill-color: white !important;">
+                            </div>
+                        </div>
+                        
+                        <button id="schedule-interview-btn" class="w-full mt-6 px-6 py-4 bg-gradient-to-r from-blue-600 to-green-600 text-white text-lg font-semibold rounded-xl hover:from-blue-700 hover:to-green-700 transition-all duration-300 transform hover:scale-105">
+                            <i class="fas fa-paper-plane mr-2"></i> Schedule & Send Invite
+                        </button>
+                        
+                        <button onclick="showPage('candidates')" class="w-full mt-4 px-6 py-3 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-800 hover:border-gray-500 transition-all duration-300">
+                            Back to Candidate Selection
+                        </button>
+                    </div>
+                    
+                    <!-- Google Calendar Integration -->
+                    <div class="glass-effect rounded-2xl p-8 mt-8">
+                        <div class="flex items-center mb-6">
+                            <div class="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fas fa-calendar-plus text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold">Google Calendar Integration</h3>
+                                <p class="text-gray-400">Connect your calendar to enable automatic interview scheduling</p>
+                            </div>
+                        </div>
+                        
+                        <div id="calendar-auth-status" class="p-4 rounded-lg text-white text-lg mb-6 bg-gray-800/50">
+                            Checking calendar status...
+                        </div>
+                        
+                        <button id="google-calendar-auth-btn" class="w-full px-6 py-4 bg-gradient-to-r from-orange-600 to-red-600 text-white text-lg font-semibold rounded-xl hover:from-orange-700 hover:to-red-700 transition-all duration-300 transform hover:scale-105">
+                            <i class="fas fa-calendar-plus mr-2"></i> Connect Calendar
+                        </button>
+                        
+                        <div id="calendar-auth-result" class="mt-6 p-4 rounded-lg text-white text-lg hidden"></div>
+                    </div>
+                </div>
+
+                <!-- Upcoming Interviews -->
+                <div class="glass-effect rounded-2xl p-8 mt-8">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mr-4">
+                            <i class="fas fa-calendar-check text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold">Upcoming Interviews</h3>
+                            <p class="text-gray-400">Your scheduled interviews this week</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-gray-800/30 rounded-lg p-4">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h4 class="font-semibold text-white">Sarah Johnson</h4>
+                                    <p class="text-gray-400 text-sm">Frontend Developer</p>
+                                </div>
+                                <span class="px-3 py-1 bg-blue-500 text-white text-xs rounded-full">confirmed</span>
+                            </div>
+                            <p class="text-gray-300 text-sm mb-3">Sat, Jan 20 14:00</p>
+                            <div class="flex items-center text-blue-400">
+                                <i class="fas fa-envelope mr-2"></i>
+                                <span class="text-sm">Invite sent</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-800/30 rounded-lg p-4">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h4 class="font-semibold text-white">Mike Chen</h4>
+                                    <p class="text-gray-400 text-sm">Data Scientist</p>
+                                </div>
+                                <span class="px-3 py-1 bg-purple-500 text-white text-xs rounded-full">pending</span>
+                            </div>
+                            <p class="text-gray-300 text-sm mb-3">Mon, Jan 22 10:30</p>
+                            <div class="flex items-center text-purple-400">
+                                <i class="fas fa-envelope mr-2"></i>
+                                <span class="text-sm">Invite sent</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-800/30 rounded-lg p-4">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h4 class="font-semibold text-white">Emily Davis</h4>
+                                    <p class="text-gray-400 text-sm">Marketing Manager</p>
+                                </div>
+                                <span class="px-3 py-1 bg-blue-500 text-white text-xs rounded-full">confirmed</span>
+                            </div>
+                            <p class="text-gray-300 text-sm mb-3">Wed, Jan 24 16:00</p>
+                            <div class="flex items-center text-blue-400">
+                                <i class="fas fa-envelope mr-2"></i>
+                                <span class="text-sm">Invite sent</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="w-full mt-6 px-6 py-3 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-800 hover:border-gray-500 transition-all duration-300">
+                        <i class="fas fa-calendar mr-2"></i> View Full Calendar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Authentication Page -->
+    <div id="auth-page" class="page-section">
+        <div class="pt-32 pb-20 px-4">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-12">
+                    <h1 class="text-5xl font-bold mb-4">Connect Your Accounts</h1>
+                    <p class="text-xl text-gray-400">Link your LinkedIn and Google Calendar to start automating your hiring process</p>
+                </div>
+
+                <!-- Progress Steps -->
+                <div class="flex justify-center mb-12">
+                    <div class="flex items-center space-x-8">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                                <span class="text-white font-bold">1</span>
+                            </div>
+                            <span class="ml-3 text-blue-400 font-medium">1 Authentication</span>
+                        </div>
+                        <div class="w-16 h-1 bg-gray-600"></div>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
+                                <span class="text-gray-400 font-bold">2</span>
+                            </div>
+                            <span class="ml-3 text-gray-400 font-medium">2 Job Description</span>
+                        </div>
+                        <div class="w-16 h-1 bg-gray-600"></div>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
+                                <span class="text-gray-400 font-bold">3</span>
+                            </div>
+                            <span class="ml-3 text-gray-400 font-medium">3 Automation</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-8 mb-12">
+                    <!-- LinkedIn Connection -->
+                    <div class="glass-effect rounded-2xl p-8">
+                        <div class="flex items-center mb-6">
+                            <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fab fa-linkedin text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold">LinkedIn</h3>
+                                <p class="text-gray-400">Post jobs and manage applications</p>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4 mb-6">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-check text-white text-xs"></i>
+                                </div>
+                                <span class="text-gray-300">Secure OAuth 2.0 authentication</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-check text-white text-xs"></i>
+                                </div>
+                                <span class="text-gray-300">Post job descriptions automatically</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between mb-4">
+                            <span id="linkedin-status-badge" class="px-3 py-1 bg-purple-500 text-white text-sm rounded-full">Not Connected</span>
+                        </div>
+                        
+                        <button id="linkedin-connect-btn" onclick="login()" class="w-full px-6 py-3 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition-all duration-300 flex items-center justify-center">
+                            <span id="linkedin-connect-text">Connect LinkedIn</span>
+                            <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+
+                    <!-- Google Calendar Connection -->
+                    <div class="glass-effect rounded-2xl p-8">
+                        <div class="flex items-center mb-6">
+                            <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fas fa-calendar text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold">Google Calendar</h3>
+                                <p class="text-gray-400">Schedule interviews automatically</p>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4 mb-6">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-check text-white text-xs"></i>
+                                </div>
+                                <span class="text-gray-300">Secure OAuth 2.0 authentication</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-check text-white text-xs"></i>
+                                </div>
+                                <span class="text-gray-300">Send email invites to candidates</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between mb-4">
+                            <span id="gcal-status-badge" class="px-3 py-1 bg-purple-500 text-white text-sm rounded-full">Not Connected</span>
+                        </div>
+                        
+                        <button id="google-calendar-connect-btn" onclick="authenticateGoogleCalendar()" class="w-full px-6 py-3 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition-all duration-300 flex items-center justify-center">
+                            <span id="gcal-connect-text">Connect Google Calendar</span>
+                            <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Data Security Section -->
+                <div class="glass-effect rounded-2xl p-8 mb-8">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mr-4">
+                            <i class="fas fa-shield-alt text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold">Your Data is Secure</h3>
+                            <p class="text-gray-400">We use industry-standard OAuth 2.0 authentication. We never store your passwords and only access the minimum permissions required for functionality.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="flex justify-between">
+                    <button onclick="showPage('landing')" class="px-8 py-4 border border-gray-600 text-gray-300 rounded-xl hover:bg-gray-800 hover:border-gray-500 transition-all duration-300">
+                        Back to Dashboard
+                    </button>
+                    <button onclick="showPage('jd')" class="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300">
+                        Connect all accounts to continue
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Page -->
+    <div id="analytics-page" class="page-section">
+        <div class="pt-32 pb-20 px-4">
+            <div class="max-w-4xl mx-auto">
+                <h1 class="text-4xl font-bold mb-6 text-center">Hiring Analytics</h1>
+                <p class="text-xl text-gray-400 text-center mb-8">
+                    Track your hiring metrics and performance insights.
+                </p>
+                
+                <div class="glass-effect rounded-2xl p-8">
+                    <h3 class="text-2xl font-bold mb-6 text-gray-300">Coming Soon</h3>
+                    <p class="text-gray-400">Advanced analytics and reporting features will be available soon. Track your hiring metrics, candidate pipeline, and optimize your recruitment strategy.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Workflow Navigation -->
+    <div class="workflow-nav">
+        <div class="workflow-step completed" onclick="showPage('auth')">
+            <i class="fas fa-link step-icon"></i>
+            Connect
+        </div>
+        <div class="workflow-step current" onclick="showPage('jd')">
+            <i class="fas fa-file-alt step-icon"></i>
+            Job Description
+        </div>
+        <div class="workflow-step pending" onclick="showPage('candidates')">
+            <i class="fas fa-users step-icon"></i>
+            Candidates
+        </div>
+        <div class="workflow-step pending" onclick="showPage('interviews')">
+            <i class="fas fa-calendar step-icon"></i>
+            Interviews
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <button class="floating-action" onclick="showQuickActions()" title="Quick Actions">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <!-- Success Toast -->
+    <div id="success-toast" class="success-toast">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle mr-3 text-xl"></i>
+            <span id="toast-message">Action completed successfully!</span>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900/50 border-t border-gray-800 mt-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-building text-white text-sm"></i>
+                        </div>
+                        <span class="text-xl font-bold gradient-text">HR Automator</span>
+                    </div>
+                    <p class="text-gray-400">Transform your hiring process with AI-powered automation</p>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Product</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">Features</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Pricing</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">API</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Company</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">About</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Blog</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Careers</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Support</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">Help Center</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Contact</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Status</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center">
+                <p class="text-gray-400">&copy; 2024 HR Automator. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
     <script>
+        // Global variables
         let currentRole = '';
         let currentJD = '';
+
+
+
+        // Authentication functions
         async function checkAuth() {
-            const res = await fetch('/check-auth');
-            const data = await res.json();
-            if (data.authenticated) {
-                let statusText = 'Logged in!';
-                if (data.token_valid !== undefined) {
-                    statusText += ` (Token: ${data.token_valid ? 'Valid' : 'Invalid'})`;
-                    if (!data.token_valid) {
-                        statusText += ` - ${data.profile_response || data.error}`;
+            try {
+                const res = await fetch('/check-auth');
+                const data = await res.json();
+                
+                if (data.authenticated) {
+                    document.getElementById('login-btn').classList.add('hidden');
+                    document.getElementById('logout-btn').classList.remove('hidden');
+
+                    // Update LinkedIn card UI
+                    const badge = document.getElementById('linkedin-status-badge');
+                    const btn = document.getElementById('linkedin-connect-btn');
+                    const text = document.getElementById('linkedin-connect-text');
+                    if (badge) {
+                        badge.textContent = 'Connected';
+                        badge.className = 'px-3 py-1 bg-green-600 text-white text-sm rounded-full';
+                    }
+                    if (btn && text) {
+                        text.textContent = 'Connected to LinkedIn';
+                        btn.className = 'w-full px-6 py-3 border border-green-600 text-green-300 rounded-lg hover:bg-gray-800 hover:border-green-500 transition-all duration-300 flex items-center justify-center';
+                        btn.disabled = true;
+                    }
+                } else {
+                    document.getElementById('login-btn').classList.remove('hidden');
+                    document.getElementById('logout-btn').classList.add('hidden');
+
+                    // Reset LinkedIn card UI
+                    const badge = document.getElementById('linkedin-status-badge');
+                    const btn = document.getElementById('linkedin-connect-btn');
+                    const text = document.getElementById('linkedin-connect-text');
+                    if (badge) {
+                        badge.textContent = 'Not Connected';
+                        badge.className = 'px-3 py-1 bg-purple-500 text-white text-sm rounded-full';
+                    }
+                    if (btn && text) {
+                        text.textContent = 'Connect LinkedIn';
+                        btn.className = 'w-full px-6 py-3 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition-all duration-300 flex items-center justify-center';
+                        btn.disabled = false;
                     }
                 }
-                document.getElementById('auth-status').textContent = statusText;
-                document.getElementById('login-btn').classList.add('hidden');
-                document.getElementById('logout-btn').classList.remove('hidden');
-                document.getElementById('workflow-section').classList.remove('hidden');
-            } else {
-                document.getElementById('auth-status').textContent = 'Not logged in.';
-                document.getElementById('login-btn').classList.remove('hidden');
-                document.getElementById('logout-btn').classList.add('hidden');
-                document.getElementById('workflow-section').classList.add('hidden');
+            } catch (error) {
+                console.error('Auth check failed:', error);
             }
         }
-        document.getElementById('login-btn').onclick = () => {
+
+        function login() {
             window.location.href = '/login';
-        };
-        document.getElementById('logout-btn').onclick = () => {
+        }
+
+        function logout() {
             window.location.href = '/logout';
-        };
+        }
+
+        // Job Description functions
         document.getElementById('jd-form').onsubmit = async (e) => {
             e.preventDefault();
             const role = document.getElementById('role').value;
             currentRole = role;
+            
+            // Hide previous results
             document.getElementById('jd-result').classList.add('hidden');
             document.getElementById('post-section').classList.add('hidden');
-            document.getElementById('post-status').textContent = '';
-            const res = await fetch('/generate-jd', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ role })
-            });
-            const data = await res.json();
-            if (data.job_description) {
-                currentJD = data.job_description;
-                document.getElementById('jd-text').value = data.job_description;
-                document.getElementById('jd-result').classList.remove('hidden');
-                document.getElementById('approval-section').classList.remove('hidden');
-                document.getElementById('post-section').classList.add('hidden');
-            } else {
-                document.getElementById('post-status').textContent = data.error || 'Failed to generate JD.';
-                document.getElementById('post-status').className = 'error';
+            document.getElementById('post-status').classList.add('hidden');
+            document.getElementById('jd-placeholder').classList.remove('hidden');
+            
+            // Show loading state
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Generating...';
+            submitBtn.disabled = true;
+            
+            try {
+                const res = await fetch('/generate-jd', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ role })
+                });
+                
+                const data = await res.json();
+                
+                if (data.job_description) {
+                    currentJD = data.job_description;
+                    document.getElementById('jd-text').innerHTML = data.job_description;
+                    document.getElementById('jd-result').classList.remove('hidden');
+                    document.getElementById('jd-placeholder').classList.add('hidden');
+                    
+                    // Add success animation
+                    document.getElementById('jd-result').classList.add('bounce-in');
+                    setTimeout(() => {
+                        document.getElementById('jd-result').classList.remove('bounce-in');
+                    }, 600);
+                } else {
+                    showStatus(data.error || 'Failed to generate JD.', 'error');
+                }
+            } catch (error) {
+                showStatus('Error: ' + error.message, 'error');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
             }
         };
+
         document.getElementById('approve-btn').onclick = async (e) => {
             e.preventDefault();
-            document.getElementById('post-status').textContent = '';
-            const res = await fetch('/approve-jd', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ role: currentRole, job_description: currentJD, approval: true })
-            });
-            const data = await res.json();
-            if (data.job_description) {
-                document.getElementById('post-section').classList.remove('hidden');
-                document.getElementById('approval-section').classList.add('hidden');
-            } else if (data.error) {
-                document.getElementById('post-status').textContent = data.error;
-                document.getElementById('post-status').className = 'error';
+            hideStatus();
+            
+            try {
+                const res = await fetch('/approve-jd', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        role: currentRole, 
+                        job_description: currentJD, 
+                        approval: true 
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.job_description) {
+                    document.getElementById('post-section').classList.remove('hidden');
+                    document.getElementById('approval-section').classList.add('hidden');
+                    showStatus('Job description approved! Ready to post to LinkedIn.', 'success');
+                } else if (data.error) {
+                    showStatus(data.error, 'error');
+                }
+            } catch (error) {
+                showStatus('Error: ' + error.message, 'error');
             }
         };
+
         document.getElementById('reject-btn').onclick = async (e) => {
             e.preventDefault();
-            document.getElementById('post-status').textContent = '';
-            const res = await fetch('/approve-jd', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ role: currentRole, job_description: currentJD, approval: false })
-            });
-            const data = await res.json();
-            if (data.job_description) {
-                currentJD = data.job_description;
-                document.getElementById('jd-text').value = data.job_description;
-                document.getElementById('post-section').classList.add('hidden');
-                document.getElementById('approval-section').classList.remove('hidden');
-            } else if (data.error) {
-                document.getElementById('post-status').textContent = data.error;
-                document.getElementById('post-status').className = 'error';
+            hideStatus();
+            
+            try {
+                const res = await fetch('/approve-jd', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        role: currentRole, 
+                        job_description: currentJD, 
+                        approval: false 
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.job_description) {
+                    currentJD = data.job_description;
+                    document.getElementById('jd-text').innerHTML = data.job_description;
+                    document.getElementById('post-section').classList.add('hidden');
+                    document.getElementById('approval-section').classList.remove('hidden');
+                    showStatus('New job description generated!', 'success');
+                } else if (data.error) {
+                    showStatus(data.error, 'error');
+                }
+            } catch (error) {
+                showStatus('Error: ' + error.message, 'error');
             }
         };
+
         document.getElementById('post-btn').onclick = async (e) => {
             e.preventDefault();
-            document.getElementById('post-status').textContent = 'Posting to LinkedIn...';
-            document.getElementById('post-status').className = '';
-            const res = await fetch('/post-jd', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ role: currentRole, job_description: currentJD })
-            });
-            const data = await res.json();
-                         if (data.post_status === 'success') {
-                 let successMessage = 'JD posted to LinkedIn!';
-                 if (data.post_ids && data.post_ids.length > 0) {
-                     successMessage += '<br>Post URLs:<br>';
-                     data.post_ids.forEach((post, index) => {
-                         if (post.url) {
-                             successMessage += `<a href="${post.url}" target="_blank">View Post ${index + 1}</a><br>`;
-                         }
-                     });
-                 } else if (data.post_url) {
-                     successMessage += `<br><a href="${data.post_url}" target="_blank">View LinkedIn Post</a>`;
-                 }
-                 document.getElementById('post-status').innerHTML = successMessage;
-                 document.getElementById('post-status').className = 'success';
-                 document.getElementById('post-section').classList.add('hidden');
-                 // Show HR automation section after successful post
-                 document.getElementById('hr-automation-section').classList.remove('hidden');
-             } else {
-                 document.getElementById('post-status').textContent = data.error || 'Failed to post JD.';
-                 document.getElementById('post-status').className = 'error';
-             }
+            showStatus('Posting to LinkedIn...', 'info');
+            
+            try {
+                const res = await fetch('/post-jd', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        role: currentRole, 
+                        job_description: currentJD 
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.post_status === 'success') {
+                    let successMessage = '✅ JD posted to LinkedIn successfully!';
+                    if (data.post_ids && data.post_ids.length > 0) {
+                        successMessage += '<br><br>📱 Post URLs:<br>';
+                        data.post_ids.forEach((post, index) => {
+                            if (post.url) {
+                                successMessage += `<a href="${post.url}" target="_blank" class="text-blue-400 hover:text-blue-300 underline">View Post ${index + 1}</a><br>`;
+                            }
+                        });
+                    }
+                    
+                    showStatus(successMessage, 'success');
+                    document.getElementById('post-section').classList.add('hidden');
+                    
+                    // Show next step navigation
+                    setTimeout(() => {
+                        document.getElementById('next-step-section').classList.remove('hidden');
+                        showSuccessToast('Job posted successfully! Ready for the next step?');
+                    }, 1000);
+                } else {
+                    showStatus('❌ ' + (data.error || 'Failed to post JD.'), 'error');
+                }
+            } catch (error) {
+                showStatus('❌ Error: ' + error.message, 'error');
+            }
         };
-        // --- HR Automation JS ---
+
+        // Candidate screening functions
         document.getElementById('select-best-btn').onclick = async (e) => {
             e.preventDefault();
             document.getElementById('best-candidates-section').classList.add('hidden');
-            document.getElementById('best-candidates-list').innerHTML = 'Selecting best candidates...';
-            // Use the job description from the textarea
-            const job_description = document.getElementById('jd-text').value;
-            // Call backend endpoint to select best candidates
-            const res = await fetch('/select-best-resumes', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ job_description })
-            });
-            const data = await res.json();
-            if (data.best_candidate) {
-                let html = '';
-                
-                // Show all top candidates
-                if (data.all_top_candidates && data.all_top_candidates.length > 0) {
-                    data.all_top_candidates.forEach((candidateData, idx) => {
-                        const candidate = candidateData.applicant;
-                        const isBest = idx === 0;
-                        const borderColor = isBest ? '#4CAF50' : '#2196F3';
-                        const bgColor = isBest ? '#f9f9f9' : '#f0f8ff';
-                        const title = isBest ? '🏆 BEST CANDIDATE' : `🥈 CANDIDATE #${idx + 1}`;
-                        
-                        html += `<div style="margin-bottom:1em;padding:1em;border:2px solid ${borderColor};border-radius:6px;background-color:${bgColor};">
-                            <h3 style="color:${borderColor};margin-top:0;">${title}</h3>
-                            <b>Name:</b> ${candidate.name || 'N/A'}<br>
-                            <b>Email:</b> ${candidate.email || 'N/A'}<br>
-                            <b>College:</b> ${candidate.college || 'N/A'}<br>
-                            <b>Intro:</b> ${candidate.intro || 'N/A'}<br>
-                            <b>Resume File ID:</b> ${candidate.resume_file_id || 'N/A'}<br>
-                            <b>Similarity Score:</b> ${candidateData.similarity_score ? candidateData.similarity_score.toFixed(3) : 'N/A'}
-                            <br><br>
-                            <button onclick="scheduleInterview('${candidate.email}', '${candidate.name}')" style="background-color: #FF9800; margin-right: 10px;">
-                                📅 Schedule Interview
-                            </button>
-                            <button onclick="viewResume('${candidate.resume_file_id}')" style="background-color: #9C27B0;">
-                                📄 View Resume
-                            </button>
-                        </div>`;
-                    });
+            
+            // Show loading state
+            const btn = e.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Screening...';
+            btn.disabled = true;
+            
+            try {
+                // Get job description from JD page if available
+                let jobDescription = currentJD;
+                if (!jobDescription) {
+                    jobDescription = "Software Engineer"; // Default fallback
                 }
                 
-                document.getElementById('best-candidates-list').innerHTML = html;
+                const res = await fetch('/select-best-resumes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ job_description: jobDescription })
+                });
+                
+                const data = await res.json();
+                
+                if (data.best_candidate) {
+                    let html = '';
+                    
+                    if (data.all_top_candidates && data.all_top_candidates.length > 0) {
+                        data.all_top_candidates.forEach((candidateData, idx) => {
+                            const candidate = candidateData.applicant;
+                            const isBest = idx === 0;
+                            const borderColor = isBest ? '#10b981' : '#3b82f6';
+                            const bgColor = isBest ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)';
+                            const title = isBest ? '🏆 BEST CANDIDATE' : `🥈 CANDIDATE #${idx + 1}`;
+                            
+                            html += `
+                                <div class="glass-effect rounded-2xl p-6 border-2" style="border-color: ${borderColor}; background: ${bgColor};">
+                                    <h4 class="text-xl font-bold mb-4" style="color: ${borderColor};">${title}</h4>
+                                    <div class="grid md:grid-cols-2 gap-4 mb-4">
+                                        <div><strong class="text-gray-300">Name:</strong> <span class="text-white">${candidate.name || 'N/A'}</span></div>
+                                        <div><strong class="text-gray-300">Email:</strong> <span class="text-white">${candidate.email || 'N/A'}</span></div>
+                                        <div><strong class="text-gray-300">College:</strong> <span class="text-white">${candidate.college || 'N/A'}</span></div>
+                                        <div><strong class="text-gray-300">Score:</strong> <span class="text-white">${candidateData.similarity_score ? candidateData.similarity_score.toFixed(3) : 'N/A'}</span></div>
+                                    </div>
+                                    <div class="mb-4">
+                                        <strong class="text-gray-300">Introduction:</strong><br>
+                                        <em class="text-gray-400">${candidate.intro || 'N/A'}</em>
+                                    </div>
+                                    <div class="flex gap-3 flex-wrap">
+                                        <button onclick="scheduleInterview('${candidate.email}', '${candidate.name}')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                            📅 Schedule Interview
+                                        </button>
+                                        <button onclick="viewResume('${candidate.resume_file_id}')" class="px-4 py-2 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors">
+                                            📄 View Resume
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
+                    
+                    document.getElementById('best-candidates-list').innerHTML = html;
+                    document.getElementById('best-candidates-section').classList.remove('hidden');
+                    
+                    // Add animation
+                    document.getElementById('best-candidates-section').classList.add('fade-in');
+                    setTimeout(() => {
+                        document.getElementById('best-candidates-section').classList.remove('fade-in');
+                    }, 500);
+                    
+                    // Show success message
+                    showSuccessToast('Candidates screened successfully! Ready to schedule interviews?');
+                } else if (data.error) {
+                    document.getElementById('best-candidates-list').innerHTML = `<div class="text-red-400 text-center py-8">❌ Error: ${data.error}</div>`;
+                    document.getElementById('best-candidates-section').classList.remove('hidden');
+                } else {
+                    document.getElementById('best-candidates-list').innerHTML = '<div class="text-gray-400 text-center py-8">No candidates found.</div>';
+                    document.getElementById('best-candidates-section').classList.remove('hidden');
+                }
+            } catch (error) {
+                document.getElementById('best-candidates-list').innerHTML = `<div class="text-red-400 text-center py-8">❌ Error: ${error.message}</div>`;
                 document.getElementById('best-candidates-section').classList.remove('hidden');
-            } else if (data.error) {
-                document.getElementById('best-candidates-list').innerHTML = `Error: ${data.error}`;
-                document.getElementById('best-candidates-section').classList.remove('hidden');
-            } else {
-                document.getElementById('best-candidates-list').innerHTML = 'No candidates found.';
-                document.getElementById('best-candidates-section').classList.remove('hidden');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
         };
-        
-        // Function to schedule interview with better UI
+
+        // Interview scheduling function
         async function scheduleInterview(candidateEmail, candidateName) {
-            // Create modal for better date/time input
             const modal = document.createElement('div');
             modal.style.cssText = `
                 position: fixed;
@@ -253,24 +1582,25 @@
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background: rgba(0,0,0,0.5);
+                background: rgba(0,0,0,0.8);
                 display: flex;
                 justify-content: center;
                 align-items: center;
                 z-index: 1000;
+                backdrop-filter: blur(10px);
             `;
             
             const modalContent = document.createElement('div');
             modalContent.style.cssText = `
-                background: white;
-                padding: 2em;
-                border-radius: 8px;
-                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-                max-width: 400px;
+                background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+                padding: 2rem;
+                border-radius: 20px;
+                box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+                max-width: 500px;
                 width: 90%;
+                border: 1px solid rgba(255,255,255,0.1);
             `;
             
-            // Get current date and time for defaults
             const now = new Date();
             const tomorrow = new Date(now);
             tomorrow.setDate(tomorrow.getDate() + 1);
@@ -278,40 +1608,45 @@
             const defaultTime = '14:00';
             
             modalContent.innerHTML = `
-                <h3 style="margin-top: 0; color: #0077b5;">📅 Schedule Interview</h3>
-                <p><strong>Candidate:</strong> ${candidateName}</p>
-                <p><strong>Email:</strong> ${candidateEmail}</p>
-                
-                <div style="margin: 1em 0;">
-                    <label for="interview-date" style="display: block; margin-bottom: 0.5em; font-weight: bold;">Interview Date:</label>
-                    <input type="date" id="interview-date" value="${defaultDate}" style="width: 100%; padding: 0.5em; border: 1px solid #ccc; border-radius: 4px;">
+                <h3 class="text-2xl font-bold mb-6 text-center" style="color: #667eea;">📅 Schedule Interview</h3>
+                <div class="bg-gray-800/50 rounded-xl p-4 mb-6 border border-gray-700">
+                    <p class="text-white mb-1"><strong>Candidate:</strong> ${candidateName}</p>
+                    <p class="text-gray-400"><strong>Email:</strong> ${candidateEmail}</p>
                 </div>
                 
-                <div style="margin: 1em 0;">
-                    <label for="interview-time" style="display: block; margin-bottom: 0.5em; font-weight: bold;">Interview Time:</label>
-                    <input type="time" id="interview-time" value="${defaultTime}" style="width: 100%; padding: 0.5em; border: 1px solid #ccc; border-radius: 4px;">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2 text-gray-300">Interview Date:</label>
+                        <input type="date" id="interview-date" value="${defaultDate}" 
+                               class="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2 text-gray-300">Interview Time:</label>
+                        <input type="time" id="interview-time" value="${defaultTime}" 
+                               class="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2 text-gray-300">Interviewer Email (optional):</label>
+                        <input type="email" id="interviewer-email" placeholder="interviewer@company.com" 
+                               class="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
                 </div>
                 
-                <div style="margin: 1em 0;">
-                    <label for="interviewer-email" style="display: block; margin-bottom: 0.5em; font-weight: bold;">Interviewer Email (optional):</label>
-                    <input type="email" id="interviewer-email" placeholder="interviewer@company.com" style="width: 100%; padding: 0.5em; border: 1px solid #ccc; border-radius: 4px;">
-                </div>
-                
-                <div style="margin-top: 2em; text-align: right;">
-                    <button id="cancel-btn" style="background: #ccc; margin-right: 1em;">Cancel</button>
-                    <button id="schedule-btn" style="background: #0077b5;">Schedule Interview</button>
+                <div class="flex gap-3 mt-6">
+                    <button id="cancel-btn" class="flex-1 px-4 py-3 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors">Cancel</button>
+                    <button id="schedule-btn" class="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-lg hover:from-blue-700 hover:to-green-700 transition-all duration-300">Schedule Interview</button>
                 </div>
             `;
             
             modal.appendChild(modalContent);
             document.body.appendChild(modal);
             
-            // Handle cancel
             document.getElementById('cancel-btn').onclick = () => {
                 document.body.removeChild(modal);
             };
             
-            // Handle schedule
             document.getElementById('schedule-btn').onclick = async () => {
                 const interviewDate = document.getElementById('interview-date').value;
                 const interviewTime = document.getElementById('interview-time').value;
@@ -322,9 +1657,9 @@
                     return;
                 }
                 
-                // Show loading state
-                document.getElementById('schedule-btn').textContent = 'Scheduling...';
-                document.getElementById('schedule-btn').disabled = true;
+                const scheduleBtn = document.getElementById('schedule-btn');
+                scheduleBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Scheduling...';
+                scheduleBtn.disabled = true;
                 
                 try {
                     const res = await fetch('/schedule-interview', {
@@ -353,19 +1688,49 @@
                 } catch (error) {
                     alert(`❌ Error scheduling interview: ${error.message}`);
                 } finally {
-                    document.getElementById('schedule-btn').textContent = 'Schedule Interview';
-                    document.getElementById('schedule-btn').disabled = false;
+                    scheduleBtn.innerHTML = 'Schedule Interview';
+                    scheduleBtn.disabled = false;
                 }
             };
         }
-        
-        // Function to view resume
+
+        // Resume viewing function
         function viewResume(fileId) {
-            // Open the resume in a new tab
             window.open(`/view-resume/${fileId}`, '_blank');
         }
-        
-        // Google Calendar Authentication Functions
+
+        // Status management functions
+        function showStatus(message, type = 'info') {
+            const statusElement = document.getElementById('post-status');
+            statusElement.innerHTML = message;
+            statusElement.classList.remove('hidden');
+            
+            // Set colors based on type
+            switch(type) {
+                case 'success':
+                    statusElement.style.backgroundColor = '#10b981';
+                    break;
+                case 'error':
+                    statusElement.style.backgroundColor = '#ef4444';
+                    break;
+                case 'info':
+                    statusElement.style.backgroundColor = '#3b82f6';
+                    break;
+                default:
+                    statusElement.style.backgroundColor = '#6b7280';
+            }
+            
+            statusElement.style.color = 'white';
+            statusElement.style.padding = '1rem';
+            statusElement.style.borderRadius = '8px';
+        }
+
+        function hideStatus() {
+            const statusElement = document.getElementById('post-status');
+            statusElement.classList.add('hidden');
+        }
+
+        // Google Calendar functions
         async function checkGoogleCalendarAuth() {
             try {
                 const res = await fetch('/check-google-calendar-auth');
@@ -373,42 +1738,72 @@
                 
                 const statusElement = document.getElementById('calendar-auth-status');
                 const authBtn = document.getElementById('google-calendar-auth-btn');
+                const badge = document.getElementById('gcal-status-badge');
+                const connectBtn = document.getElementById('google-calendar-connect-btn');
+                const connectText = document.getElementById('gcal-connect-text');
                 
                 if (data.authenticated) {
-                    statusElement.textContent = '✅ Authenticated with Google Calendar';
-                    statusElement.style.color = 'green';
-                    authBtn.textContent = '🔄 Re-authenticate Google Calendar';
-                    authBtn.style.background = '#FF9800';
+                    statusElement.innerHTML = '✅ <strong>Connected to Google Calendar</strong><br><small>You can now schedule interviews automatically</small>';
+                    statusElement.style.backgroundColor = '#10b981';
+                    statusElement.style.color = 'white';
+                    authBtn.innerHTML = '<i class="fas fa-sync mr-2"></i> Reconnect Calendar';
+                    authBtn.className = 'w-full px-6 py-3 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-800 hover:border-gray-500 transition-all duration-300';
+
+                    // Update auth page badge/button
+                    if (badge) {
+                        badge.textContent = 'Connected';
+                        badge.className = 'px-3 py-1 bg-green-600 text-white text-sm rounded-full';
+                    }
+                    if (connectBtn && connectText) {
+                        connectText.textContent = 'Connected to Google Calendar';
+                        connectBtn.className = 'w-full px-6 py-3 border border-green-600 text-green-300 rounded-lg hover:bg-gray-800 hover:border-green-500 transition-all duration-300 flex items-center justify-center';
+                        connectBtn.disabled = true;
+                    }
                 } else {
-                    statusElement.textContent = '❌ Not authenticated with Google Calendar';
-                    statusElement.style.color = 'red';
-                    authBtn.textContent = '🔐 Authenticate Google Calendar';
-                    authBtn.style.background = '#0077b5';
+                    statusElement.innerHTML = '❌ <strong>Not connected to Google Calendar</strong><br><small>Connect your calendar to enable automatic interview scheduling</small>';
+                    statusElement.style.backgroundColor = '#ef4444';
+                    statusElement.style.color = 'white';
+                    authBtn.innerHTML = '<i class="fas fa-calendar-plus mr-2"></i> Connect Calendar';
+                    authBtn.className = 'w-full px-6 py-3 bg-blue-600 text-white text-lg font-semibold rounded-xl hover:bg-blue-700 transition-all duration-300 transform hover:scale-105';
+
+                    if (badge) {
+                        badge.textContent = 'Not Connected';
+                        badge.className = 'px-3 py-1 bg-purple-500 text-white text-sm rounded-full';
+                    }
+                    if (connectBtn && connectText) {
+                        connectText.textContent = 'Connect Google Calendar';
+                        connectBtn.className = 'w-full px-6 py-3 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition-all duration-300 flex items-center justify-center';
+                        connectBtn.disabled = false;
+                    }
                 }
             } catch (error) {
                 console.error('Error checking Google Calendar auth:', error);
             }
         }
-        
+
         async function authenticateGoogleCalendar() {
             const authBtn = document.getElementById('google-calendar-auth-btn');
             const resultElement = document.getElementById('calendar-auth-result');
             
-            authBtn.textContent = 'Authenticating...';
+            authBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Connecting...';
             authBtn.disabled = true;
-            resultElement.textContent = '';
+            resultElement.classList.add('hidden');
             
             try {
                 const res = await fetch('/google-calendar-auth');
                 const data = await res.json();
                 
                 if (data.status === 'success') {
-                    resultElement.textContent = '✅ ' + data.message;
-                    resultElement.style.color = 'green';
-                    await checkGoogleCalendarAuth(); // Refresh status
+                    resultElement.innerHTML = '✅ ' + data.message;
+                    resultElement.style.backgroundColor = '#10b981';
+                    resultElement.style.color = 'white';
+                    resultElement.classList.remove('hidden');
+                    await checkGoogleCalendarAuth();
                 } else if (data.error) {
-                    resultElement.textContent = '❌ ' + data.error;
-                    resultElement.style.color = 'red';
+                    resultElement.innerHTML = '❌ ' + data.error;
+                    resultElement.style.backgroundColor = '#ef4444';
+                    resultElement.style.color = 'white';
+                    resultElement.classList.remove('hidden');
                     
                     if (data.instructions) {
                         resultElement.innerHTML += '<br><br><strong>Setup Instructions:</strong><ul>' + 
@@ -417,21 +1812,180 @@
                     }
                 }
             } catch (error) {
-                resultElement.textContent = '❌ Error: ' + error.message;
-                resultElement.style.color = 'red';
+                resultElement.innerHTML = '❌ Error: ' + error.message;
+                resultElement.style.backgroundColor = '#ef4444';
+                resultElement.style.color = 'white';
+                resultElement.classList.remove('hidden');
             } finally {
-                authBtn.textContent = '🔐 Authenticate Google Calendar';
                 authBtn.disabled = false;
+                await checkGoogleCalendarAuth();
             }
         }
-        
-        // Add event listeners
+
+        // Event listeners
         document.getElementById('google-calendar-auth-btn').onclick = authenticateGoogleCalendar;
-        
+
+        // Initialize
         window.onload = function() {
             checkAuth();
             checkGoogleCalendarAuth();
+            
+            // Set default date and time for interview scheduling
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const defaultDate = tomorrow.toISOString().split('T')[0];
+            const defaultTime = '14:00';
+            
+            if (document.getElementById('interview-date')) {
+                document.getElementById('interview-date').value = defaultDate;
+            }
+            if (document.getElementById('interview-time')) {
+                document.getElementById('interview-time').value = defaultTime;
+            }
+            
+            // Add smooth scrolling and animations
+            addScrollAnimations();
         };
+        
+        // Add scroll animations
+        function addScrollAnimations() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('fade-in');
+                    }
+                });
+            }, observerOptions);
+            
+            // Observe all cards and sections
+            document.querySelectorAll('.glass-effect, .card-hover').forEach(el => {
+                observer.observe(el);
+            });
+        }
+        
+        // Enhanced page navigation with smooth transitions
+        function showPage(pageName) {
+            // Hide all pages with fade out
+            document.querySelectorAll('.page-section').forEach(page => {
+                if (page.classList.contains('active')) {
+                    page.style.opacity = '0';
+                    page.style.transform = 'translateY(20px)';
+                    setTimeout(() => {
+                        page.classList.remove('active');
+                    }, 300);
+                }
+            });
+            
+            // Show selected page with fade in
+            setTimeout(() => {
+                const targetPage = document.getElementById(pageName + '-page');
+                targetPage.classList.add('active');
+                targetPage.style.opacity = '1';
+                targetPage.style.transform = 'translateY(0)';
+                
+                // Add animation classes
+                targetPage.classList.add('fade-in');
+                setTimeout(() => {
+                    targetPage.classList.remove('fade-in');
+                }, 500);
+                
+                // Scroll to top smoothly
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 300);
+            
+            // Update navigation active state
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.classList.remove('text-white');
+                link.classList.add('text-gray-300');
+            });
+            
+            // Highlight current page in nav
+            event.target.classList.remove('text-gray-300');
+            event.target.classList.add('text-white');
+            
+            // Update workflow navigation
+            updateWorkflowSteps(pageName);
+
+            // If navigating to auth page, refresh connection statuses
+            if (pageName === 'auth') {
+                checkAuth();
+                checkGoogleCalendarAuth();
+            }
+        }
+        
+        // Update workflow step indicators
+        function updateWorkflowSteps(currentPage) {
+            const steps = document.querySelectorAll('.workflow-step');
+            const pageOrder = ['auth', 'jd', 'candidates', 'interviews'];
+            const currentIndex = pageOrder.indexOf(currentPage);
+            
+            steps.forEach((step, index) => {
+                step.classList.remove('completed', 'current', 'pending');
+                
+                if (index < currentIndex) {
+                    step.classList.add('completed');
+                } else if (index === currentIndex) {
+                    step.classList.add('current');
+                } else {
+                    step.classList.add('pending');
+                }
+            });
+        }
+        
+        // Show success toast
+        function showSuccessToast(message) {
+            const toast = document.getElementById('success-toast');
+            const toastMessage = document.getElementById('toast-message');
+            toastMessage.textContent = message;
+            
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Quick actions menu
+        function showQuickActions() {
+            const actions = [
+                { name: 'Create JD', icon: 'fas fa-file-alt', action: () => showPage('jd') },
+                { name: 'Screen Candidates', icon: 'fas fa-users', action: () => showPage('candidates') },
+                { name: 'Schedule Interviews', icon: 'fas fa-calendar', action: () => showPage('interviews') },
+                { name: 'Dashboard', icon: 'fas fa-tachometer-alt', action: () => showPage('dashboard') }
+            ];
+            
+            // Create floating menu
+            const menu = document.createElement('div');
+            menu.className = 'fixed bottom-24 right-2 z-50 bg-gray-900/95 backdrop-blur-20 border border-gray-700 rounded-2xl p-4 shadow-2xl';
+            menu.style.minWidth = '200px';
+            
+            let menuHTML = '<div class="text-gray-400 text-sm mb-3 font-semibold">Quick Actions</div>';
+            actions.forEach(action => {
+                menuHTML += `
+                    <button onclick="this.parentElement.remove(); ${action.action.toString()}()" 
+                            class="w-full text-left p-3 hover:bg-gray-800 rounded-lg transition-colors flex items-center">
+                        <i class="${action.icon} mr-3 text-blue-400"></i>
+                        <span class="text-white">${action.name}</span>
+                    </button>
+                `;
+            });
+            
+            menu.innerHTML = menuHTML;
+            document.body.appendChild(menu);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (menu.parentElement) {
+                    menu.remove();
+                }
+            }, 5000);
+        }
     </script>
 </body>
 </html>
+
+
