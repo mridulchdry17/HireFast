@@ -149,18 +149,20 @@ def generate_jd_node(state: HRHiringState) -> dict:
     if not role:
         return {'post_status': 'error', 'error': 'Role is required'}
     template = (
-        "You are an HR and copywriting expert. Write a concise, professional job description for the role of {role}, optimized for posting on LinkedIn.\n\n"
-        "Guidelines:\n"
-        "- Keep the total length under 1200 characters to allow space for the application link.\n"
-        "- Use clear, professional language with a compelling hook.\n"
-        "- Include key responsibilities, qualifications, and a call-to-action.\n"
-        "- Add relevant hashtags (e.g., #Hiring, #JobOpportunity) and emojis for engagement.\n"
-        "- Avoid bullet points or excessive formatting; use plain text with newlines for readability.\n\n"
-        "Return the response as a plain text paragraph.\n\n"
-        "Role: {role}"
+    "You are an HR and copywriting expert. Write a concise, professional job description for the role of {role}, optimized for posting on LinkedIn.\n\n"
+    "Guidelines:\n"
+    "- Keep the total length under 1200 characters to allow space for the application link.\n"
+    "- Use clear, professional language with a compelling hook.\n"
+    "- Include key responsibilities, qualifications, and a call-to-action.\n"
+    "- Add relevant hashtags (e.g., #Hiring, #JobOpportunity) and emojis for engagement.\n"
+    "- Avoid bullet points or excessive formatting; use plain text with newlines for readability.\n"
+    "- Do NOT start with phrases like 'Here is the job description' or any introductory statements; start directly with the content.\n\n"
+    "Return the response as a plain text paragraph only.\n\n"
+    "Role: {role}"
     )
+
     prompt = PromptTemplate.from_template(template).format(role=role)
-    llm = ChatGroq(api_key=os.environ.get("GROQ_API_KEY"), model='llama3-8b-8192')
+    llm = ChatGroq(api_key=os.environ.get("GROQ_API_KEY"), model='openai/gpt-oss-120b')
     try:
         jd = llm.invoke(prompt)
         return {'role': role, 'job_description': jd.content}
