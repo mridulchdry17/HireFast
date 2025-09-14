@@ -3565,3 +3565,3570 @@
     </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Automator</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #10b981 0%, #3b82f6 100%);
+            height: 8px;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .status-pill {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-completed {
+            background: #10b981;
+            color: white;
+        }
+        
+        .status-current {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .status-pending {
+            background: #8b5cf6;
+            color: white;
+        }
+        
+        .page-section {
+            display: none;
+        }
+        
+        .page-section.active {
+            display: block;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .bounce-in {
+            animation: bounceIn 0.6s ease-out;
+        }
+        
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+
+        
+        /* Clean Floating Action Button - Simple & Functional */
+        .floating-action-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 1000;
+        }
+        
+        .floating-action {
+            width: 4rem;
+            height: 4rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .floating-action:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.6);
+        }
+        
+        .floating-action:active {
+            transform: scale(0.95);
+        }
+        
+        /* Simple Floating Menu */
+        .floating-menu {
+            position: fixed;
+            bottom: 7rem;
+            right: 2rem;
+            z-index: 50;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            width: 360px;
+            transform: scale(0.8) translateY(20px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        .floating-menu.show {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Clean Header */
+        .floating-menu-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .floating-menu-header h3 {
+            margin: 0.5rem 0 0.25rem 0;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: white;
+        }
+        
+        .floating-menu-header p {
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: #cbd5e1;
+        }
+        
+        /* Clean Action Items */
+        .floating-menu-actions {
+            margin-bottom: 1rem;
+        }
+        
+        .action-item {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .action-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateX(4px);
+        }
+        
+        .action-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .action-content {
+            flex: 1;
+            text-align: left;
+        }
+        
+        .action-title {
+            display: block;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 0.25rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+        }
+        
+        .action-subtitle {
+            display: block;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+        }
+        
+        .action-status {
+            font-size: 1.2rem;
+            margin-left: 0.5rem;
+        }
+        
+        /* Clean Footer */
+        .floating-menu-footer {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+        
+        .progress-ring-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+        
+        .progress-text {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .progress-percentage {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #10b981;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .progress-label {
+            font-size: 0.9rem;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        /* Micro-interactions */
+        .action-item:active {
+            transform: scale(0.98);
+        }
+        
+        .feature-card:active {
+            transform: translateY(-4px) scale(1.01);
+        }
+        
+        /* Enhanced focus states */
+        .action-item:focus,
+        .feature-card:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+        
+        .action-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            color: white;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        
+        .action-content {
+            flex: 1;
+            text-align: left;
+        }
+        
+        .action-title {
+            display: block;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.25rem;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            letter-spacing: -0.01em;
+            font-size: 1.1rem;
+        }
+        
+        .action-subtitle {
+            display: block;
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-weight: 500;
+            letter-spacing: 0.01em;
+        }
+        
+        .action-status {
+            font-size: 1.5rem;
+            margin-left: 0.5rem;
+        }
+        
+        .floating-menu-footer {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+        
+        .progress-ring-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .progress-text {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .progress-percentage {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #10b981;
+            text-shadow: 0 0 25px rgba(16, 185, 129, 0.8);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            letter-spacing: -0.02em;
+            line-height: 1;
+        }
+        
+        .progress-label {
+            font-size: 1.1rem;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-weight: 700;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
+            font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        /* Crazy animations */
+        .floating-menu.show .action-item {
+            animation: slideInRight 0.6s ease forwards;
+        }
+        
+        .floating-menu.show .action-item:nth-child(1) { animation-delay: 0.1s; }
+        .floating-menu.show .action-item:nth-child(2) { animation-delay: 0.2s; }
+        .floating-menu.show .action-item:nth-child(3) { animation-delay: 0.3s; }
+        .floating-menu.show .action-item:nth-child(4) { animation-delay: 0.4s; }
+        .floating-menu.show .action-item:nth-child(5) { animation-delay: 0.5s; }
+        
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px) scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+        }
+        
+        /* Enhanced pulse glow for main FAB */
+        .pulse-glow {
+            animation: pulseGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes pulseGlow {
+            0% { 
+                box-shadow: 0 0 20px rgba(102, 126, 234, 0.4),
+                            0 0 40px rgba(102, 126, 234, 0.2),
+                            0 0 60px rgba(102, 126, 234, 0.1);
+            }
+            100% { 
+                box-shadow: 0 0 30px rgba(102, 126, 234, 0.6),
+                            0 0 60px rgba(102, 126, 234, 0.4),
+                            0 0 90px rgba(102, 126, 234, 0.2);
+            }
+        }
+        
+        /* Crazy particle effects */
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 50%;
+            animation: float-particle 6s ease-in-out infinite;
+        }
+        
+        @keyframes float-particle {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+        }
+        
+        /* Enhanced card hover effects */
+        .glass-effect {
+            position: relative;
+            overflow: hidden;
+        }
+        
+
+        
+        /* Magnetic effect for buttons */
+        .magnetic-button {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .magnetic-button:hover {
+            transform: scale(1.05) translateY(-2px);
+            filter: brightness(1.1);
+        }
+        
+        /* Enhanced success toast */
+        .success-toast {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            z-index: 60;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 15px 35px rgba(16, 185, 129, 0.4);
+            transform: translateX(400px) scale(0.8);
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+        
+        .success-toast::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 1rem;
+            border: 2px solid rgba(16, 185, 129, 0.3);
+            z-index: -1;
+        }
+        
+        .success-toast.show {
+            transform: translateX(0) scale(1);
+        }
+        
+        /* Crazy loading animations */
+        .crazy-loading {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .crazy-loading::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.3), transparent);
+            animation: loading-shimmer 1.5s infinite;
+        }
+        
+        @keyframes loading-shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        /* Crazy 3D effects */
+        .crazy-3d {
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+        
+        .crazy-3d:hover {
+            transform: rotateY(10deg) rotateX(5deg) translateZ(20px);
+        }
+        
+        /* Neon glow effects */
+        .neon-glow {
+            text-shadow: 0 0 5px currentColor, 0 0 10px currentColor, 0 0 15px currentColor;
+            animation: neon-pulse 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes neon-pulse {
+            0% { filter: brightness(1) drop-shadow(0 0 5px currentColor); }
+            100% { filter: brightness(1.3) drop-shadow(0 0 20px currentColor); }
+        }
+        
+        /* Floating elements */
+        .floating-element {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        /* Gradient text with animation */
+        .gradient-text-animated {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient-shift 3s ease infinite;
+        }
+        
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+        }
+        
+        /* Crazy button effects */
+        .crazy-button {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(45deg, #667eea, #764ba2, #f093fb);
+            background-size: 200% 200%;
+            animation: gradient-move 3s ease infinite;
+        }
+        
+        @keyframes gradient-move {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .crazy-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .crazy-button:hover::before {
+            left: 100%;
+        }
+        
+        /* Matrix rain effect */
+        .matrix-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.1;
+        }
+        
+        /* Enhanced card effects */
+        .enhanced-card {
+            position: relative;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Perfect Feature Cards */
+        .feature-card {
+            position: relative;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(25px);
+            border: 2px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(59, 130, 246, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .feature-icon-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-shrink: 0;
+        }
+        
+        .feature-icon {
+            width: 4rem;
+            height: 4rem;
+            border-radius: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover .feature-icon {
+            transform: scale(1.05);
+        }
+        
+        .feature-title {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 1rem;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        
+        .feature-description {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #cbd5e1;
+            line-height: 1.6;
+            text-align: center;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Ensure grid layout works perfectly */
+        .grid {
+            display: grid;
+            align-items: stretch;
+        }
+        
+        .feature-card {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .feature-card .feature-icon-container {
+            flex-shrink: 0;
+        }
+        
+        .feature-card .feature-title {
+            flex-shrink: 0;
+        }
+        
+        .feature-card .feature-description {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+
+        
+        .enhanced-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+            border-color: rgba(59, 130, 246, 0.5);
+        }
+        
+        /* Crazy loading spinner */
+        .crazy-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(59, 130, 246, 0.3);
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite, glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes glow {
+            0% { box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
+            100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.8); }
+        }
+        
+        /* Crazy Options Panel */
+        .crazy-options-panel {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            z-index: 70;
+            background: rgba(15, 23, 42, 0.98);
+            backdrop-filter: blur(25px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 2rem;
+            padding: 2rem;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            width: 340px;
+            transform: translateX(-400px);
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            border: 2px solid transparent;
+            background-clip: padding-box;
+            max-height: 80vh;
+            overflow-y: auto;
+            pointer-events: none;
+        }
+        
+        .crazy-options-panel.show {
+            transform: translateX(0);
+            pointer-events: auto;
+        }
+        
+        .crazy-options-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 2rem;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            z-index: -1;
+        }
+        
+        .crazy-options-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .crazy-options-content {
+            space-y: 1rem;
+        }
+        
+        .option-group {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        .option-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        
+        .option-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateX(4px);
+        }
+        
+        .option-item input[type="checkbox"] {
+            margin-right: 1rem;
+            width: 1.4rem;
+            height: 1.4rem;
+            accent-color: #3b82f6;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .option-item input[type="checkbox"]:checked {
+            transform: scale(1.1);
+        }
+        
+        .option-item span {
+            color: #f1f5f9;
+            font-size: 0.95rem;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-weight: 500;
+            letter-spacing: 0.01em;
+        }
+        
+        .option-group h4 {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            font-size: 1.1rem;
+        }
+        
+        /* Matrix Rain Effect */
+        #matrix-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        #matrix-rain.active {
+            opacity: 0.1;
+        }
+        
+        /* Beautiful Scrollbar */
+        .floating-menu::-webkit-scrollbar,
+        .crazy-options-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .floating-menu::-webkit-scrollbar-track,
+        .crazy-options-panel::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+        
+        .floating-menu::-webkit-scrollbar-thumb,
+        .crazy-options-panel::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #3b82f6, #10b981);
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .floating-menu::-webkit-scrollbar-thumb:hover,
+        .crazy-options-panel::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #2563eb, #059669);
+        }
+        
+        .success-toast {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            z-index: 60;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 15px 35px rgba(16, 185, 129, 0.4);
+            transform: translateX(400px);
+            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            border: 2px solid transparent;
+            background-clip: padding-box;
+        }
+        
+        .success-toast.show {
+            transform: translateX(0);
+        }
+        
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+        
+        .progress-ring-circle {
+            transition: stroke-dasharray 0.5s ease;
+        }
+        
+        .pulse-glow {
+            animation: pulseGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.4); }
+            100% { box-shadow: 0 0 40px rgba(102, 126, 234, 0.8); }
+        }
+        
+        .floating-card {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .gradient-border {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 2px;
+            border-radius: 1rem;
+        }
+        
+        .gradient-border > div {
+            background: #1e293b;
+            border-radius: 0.875rem;
+            padding: 1.5rem;
+        }
+        
+        .hover-lift {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .hover-lift:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+        }
+        
+        /* Premium Typography System */
+        .premium-heading {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+        
+        /* Perfect main heading styling */
+        #landing-page h1 {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-weight: 900;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        #landing-page h1 span {
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        
+        #landing-page h1 span:hover {
+            transform: scale(1.05);
+            text-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+        
+        .premium-text {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+            line-height: 1.6;
+        }
+        
+        .premium-subtitle {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            line-height: 1.5;
+        }
+        
+        /* Enhanced form input styling */
+        input[type="text"], input[type="email"], input[type="date"], input[type="time"], textarea {
+            color: white !important;
+            -webkit-text-fill-color: white !important;
+            font-weight: 600;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: rgba(31, 41, 55, 0.9) !important;
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 1rem;
+        }
+        
+        input[type="text"]:focus, input[type="email"]:focus, 
+        input[type="date"]:focus, input[type="time"]:focus, textarea:focus {
+            outline: none;
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.3);
+            transform: scale(1.02);
+            background: rgba(31, 41, 55, 0.95) !important;
+        }
+        
+        /* Crazy input animations */
+        input[type="text"], input[type="email"], input[type="date"], input[type="time"], textarea {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        input[type="text"]::after, input[type="email"]::after, 
+        input[type="date"]::after, input[type="time"]::after, textarea::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+            transition: width 0.3s ease;
+        }
+        
+        input[type="text"]:focus::after, input[type="email"]:focus::after, 
+        input[type="date"]:focus::after, input[type="time"]:focus::after, textarea:focus::after {
+            width: 100%;
+        }
+        
+        input[type="text"]::placeholder, input[type="email"]::placeholder {
+            color: #6b7280 !important;
+            -webkit-text-fill-color: #6b7280 !important;
+        }
+        
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+        
+        input[type="date"]::-webkit-datetime-edit,
+        input[type="time"]::-webkit-datetime-edit {
+            color: white !important;
+        }
+        
+        input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+        input[type="time"]::-webkit-datetime-edit-fields-wrapper {
+            color: white !important;
+        }
+        
+        /* Focus effects for form inputs */
+        input[type="text"]:focus, input[type="email"]:focus, 
+        input[type="date"]:focus, input[type="time"]:focus {
+            outline: none;
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+            transform: scale(1.02);
+            transition: all 0.2s ease;
+        }
+        
+        /* Enhanced input backgrounds */
+        input[type="text"], input[type="email"], input[type="date"], input[type="time"] {
+            background: rgba(31, 41, 55, 0.8) !important;
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Fix any potential layout issues */
+        .page-section {
+            width: 100%;
+            overflow-x: hidden;
+        }
+        
+        .container, .max-w-6xl, .max-w-4xl, .max-w-3xl {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        
+        /* Restore proper container widths for better UX */
+        .max-w-6xl {
+            max-width: 72rem; /* 1152px - reasonable width */
+        }
+        
+        .max-w-4xl {
+            max-width: 56rem; /* 896px */
+        }
+        
+        .max-w-3xl {
+            max-width: 48rem; /* 768px */
+        }
+        
+        .max-w-7xl {
+            max-width: 80rem; /* 1280px */
+        }
+        
+        /* Ensure proper spacing */
+        .py-20 {
+            padding-top: 5rem;
+            padding-bottom: 5rem;
+        }
+        
+        .px-4 {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        
+        /* Fix mobile responsiveness */
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .feature-card {
+                margin: 0 auto;
+                max-width: 400px;
+            }
+            
+            #landing-page h1 {
+                font-size: 3rem;
+                line-height: 1.2;
+            }
+            
+            .max-w-6xl {
+                max-width: 100%;
+                padding: 0 1rem;
+            }
+        }
+        
+        /* Simple Scrollbar */
+        .floating-menu::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .floating-menu::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+        
+        .floating-menu::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+        
+        .floating-menu::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        /* Enhanced input backgrounds */
+        input[type="text"], input[type="email"], input[type="date"], input[type="time"] {
+            background: rgba(31, 41, 55, 0.8) !important;
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Specific styling for date and time inputs */
+        input[type="date"], input[type="time"] {
+            color: white !important;
+            -webkit-text-fill-color: white !important;
+            font-size: 16px !important;
+            padding: 12px !important;
+            border-radius: 8px !important;
+            border: 2px solid rgba(255, 255, 255, 0.15) !important;
+            background: rgba(31, 41, 55, 0.9) !important;
+        }
+        
+        input[type="date"]::-webkit-datetime-edit,
+        input[type="time"]::-webkit-datetime-edit {
+            color: white !important;
+            -webkit-text-fill-color: white !important;
+            font-weight: 600 !important;
+        }
+        
+        input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+        input[type="time"]::-webkit-datetime-edit-fields-wrapper {
+            color: white !important;
+            -webkit-text-fill-color: white !important;
+        }
+        
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(1) brightness(1.5);
+            cursor: pointer;
+            opacity: 0.8;
+        }
+        
+        input[type="date"]::-webkit-calendar-picker-indicator:hover,
+        input[type="time"]::-webkit-calendar-picker-indicator:hover {
+            opacity: 1;
+        }
+        
+        /* Interview form specific styling */
+        #interview-modal input[type="date"],
+        #interview-modal input[type="time"],
+        #interview-modal input[type="email"] {
+            color: white !important;
+            -webkit-text-fill-color: white !important;
+            background: rgba(31, 41, 55, 0.9) !important;
+            border: 2px solid rgba(255, 255, 255, 0.15) !important;
+            border-radius: 8px !important;
+            padding: 12px !important;
+            font-size: 16px !important;
+            font-weight: 600 !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        
+        #interview-modal input[type="date"]:focus,
+        #interview-modal input[type="time"]:focus,
+        #interview-modal input[type="email"]:focus {
+            outline: none !important;
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3) !important;
+            transform: scale(1.02) !important;
+            transition: all 0.2s ease !important;
+        }
+        
+        #interview-modal input[type="date"]::-webkit-datetime-edit,
+        #interview-modal input[type="time"]::-webkit-datetime-edit {
+            color: white !important;
+            -webkit-text-fill-color: white !important;
+            font-weight: 600 !important;
+        }
+        
+        #interview-modal input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+        #interview-modal input[type="time"]::-webkit-datetime-edit-fields-wrapper {
+            color: white !important;
+            -webkit-text-fill-color: white !important;
+        }
+        
+        #interview-modal input[type="date"]::-webkit-calendar-picker-indicator,
+        #interview-modal input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(1) brightness(1.5) !important;
+            cursor: pointer !important;
+            opacity: 0.8 !important;
+        }
+        
+        #interview-modal input[type="date"]::-webkit-calendar-picker-indicator:hover,
+        #interview-modal input[type="time"]::-webkit-calendar-picker-indicator:hover {
+            opacity: 1 !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass-effect">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-building text-white text-sm"></i>
+                    </div>
+                    <span class="text-xl font-bold gradient-text">HR Automator</span>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#" onclick="showPage('landing')" class="text-gray-300 hover:text-white transition-colors">Home</a>
+                    <a href="#" onclick="showPage('dashboard')" class="text-gray-300 hover:text-white transition-colors">Dashboard</a>
+                    <a href="#" onclick="showPage('auth')" class="text-gray-300 hover:text-white transition-colors">Connect</a>
+                    <a href="#" onclick="showPage('jd')" class="text-gray-300 hover:text-white transition-colors">Job Description</a>
+                    <a href="#" onclick="showPage('candidates')" class="text-gray-300 hover:text-white transition-colors">Candidates</a>
+                    <a href="#" onclick="showPage('interviews')" class="text-gray-300 hover:text-white transition-colors">Interviews</a>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <button id="login-btn" onclick="login()" class="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105">
+                        Get Started
+                    </button>
+                    <button id="logout-btn" onclick="logout()" class="hidden px-6 py-2 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-700 transition-all duration-300">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Landing Page -->
+    <div id="landing-page" class="page-section active">
+        <!-- Hero Section -->
+        <section class="pt-32 pb-20 px-4">
+            <div class="max-w-6xl mx-auto text-center">
+                <h1 class="text-6xl md:text-7xl font-black mb-8 leading-tight">
+                    <span class="text-blue-400">Automate Your</span>
+                    <span class="text-purple-400">Hiring Process</span>
+                </h1>
+                <p class="text-xl md:text-2xl text-gray-300 mb-12 max-w-4xl mx-auto leading-relaxed floating-element premium-text">
+                    From job posting to interview scheduling - let AI handle your HR workflow while you focus on building great teams.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
+                    <button onclick="showPage('dashboard')" class="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-lg font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-2xl pulse-glow hover-lift magnetic-button">
+                        Start Automating →
+                    </button>
+                    <button onclick="showPage('jd')" class="px-8 py-4 border-2 border-gray-600 text-gray-300 text-lg font-semibold rounded-xl hover:bg-gray-800 hover:border-gray-500 transition-all duration-300">
+                        View Demo
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="py-20 px-4">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-4xl md:text-5xl font-bold text-center mb-16 premium-heading">Powerful Features</h2>
+                <p class="text-xl text-gray-400 text-center mb-16 max-w-3xl mx-auto premium-text">
+                    Everything you need to streamline your hiring process
+                </p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div class="feature-card glass-effect rounded-2xl p-8 text-center card-hover">
+                        <div class="feature-icon-container mb-6">
+                            <div class="feature-icon bg-gradient-to-br from-blue-500 to-blue-600">
+                                <i class="fas fa-file-alt text-white text-2xl"></i>
+                            </div>
+                        </div>
+                        <h3 class="feature-title mb-4">AI Job Description Generator</h3>
+                        <p class="feature-description">Create compelling job descriptions optimized for LinkedIn in seconds</p>
+                    </div>
+                    
+                    <div class="feature-card glass-effect rounded-2xl p-8 text-center card-hover">
+                        <div class="feature-icon-container mb-6">
+                            <div class="feature-icon bg-gradient-to-br from-green-500 to-green-600">
+                                <i class="fas fa-users text-white text-2xl"></i>
+                            </div>
+                        </div>
+                        <h3 class="feature-title mb-4">Smart Candidate Matching</h3>
+                        <p class="feature-description">AI-powered resume analysis to find the perfect candidates</p>
+                    </div>
+                    
+                    <div class="feature-card glass-effect rounded-2xl p-8 text-center card-hover">
+                        <div class="feature-icon-container mb-6">
+                            <div class="feature-icon bg-gradient-to-br from-purple-500 to-purple-600">
+                                <i class="fas fa-calendar-plus text-white text-2xl"></i>
+                            </div>
+                        </div>
+                        <h3 class="feature-title mb-4">Automated Interview Scheduling</h3>
+                        <p class="feature-description">Seamlessly schedule interviews with Google Calendar integration</p>
+                    </div>
+                    
+                    <div class="feature-card glass-effect rounded-2xl p-8 text-center card-hover">
+                        <div class="feature-icon-container mb-6">
+                            <div class="feature-icon bg-gradient-to-br from-orange-500 to-orange-600">
+                                <i class="fas fa-bolt text-white text-2xl"></i>
+                            </div>
+                        </div>
+                        <h3 class="feature-title mb-4">LinkedIn Auto-Posting</h3>
+                        <p class="feature-description">Post job descriptions directly to LinkedIn with one click</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Why Choose Section -->
+        <section class="py-20 px-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="grid lg:grid-cols-2 gap-16 items-center">
+                    <div>
+                        <h2 class="text-4xl md:text-5xl font-bold mb-8">Why Choose HR Automator?</h2>
+                        <p class="text-xl text-gray-400 mb-12 leading-relaxed">
+                            Transform your hiring process with enterprise-grade automation that scales with your business needs.
+                        </p>
+                        
+                        <div class="space-y-6">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-check text-white text-sm"></i>
+                                </div>
+                                <span class="text-lg text-gray-300">Reduce hiring time by 70%</span>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-check text-white text-sm"></i>
+                                </div>
+                                <span class="text-lg text-gray-300">Improve candidate quality with AI matching</span>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-check text-white text-sm"></i>
+                                </div>
+                                <span class="text-lg text-gray-300">Automate repetitive HR tasks</span>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <div class="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-check text-white text-sm"></i>
+                                </div>
+                                <span class="text-lg text-gray-300">Scale your hiring process effortlessly</span>
+                            </div>
+                        </div>
+                        
+                        <button onclick="showPage('dashboard')" class="mt-12 px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-lg font-semibold rounded-xl hover:from-purple-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105">
+                            Get Started Today
+                        </button>
+                    </div>
+                    
+                    <div class="glass-effect rounded-2xl p-8 text-center">
+                        <h3 class="text-2xl font-bold mb-6">Ready to Transform Your HR?</h3>
+                        <p class="text-gray-400 mb-8">Join thousands of companies already using HR Automator</p>
+                        
+                        <div class="grid grid-cols-2 gap-8">
+                            <div>
+                                <div class="text-4xl font-bold text-blue-400 mb-2">70%</div>
+                                <div class="text-gray-400">Time Saved</div>
+                            </div>
+                            <div>
+                                <div class="text-4xl font-bold text-purple-400 mb-2">10x</div>
+                                <div class="text-gray-400">Faster Hiring</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="py-20 px-4">
+            <div class="max-w-4xl mx-auto text-center">
+                <div class="gradient-bg rounded-3xl p-16">
+                    <h2 class="text-4xl md:text-5xl font-bold mb-8">Ready to Automate Your Hiring?</h2>
+                    <p class="text-xl text-gray-200 mb-12 opacity-90">
+                        Start your free trial today and see how HR Automator can transform your recruitment process.
+                    </p>
+                    <button onclick="showPage('dashboard')" class="px-10 py-5 bg-black text-white text-xl font-semibold rounded-2xl hover:bg-gray-900 transition-all duration-300 transform hover:scale-105">
+                        Start Free Trial →
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Dashboard Page -->
+    <div id="dashboard-page" class="page-section">
+        <div class="pt-32 pb-20 px-4">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-16">
+                    <h1 class="text-5xl font-bold mb-4">HR Dashboard</h1>
+                    <p class="text-xl text-gray-400">Manage your automated hiring workflow</p>
+                    <button onclick="showPage('landing')" class="mt-6 px-6 py-3 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-800 hover:border-gray-500 transition-all duration-300">
+                        Back to Home
+                    </button>
+                </div>
+
+                <!-- Key Metrics -->
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+                    <div class="glass-effect rounded-2xl p-8 text-center card-hover">
+                        <div class="text-4xl font-bold text-blue-400 mb-2">12</div>
+                        <div class="text-gray-400 mb-2">Active Job Posts</div>
+                        <div class="text-sm text-green-400">+3 this week</div>
+                    </div>
+                    <div class="glass-effect rounded-2xl p-8 text-center card-hover">
+                        <div class="text-4xl font-bold text-blue-400 mb-2">47</div>
+                        <div class="text-gray-400 mb-2">Applications</div>
+                        <div class="text-sm text-green-400">+12 today</div>
+                    </div>
+                    <div class="glass-effect rounded-2xl p-8 text-center card-hover">
+                        <div class="text-4xl font-bold text-blue-400 mb-2">8</div>
+                        <div class="text-gray-400 mb-2">Interviews Scheduled</div>
+                        <div class="text-sm text-green-400">+2 this week</div>
+                    </div>
+                    <div class="glass-effect rounded-2xl p-8 text-center card-hover">
+                        <div class="text-4xl font-bold text-blue-400 mb-2">24h</div>
+                        <div class="text-gray-400 mb-2">Time Saved</div>
+                        <div class="text-sm text-gray-400">This month</div>
+                    </div>
+                </div>
+
+                <!-- Hiring Workflow -->
+                <div class="glass-effect rounded-2xl p-8 mb-16">
+                    <div class="flex items-center mb-6">
+                        <i class="fas fa-bolt text-blue-400 text-2xl mr-3"></i>
+                        <h2 class="text-2xl font-bold">Hiring Workflow</h2>
+                    </div>
+                    <p class="text-gray-400 mb-8">Complete each step to automate your hiring process</p>
+                    
+                    <div class="mb-8">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-sm font-medium">Progress</span>
+                            <span class="text-sm font-medium">25% Complete</span>
+                        </div>
+                        <div class="relative">
+                            <div class="w-full bg-gray-700 rounded-full h-3">
+                                <div class="progress-bar rounded-full h-3 transition-all duration-1000 ease-out" style="width: 25%"></div>
+                            </div>
+                            <div class="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-white text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="bg-green-900/30 border border-green-500/30 rounded-xl p-6 relative">
+                            <div class="absolute top-4 right-4">
+                                <i class="fas fa-check text-green-400"></i>
+                            </div>
+                            <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mb-4">
+                                <i class="fas fa-bolt text-white"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold mb-2">Authentication</h3>
+                            <p class="text-gray-400 text-sm mb-4">Connect LinkedIn & Google Calendar</p>
+                            <div class="status-pill status-completed">completed</div>
+                            <button class="mt-4 text-green-400 hover:text-green-300 transition-colors">View →</button>
+                        </div>
+                        
+                        <div class="bg-blue-900/30 border border-blue-500/30 rounded-xl p-6 relative">
+                            <div class="absolute top-4 right-4">
+                                <i class="fas fa-clock text-blue-400"></i>
+                            </div>
+                            <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mb-4">
+                                <i class="fas fa-file-alt text-white"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold mb-2">Job Description</h3>
+                            <p class="text-gray-400 text-sm mb-4">Create & approve job posting</p>
+                            <div class="status-pill status-current">current</div>
+                            <button onclick="showPage('jd')" class="mt-4 text-blue-400 hover:text-blue-300 transition-colors">Continue →</button>
+                        </div>
+                        
+                        <div class="bg-gray-800/50 border border-gray-600/30 rounded-xl p-6 relative">
+                            <div class="absolute top-4 right-4">
+                                <i class="fas fa-exclamation text-purple-400"></i>
+                            </div>
+                            <div class="w-12 h-12 bg-gray-600 rounded-xl flex items-center justify-center mb-4">
+                                <i class="fas fa-users text-white"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold mb-2">Candidate Selection</h3>
+                            <p class="text-gray-400 text-sm mb-4">Review & select candidates</p>
+                            <div class="status-pill status-pending">pending</div>
+                            <button onclick="showPage('candidates')" class="mt-4 text-gray-400 hover:text-gray-300 transition-colors">View →</button>
+                        </div>
+                        
+                        <div class="bg-gray-800/50 border border-gray-600/30 rounded-xl p-6 relative">
+                            <div class="absolute top-4 right-4">
+                                <i class="fas fa-exclamation text-purple-400"></i>
+                            </div>
+                            <div class="w-12 h-12 bg-gray-600 rounded-xl flex items-center justify-center mb-4">
+                                <i class="fas fa-calendar text-white"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold mb-2">Interview Scheduling</h3>
+                            <p class="text-gray-400 text-sm mb-4">Schedule interviews automatically</p>
+                            <div class="status-pill status-pending">pending</div>
+                            <button onclick="showPage('interviews')" class="mt-4 text-gray-400 hover:text-gray-300 transition-colors">View →</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions & Recent Activity -->
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="glass-effect rounded-2xl p-8">
+                        <h3 class="text-xl font-semibold mb-6">Quick Actions</h3>
+                        <div class="space-y-4">
+                            <button onclick="showPage('jd')" class="w-full text-left p-4 bg-gray-800/50 rounded-lg hover:bg-gray-700/50 transition-colors">
+                                <i class="fas fa-plus text-blue-400 mr-3"></i>
+                                Create New Job Description
+                            </button>
+                            <button onclick="showPage('candidates')" class="w-full text-left p-4 bg-gray-800/50 rounded-lg hover:bg-gray-700/50 transition-colors">
+                                <i class="fas fa-search text-green-400 mr-3"></i>
+                                Screen Candidates
+                            </button>
+                            <button onclick="showPage('interviews')" class="w-full text-left p-4 bg-gray-800/50 rounded-lg hover:bg-gray-700/50 transition-colors">
+                                <i class="fas fa-calendar-plus text-purple-400 mr-3"></i>
+                                Schedule Interview
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-effect rounded-2xl p-8">
+                        <h3 class="text-xl font-semibold mb-6">Recent Activity</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center space-x-3 p-3 bg-gray-800/30 rounded-lg">
+                                <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+                                <span class="text-sm text-gray-400">Job posted for Frontend Developer</span>
+                            </div>
+                            <div class="flex items-center space-x-3 p-3 bg-gray-800/30 rounded-lg">
+                                <div class="w-2 h-2 bg-blue-400 rounded-full"></div>
+                                <span class="text-sm text-gray-400">3 new applications received</span>
+                            </div>
+                            <div class="flex items-center space-x-3 p-3 bg-gray-800/30 rounded-lg">
+                                <div class="w-2 h-2 bg-purple-400 rounded-full"></div>
+                                <span class="text-sm text-gray-400">Interview scheduled with Sarah Johnson</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Job Description Page -->
+    <div id="jd-page" class="page-section">
+        <div class="pt-32 pb-20 px-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-12">
+                    <h1 class="text-5xl font-bold mb-4">Create Job Description</h1>
+                    <p class="text-xl text-gray-400">Generate AI-powered job descriptions optimized for LinkedIn</p>
+                </div>
+
+                <!-- Progress Steps -->
+                <div class="flex justify-center mb-12">
+                    <div class="flex items-center space-x-8">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-white"></i>
+                            </div>
+                            <span class="ml-3 text-green-400 font-medium">1 Authentication</span>
+                        </div>
+                        <div class="w-16 h-1 bg-blue-500"></div>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                                <span class="text-white font-bold">2</span>
+                            </div>
+                            <span class="ml-3 text-blue-400 font-medium">2 Job Description</span>
+                        </div>
+                        <div class="w-16 h-1 bg-gray-600"></div>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
+                                <span class="text-gray-400 font-bold">3</span>
+                            </div>
+                            <span class="ml-3 text-gray-400 font-medium">3 Candidate Selection</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid lg:grid-cols-2 gap-8">
+                    <!-- Job Role Input -->
+                    <div class="glass-effect rounded-2xl p-8">
+                        <div class="flex items-center mb-6">
+                            <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fas fa-file-alt text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold">Job Role</h3>
+                                <p class="text-gray-400">Enter the role you want to hire for</p>
+                            </div>
+                        </div>
+                        
+                        <form id="jd-form">
+                            <div class="mb-6">
+                                <label for="role" class="block text-lg font-medium mb-3 text-gray-300">Job Title / Role</label>
+                                <input type="text" id="role" name="role" required 
+                                       placeholder="e.g., Senior Frontend Developer, Data Scientist, Marketing Manager" 
+                                       class="w-full px-4 py-3 bg-gray-800/30 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <button type="submit" class="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-green-600 text-white text-lg font-semibold rounded-xl hover:from-blue-700 hover:to-green-700 transition-all duration-300 transform hover:scale-105">
+                                <i class="fas fa-sparkles mr-2"></i> Generate Job Description
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Generated Job Description -->
+                    <div class="glass-effect rounded-2xl p-8">
+                        <div class="flex items-center mb-6">
+                            <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fas fa-file-alt text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold">Generated Job Description</h3>
+                                <p class="text-gray-400">AI-generated job description optimized for LinkedIn</p>
+                            </div>
+                        </div>
+                        
+                        <div id="jd-result" class="hidden">
+                            <div class="bg-gray-800/30 rounded-lg p-6 text-white min-h-[300px]">
+                                <p id="jd-text" class="text-lg leading-relaxed"></p>
+                            </div>
+                            
+                            <div id="approval-section" class="mt-6 flex gap-3">
+                                <button id="approve-btn" class="flex-1 px-6 py-3 bg-green-600 text-white text-lg font-semibold rounded-xl hover:bg-green-700 transition-all duration-300">
+                                    <i class="fas fa-check mr-2"></i> Approve & Post
+                                </button>
+                                <button id="reject-btn" class="flex-1 px-6 py-3 bg-red-600 text-white text-lg font-semibold rounded-xl hover:bg-red-700 transition-all duration-300">
+                                    <i class="fas fa-redo mr-2"></i> Regenerate
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="jd-placeholder" class="text-center py-16">
+                            <div class="w-20 h-20 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-sparkles text-gray-500 text-3xl"></i>
+                            </div>
+                            <p class="text-gray-500 text-lg mb-2">No job description generated yet</p>
+                            <p class="text-gray-600">Enter a job role and click "Generate Job Description" to get started</p>
+                        </div>
+                        
+                        <div id="post-section" class="hidden mt-6">
+                            <button id="post-btn" class="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-lg font-semibold rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300">
+                                <i class="fas fa-linkedin mr-2"></i> Post to LinkedIn
+                            </button>
+                        </div>
+                        
+                        <div id="post-status" class="mt-6 p-4 rounded-lg text-white text-lg hidden"></div>
+                        
+                        <!-- Next Step Navigation -->
+                        <div id="next-step-section" class="hidden mt-8 p-6 bg-gradient-to-r from-green-900/30 to-blue-900/30 rounded-2xl border border-green-500/30">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-rocket text-white text-2xl"></i>
+                                </div>
+                                <h3 class="text-2xl font-bold mb-2 text-white">🎉 Job Posted Successfully!</h3>
+                                <p class="text-gray-300 mb-6">Ready to find the perfect candidates? Let's screen some resumes!</p>
+                                <button onclick="showPage('candidates')" class="px-8 py-4 bg-gradient-to-r from-green-500 to-blue-500 text-white text-lg font-semibold rounded-xl hover:from-green-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-105 magnetic-button">
+                                    <i class="fas fa-users mr-2"></i> Screen Candidates →
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Candidates Page -->
+    <div id="candidates-page" class="page-section">
+        <div class="pt-32 pb-20 px-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-12">
+                    <h1 class="text-5xl font-bold mb-4">Candidate Selection</h1>
+                    <p class="text-xl text-gray-400">AI-powered resume screening to find the best candidates</p>
+                </div>
+
+                <!-- Progress Steps -->
+                <div class="flex justify-center mb-12">
+                    <div class="flex items-center space-x-8">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-white"></i>
+                            </div>
+                            <span class="ml-3 text-green-400 font-medium">1 Authentication</span>
+                        </div>
+                        <div class="w-16 h-1 bg-green-500"></div>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-white"></i>
+                            </div>
+                            <span class="ml-3 text-green-400 font-medium">2 Job Description</span>
+                        </div>
+                        <div class="w-16 h-1 bg-blue-500"></div>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                                <span class="text-white font-bold">3</span>
+                            </div>
+                            <span class="ml-3 text-blue-400 font-medium">3 Candidate Selection</span>
+                        </div>
+                        <div class="w-16 h-1 bg-gray-600"></div>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
+                                <span class="text-gray-400 font-bold">4</span>
+                            </div>
+                            <span class="ml-3 text-gray-400 font-medium">4 Interview Scheduling</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-effect rounded-2xl p-8 mb-8">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center mr-4">
+                            <i class="fas fa-search text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold">Resume Screening</h3>
+                            <p class="text-gray-400">Use AI to automatically screen resumes and select the best candidates</p>
+                        </div>
+                    </div>
+                    
+                    <button id="select-best-btn" class="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-lg font-semibold rounded-xl hover:from-purple-700 hover:to-blue-700 transition-all duration-300 transform hover:scale-105">
+                        <i class="fas fa-search mr-2"></i> Screen Candidates
+                    </button>
+                </div>
+                
+                <div id="best-candidates-section" class="hidden">
+                    <h3 class="text-3xl font-bold mb-8 text-center">Top Candidates</h3>
+                    <div id="best-candidates-list" class="space-y-6"></div>
+                    
+                    <!-- Next Step Navigation -->
+                    <div class="mt-12 p-8 bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded-2xl border border-purple-500/30 text-center">
+                        <div class="w-20 h-20 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <i class="fas fa-calendar-plus text-white text-3xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3 text-white">🚀 Great Candidates Found!</h3>
+                        <p class="text-gray-300 mb-6">Now let's schedule interviews with your top picks. Ready to automate your calendar?</p>
+                        <button onclick="showPage('interviews')" class="px-8 py-4 bg-gradient-to-r from-purple-500 to-blue-500 text-white text-lg font-semibold rounded-xl hover:from-purple-600 hover:to-blue-600 transition-all duration-300 transform hover:scale-105 magnetic-button">
+                            <i class="fas fa-calendar-plus mr-2"></i> Schedule Interviews →
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interviews Page -->
+    <div id="interviews-page" class="page-section">
+        <div class="pt-32 pb-20 px-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-12">
+                    <h1 class="text-5xl font-bold mb-4">Interview Scheduling</h1>
+                    <p class="text-xl text-gray-400">Automated interview scheduling with Google Calendar integration</p>
+                </div>
+
+                <!-- Progress Steps -->
+                <div class="flex justify-center mb-12">
+                    <div class="flex items-center space-x-8">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-white"></i>
+                            </div>
+                            <span class="ml-3 text-green-400 font-medium">1 Authentication</span>
+                        </div>
+                        <div class="w-16 h-1 bg-green-500"></div>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-white"></i>
+                            </div>
+                            <span class="ml-3 text-green-400 font-medium">2 Job Description</span>
+                        </div>
+                        <div class="w-16 h-1 bg-green-500"></div>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-white"></i>
+                            </div>
+                            <span class="ml-3 text-green-400 font-medium">3 Candidate Selection</span>
+                        </div>
+                        <div class="w-16 h-1 bg-blue-500"></div>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                                <span class="text-white font-bold">4</span>
+                            </div>
+                            <span class="ml-3 text-blue-400 font-medium">4 Interview Scheduling</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid lg:grid-cols-2 gap-8">
+                    <!-- Schedule Interview -->
+                    <div class="glass-effect rounded-2xl p-8">
+                        <div class="flex items-center mb-6">
+                            <div class="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fas fa-calendar-plus text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold">Schedule Interview</h3>
+                                <p class="text-gray-400">Create a calendar event and send invite to candidate</p>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-800/30 rounded-lg p-4 mb-6">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                                    <span class="text-white font-bold">JD</span>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-white">John Doe</p>
+                                    <p class="text-gray-400 text-sm">john.doe@example.com</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-2 text-gray-300">Candidate Name</label>
+                                <input type="text" id="candidate-name" value="John Doe" 
+                                       class="w-full px-4 py-3 bg-gray-800/30 border border-gray-700 rounded-lg text-white text-lg font-medium" 
+                                       style="color: white !important; -webkit-text-fill-color: white !important;">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2 text-gray-300">Candidate Email</label>
+                                <input type="email" id="candidate-email" value="john.doe@example.com" 
+                                       class="w-full px-4 py-3 bg-gray-800/30 border border-gray-700 rounded-lg text-white text-lg font-medium" 
+                                       style="color: white !important; -webkit-text-fill-color: white !important;">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2 text-gray-300">Interview Date</label>
+                                    <input type="date" id="interview-date" 
+                                           class="w-full px-4 py-3 bg-gray-800/30 border border-gray-700 rounded-lg text-white text-lg font-medium" 
+                                           style="color: white !important; -webkit-text-fill-color: white !important;">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2 text-gray-300">Interview Time</label>
+                                    <input type="time" id="interview-time" 
+                                           class="w-full px-4 py-3 bg-gray-800/30 border border-gray-700 rounded-lg text-white text-lg font-medium" 
+                                           style="color: white !important; -webkit-text-fill-color: white !important;">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2 text-gray-300">Interviewer Email (Optional)</label>
+                                <input type="email" id="interviewer-email" placeholder="interviewer@company.com" 
+                                       class="w-full px-4 py-3 bg-gray-800/30 border border-gray-700 rounded-lg text-white text-lg font-medium placeholder-gray-500" 
+                                       style="color: white !important; -webkit-text-fill-color: white !important;">
+                            </div>
+                        </div>
+                        
+                        <button id="schedule-interview-btn" class="w-full mt-6 px-6 py-4 bg-gradient-to-r from-blue-600 to-green-600 text-white text-lg font-semibold rounded-xl hover:from-blue-700 hover:to-green-700 transition-all duration-300 transform hover:scale-105">
+                            <i class="fas fa-paper-plane mr-2"></i> Schedule & Send Invite
+                        </button>
+                        
+                        <button onclick="showPage('candidates')" class="w-full mt-4 px-6 py-3 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-800 hover:border-gray-500 transition-all duration-300">
+                            Back to Candidate Selection
+                        </button>
+                    </div>
+                    
+                    <!-- Google Calendar Integration -->
+                    <div class="glass-effect rounded-2xl p-8 mt-8">
+                        <div class="flex items-center mb-6">
+                            <div class="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fas fa-calendar-plus text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold">Google Calendar Integration</h3>
+                                <p class="text-gray-400">Connect your calendar to enable automatic interview scheduling</p>
+                            </div>
+                        </div>
+                        
+                        <div id="calendar-auth-status" class="p-4 rounded-lg text-white text-lg mb-6 bg-gray-800/50">
+                            Checking calendar status...
+                        </div>
+                        
+                        <button id="google-calendar-auth-btn" class="w-full px-6 py-4 bg-gradient-to-r from-orange-600 to-red-600 text-white text-lg font-semibold rounded-xl hover:from-orange-700 hover:to-red-700 transition-all duration-300 transform hover:scale-105">
+                            <i class="fas fa-calendar-plus mr-2"></i> Connect Calendar
+                        </button>
+                        
+                        <div id="calendar-auth-result" class="mt-6 p-4 rounded-lg text-white text-lg hidden"></div>
+                    </div>
+                </div>
+
+                <!-- Upcoming Interviews -->
+                <div class="glass-effect rounded-2xl p-8 mt-8">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mr-4">
+                            <i class="fas fa-calendar-check text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold">Upcoming Interviews</h3>
+                            <p class="text-gray-400">Your scheduled interviews this week</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-gray-800/30 rounded-lg p-4">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h4 class="font-semibold text-white">Sarah Johnson</h4>
+                                    <p class="text-gray-400 text-sm">Frontend Developer</p>
+                                </div>
+                                <span class="px-3 py-1 bg-blue-500 text-white text-xs rounded-full">confirmed</span>
+                            </div>
+                            <p class="text-gray-300 text-sm mb-3">Sat, Jan 20 14:00</p>
+                            <div class="flex items-center text-blue-400">
+                                <i class="fas fa-envelope mr-2"></i>
+                                <span class="text-sm">Invite sent</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-800/30 rounded-lg p-4">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h4 class="font-semibold text-white">Mike Chen</h4>
+                                    <p class="text-gray-400 text-sm">Data Scientist</p>
+                                </div>
+                                <span class="px-3 py-1 bg-purple-500 text-white text-xs rounded-full">pending</span>
+                            </div>
+                            <p class="text-gray-300 text-sm mb-3">Mon, Jan 22 10:30</p>
+                            <div class="flex items-center text-purple-400">
+                                <i class="fas fa-envelope mr-2"></i>
+                                <span class="text-sm">Invite sent</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-800/30 rounded-lg p-4">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h4 class="font-semibold text-white">Emily Davis</h4>
+                                    <p class="text-gray-400 text-sm">Marketing Manager</p>
+                                </div>
+                                <span class="px-3 py-1 bg-blue-500 text-white text-xs rounded-full">confirmed</span>
+                            </div>
+                            <p class="text-gray-300 text-sm mb-3">Wed, Jan 24 16:00</p>
+                            <div class="flex items-center text-blue-400">
+                                <i class="fas fa-envelope mr-2"></i>
+                                <span class="text-sm">Invite sent</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="w-full mt-6 px-6 py-3 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-800 hover:border-gray-500 transition-all duration-300">
+                        <i class="fas fa-calendar mr-2"></i> View Full Calendar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Authentication Page -->
+    <div id="auth-page" class="page-section">
+        <div class="pt-32 pb-20 px-4">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-12">
+                    <h1 class="text-5xl font-bold mb-4">Connect Your Accounts</h1>
+                    <p class="text-xl text-gray-400">Link your LinkedIn and Google Calendar to start automating your hiring process</p>
+                </div>
+
+                <!-- Progress Steps -->
+                <div class="flex justify-center mb-12">
+                    <div class="flex items-center space-x-8">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                                <span class="text-white font-bold">1</span>
+                            </div>
+                            <span class="ml-3 text-blue-400 font-medium">1 Authentication</span>
+                        </div>
+                        <div class="w-16 h-1 bg-gray-600"></div>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
+                                <span class="text-gray-400 font-bold">2</span>
+                            </div>
+                            <span class="ml-3 text-gray-400 font-medium">2 Job Description</span>
+                        </div>
+                        <div class="w-16 h-1 bg-gray-600"></div>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
+                                <span class="text-gray-400 font-bold">3</span>
+                            </div>
+                            <span class="ml-3 text-gray-400 font-medium">3 Automation</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-8 mb-12">
+                    <!-- LinkedIn Connection -->
+                    <div class="glass-effect rounded-2xl p-8">
+                        <div class="flex items-center mb-6">
+                            <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fab fa-linkedin text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold">LinkedIn</h3>
+                                <p class="text-gray-400">Post jobs and manage applications</p>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4 mb-6">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-check text-white text-xs"></i>
+                                </div>
+                                <span class="text-gray-300">Secure OAuth 2.0 authentication</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-check text-white text-xs"></i>
+                                </div>
+                                <span class="text-gray-300">Post job descriptions automatically</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between mb-4">
+                            <span id="linkedin-status-badge" class="px-3 py-1 bg-purple-500 text-white text-sm rounded-full">Not Connected</span>
+                        </div>
+                        
+                        <button id="linkedin-connect-btn" onclick="login()" class="w-full px-6 py-3 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition-all duration-300 flex items-center justify-center">
+                            <span id="linkedin-connect-text">Connect LinkedIn</span>
+                            <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+
+                    <!-- Google Calendar Connection -->
+                    <div class="glass-effect rounded-2xl p-8">
+                        <div class="flex items-center mb-6">
+                            <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fas fa-calendar text-white text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold">Google Calendar</h3>
+                                <p class="text-gray-400">Schedule interviews automatically</p>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4 mb-6">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-check text-white text-xs"></i>
+                                </div>
+                                <span class="text-gray-300">Secure OAuth 2.0 authentication</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-check text-white text-xs"></i>
+                                </div>
+                                <span class="text-gray-300">Send email invites to candidates</span>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-between mb-4">
+                            <span id="gcal-status-badge" class="px-3 py-1 bg-purple-500 text-white text-sm rounded-full">Not Connected</span>
+                        </div>
+                        
+                        <button id="google-calendar-connect-btn" onclick="authenticateGoogleCalendar()" class="w-full px-6 py-3 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition-all duration-300 flex items-center justify-center">
+                            <span id="gcal-connect-text">Connect Google Calendar</span>
+                            <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Data Security Section -->
+                <div class="glass-effect rounded-2xl p-8 mb-8">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center mr-4">
+                            <i class="fas fa-shield-alt text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold">Your Data is Secure</h3>
+                            <p class="text-gray-400">We use industry-standard OAuth 2.0 authentication. We never store your passwords and only access the minimum permissions required for functionality.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="flex justify-between">
+                    <button onclick="showPage('landing')" class="px-8 py-4 border border-gray-600 text-gray-300 rounded-xl hover:bg-gray-800 hover:border-gray-500 transition-all duration-300">
+                        Back to Dashboard
+                    </button>
+                    <button onclick="showPage('jd')" class="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300">
+                        Connect all accounts to continue
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Page -->
+    <div id="analytics-page" class="page-section">
+        <div class="pt-32 pb-20 px-4">
+            <div class="max-w-4xl mx-auto">
+                <h1 class="text-4xl font-bold mb-6 text-center">Hiring Analytics</h1>
+                <p class="text-xl text-gray-400 text-center mb-8">
+                    Track your hiring metrics and performance insights.
+                </p>
+                
+                <div class="glass-effect rounded-2xl p-8">
+                    <h3 class="text-2xl font-bold mb-6 text-gray-300">Coming Soon</h3>
+                    <p class="text-gray-400">Advanced analytics and reporting features will be available soon. Track your hiring metrics, candidate pipeline, and optimize your recruitment strategy.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Matrix Rain Effect -->
+    <canvas id="matrix-rain" class="matrix-rain"></canvas>
+    
+    <!-- Crazy Options Panel -->
+    <div class="crazy-options-panel" id="crazy-options-panel">
+        <div class="crazy-options-header">
+            <h3 class="text-xl font-bold text-white neon-glow">🎭 Crazy Options</h3>
+            <button onclick="toggleCrazyOptions()" class="text-gray-400 hover:text-white">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="crazy-options-content">
+            <div class="option-group">
+                <h4 class="text-lg font-semibold text-blue-400 mb-3">Visual Effects</h4>
+                <label class="option-item">
+                    <input type="checkbox" id="matrix-effect" onchange="toggleMatrixEffect()">
+                    <span>Matrix Rain Effect</span>
+                </label>
+                <label class="option-item">
+                    <input type="checkbox" id="particle-effect" onchange="toggleParticleEffect()">
+                    <span>Floating Particles</span>
+                </label>
+                <label class="option-item">
+                    <input type="checkbox" id="neon-effect" onchange="toggleNeonEffect()">
+                    <span>Neon Glow</span>
+                </label>
+            </div>
+            <div class="option-group">
+                <h4 class="text-lg font-semibold text-purple-400 mb-3">Animations</h4>
+                <label class="option-item">
+                    <input type="checkbox" id="3d-effect" onchange="toggle3DEffect()">
+                    <span>3D Card Effects</span>
+                </label>
+                <label class="option-item">
+                    <input type="checkbox" id="floating-effect" onchange="toggleFloatingEffect()">
+                    <span>Floating Elements</span>
+                </label>
+            </div>
+            <div class="option-group">
+                <h4 class="text-lg font-semibold text-green-400 mb-3">Performance</h4>
+                <label class="option-item">
+                    <input type="checkbox" id="crazy-mode" onchange="toggleCrazyMode()">
+                    <span>🚀 Crazy Mode (All Effects)</span>
+                </label>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Clean Floating Action Button -->
+    <div class="floating-action-container">
+        <button class="floating-action" onclick="toggleQuickActions()" title="Quick Actions" id="main-fab">
+            <i class="fas fa-plus" id="fab-icon"></i>
+        </button>
+        
+        <!-- Simple Floating Menu -->
+        <div class="floating-menu" id="floating-menu">
+            <div class="floating-menu-header">
+                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <i class="fas fa-rocket text-white text-xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-white">HR Automator</h3>
+                <p class="text-sm text-gray-300">Your hiring workflow hub</p>
+            </div>
+            
+            <div class="floating-menu-actions">
+                <button onclick="navigateToPage('auth')" class="action-item">
+                    <div class="action-icon bg-blue-500">
+                        <i class="fas fa-link text-white"></i>
+                    </div>
+                    <div class="action-content">
+                        <span class="action-title">Connect Accounts</span>
+                        <span class="action-subtitle">Link LinkedIn & Calendar</span>
+                    </div>
+                    <div class="action-status" id="auth-status-indicator">⚪</div>
+                </button>
+                
+                <button onclick="navigateToPage('jd')" class="action-item">
+                    <div class="action-icon bg-green-500">
+                        <i class="fas fa-file-alt text-white"></i>
+                    </div>
+                    <div class="action-content">
+                        <span class="action-title">Job Description</span>
+                        <span class="action-subtitle">AI-powered JD creation</span>
+                    </div>
+                    <div class="action-status" id="jd-status-indicator">⚪</div>
+                </button>
+                
+                <button onclick="navigateToPage('candidates')" class="action-item">
+                    <div class="action-icon bg-purple-500">
+                        <i class="fas fa-users text-white"></i>
+                    </div>
+                    <div class="action-content">
+                        <span class="action-title">Screen Candidates</span>
+                        <span class="action-subtitle">AI resume screening</span>
+                    </div>
+                    <div class="action-status" id="candidates-status-indicator">⚪</div>
+                </button>
+                
+                <button onclick="navigateToPage('interviews')" class="action-item">
+                    <div class="action-icon bg-orange-500">
+                        <i class="fas fa-calendar text-white"></i>
+                    </div>
+                    <div class="action-content">
+                        <span class="action-title">Schedule Interviews</span>
+                        <span class="action-subtitle">Automated scheduling</span>
+                    </div>
+                    <div class="action-status" id="interviews-status-indicator">⚪</div>
+                </button>
+                
+                <button onclick="navigateToPage('dashboard')" class="action-item">
+                    <div class="action-icon bg-indigo-500">
+                        <i class="fas fa-tachometer-alt text-white"></i>
+                    </div>
+                    <div class="action-content">
+                        <span class="action-title">Dashboard</span>
+                        <span class="action-subtitle">Overview & analytics</span>
+                    </div>
+                    <div class="action-status">⚪</div>
+                </button>
+                
+                <button onclick="toggleCrazyOptions()" class="action-item">
+                    <div class="action-icon bg-pink-500">
+                        <i class="fas fa-magic text-white"></i>
+                    </div>
+                    <div class="action-content">
+                        <span class="action-title">🎭 Crazy Options</span>
+                        <span class="action-subtitle">Customize your experience</span>
+                    </div>
+                    <div class="action-status">✨</div>
+                </button>
+            </div>
+            
+            <div class="floating-menu-footer">
+                <div class="progress-ring-container">
+                    <svg class="progress-ring" width="60" height="60">
+                        <circle class="progress-ring-circle" stroke="#374151" stroke-width="4" fill="transparent" r="26" cx="30" cy="30"/>
+                        <circle class="progress-ring-circle" stroke="#10b981" stroke-width="4" fill="transparent" r="26" cx="30" cy="30" 
+                                stroke-dasharray="163.4" stroke-dashoffset="122.55" id="workflow-progress"/>
+                    </svg>
+                    <div class="progress-text">
+                        <span class="progress-percentage" id="workflow-percentage">25%</span>
+                        <span class="progress-label">Complete</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Toast -->
+    <div id="success-toast" class="success-toast">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle mr-3 text-xl"></i>
+            <span id="toast-message">Action completed successfully!</span>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900/50 border-t border-gray-800 mt-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-building text-white text-sm"></i>
+                        </div>
+                        <span class="text-xl font-bold gradient-text">HR Automator</span>
+                    </div>
+                    <p class="text-gray-400">Transform your hiring process with AI-powered automation</p>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Product</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">Features</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Pricing</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">API</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Company</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">About</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Blog</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Careers</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Support</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-white transition-colors">Help Center</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Contact</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Status</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center">
+                <p class="text-gray-400">&copy; 2024 HR Automator. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Global variables
+        let currentRole = '';
+        let currentJD = '';
+
+
+
+        // Authentication functions
+        async function checkAuth() {
+            try {
+                const res = await fetch('/check-auth');
+                const data = await res.json();
+                
+                if (data.authenticated) {
+                    document.getElementById('login-btn').classList.add('hidden');
+                    document.getElementById('logout-btn').classList.remove('hidden');
+
+                    // Update LinkedIn card UI
+                    const badge = document.getElementById('linkedin-status-badge');
+                    const btn = document.getElementById('linkedin-connect-btn');
+                    const text = document.getElementById('linkedin-connect-text');
+                    if (badge) {
+                        badge.textContent = 'Connected';
+                        badge.className = 'px-3 py-1 bg-green-600 text-white text-sm rounded-full';
+                    }
+                    if (btn && text) {
+                        text.textContent = 'Connected to LinkedIn';
+                        btn.className = 'w-full px-6 py-3 border border-green-600 text-green-300 rounded-lg hover:bg-gray-800 hover:border-green-500 transition-all duration-300 flex items-center justify-center';
+                        btn.disabled = true;
+                    }
+                } else {
+                    document.getElementById('login-btn').classList.remove('hidden');
+                    document.getElementById('logout-btn').classList.add('hidden');
+
+                    // Reset LinkedIn card UI
+                    const badge = document.getElementById('linkedin-status-badge');
+                    const btn = document.getElementById('linkedin-connect-btn');
+                    const text = document.getElementById('linkedin-connect-text');
+                    if (badge) {
+                        badge.textContent = 'Not Connected';
+                        badge.className = 'px-3 py-1 bg-purple-500 text-white text-sm rounded-full';
+                    }
+                    if (btn && text) {
+                        text.textContent = 'Connect LinkedIn';
+                        btn.className = 'w-full px-6 py-3 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition-all duration-300 flex items-center justify-center';
+                        btn.disabled = false;
+                    }
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+            }
+        }
+
+        function login() {
+            window.location.href = '/login';
+        }
+
+        function logout() {
+            window.location.href = '/logout';
+        }
+
+        // Job Description functions
+        document.getElementById('jd-form').onsubmit = async (e) => {
+            e.preventDefault();
+            const role = document.getElementById('role').value;
+            currentRole = role;
+            
+            // Hide previous results
+            document.getElementById('jd-result').classList.add('hidden');
+            document.getElementById('post-section').classList.add('hidden');
+            document.getElementById('post-status').classList.add('hidden');
+            document.getElementById('jd-placeholder').classList.remove('hidden');
+            
+            // Show loading state
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<div class="crazy-spinner mr-2"></div> Generating...';
+            submitBtn.disabled = true;
+            
+            try {
+                const res = await fetch('/generate-jd', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ role })
+                });
+                
+                const data = await res.json();
+                
+                if (data.job_description) {
+                    currentJD = data.job_description;
+                    document.getElementById('jd-text').innerHTML = data.job_description;
+                    document.getElementById('jd-result').classList.remove('hidden');
+                    document.getElementById('jd-placeholder').classList.add('hidden');
+                    
+                    // Add success animation
+                    document.getElementById('jd-result').classList.add('bounce-in');
+                    setTimeout(() => {
+                        document.getElementById('jd-result').classList.remove('bounce-in');
+                    }, 600);
+                } else {
+                    showStatus(data.error || 'Failed to generate JD.', 'error');
+                }
+            } catch (error) {
+                showStatus('Error: ' + error.message, 'error');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        };
+
+        document.getElementById('approve-btn').onclick = async (e) => {
+            e.preventDefault();
+            hideStatus();
+            
+            try {
+                const res = await fetch('/approve-jd', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        role: currentRole, 
+                        job_description: currentJD, 
+                        approval: true 
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.job_description) {
+                    document.getElementById('post-section').classList.remove('hidden');
+                    document.getElementById('approval-section').classList.add('hidden');
+                    showStatus('Job description approved! Ready to post to LinkedIn.', 'success');
+                } else if (data.error) {
+                    showStatus(data.error, 'error');
+                }
+            } catch (error) {
+                showStatus('Error: ' + error.message, 'error');
+            }
+        };
+
+        document.getElementById('reject-btn').onclick = async (e) => {
+            e.preventDefault();
+            hideStatus();
+            
+            try {
+                const res = await fetch('/approve-jd', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        role: currentRole, 
+                        job_description: currentJD, 
+                        approval: false 
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.job_description) {
+                    currentJD = data.job_description;
+                    document.getElementById('jd-text').innerHTML = data.job_description;
+                    document.getElementById('post-section').classList.add('hidden');
+                    document.getElementById('approval-section').classList.remove('hidden');
+                    showStatus('New job description generated!', 'success');
+                } else if (data.error) {
+                    showStatus(data.error, 'error');
+                }
+            } catch (error) {
+                showStatus('Error: ' + error.message, 'error');
+            }
+        };
+
+        document.getElementById('post-btn').onclick = async (e) => {
+            e.preventDefault();
+            showStatus('Posting to LinkedIn...', 'info');
+            
+            try {
+                const res = await fetch('/post-jd', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        role: currentRole, 
+                        job_description: currentJD 
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.post_status === 'success') {
+                    let successMessage = '✅ JD posted to LinkedIn successfully!';
+                    if (data.post_ids && data.post_ids.length > 0) {
+                        successMessage += '<br><br>📱 Post URLs:<br>';
+                        data.post_ids.forEach((post, index) => {
+                            if (post.url) {
+                                successMessage += `<a href="${post.url}" target="_blank" class="text-blue-400 hover:text-blue-300 underline">View Post ${index + 1}</a><br>`;
+                            }
+                        });
+                    }
+                    
+                    showStatus(successMessage, 'success');
+                    document.getElementById('post-section').classList.add('hidden');
+                    
+                    // Show next step navigation
+                    setTimeout(() => {
+                        document.getElementById('next-step-section').classList.remove('hidden');
+                        showSuccessToast('Job posted successfully! Ready for the next step?');
+                    }, 1000);
+                } else {
+                    showStatus('❌ ' + (data.error || 'Failed to post JD.'), 'error');
+                }
+            } catch (error) {
+                showStatus('❌ Error: ' + error.message, 'error');
+            }
+        };
+
+        // Candidate screening functions
+        document.getElementById('select-best-btn').onclick = async (e) => {
+            e.preventDefault();
+            document.getElementById('best-candidates-section').classList.add('hidden');
+            
+            // Show loading state
+            const btn = e.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Screening...';
+            btn.disabled = true;
+            
+            try {
+                // Get job description from JD page if available
+                let jobDescription = currentJD;
+                if (!jobDescription) {
+                    jobDescription = "Software Engineer"; // Default fallback
+                }
+                
+                const res = await fetch('/select-best-resumes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ job_description: jobDescription })
+                });
+                
+                const data = await res.json();
+                
+                if (data.best_candidate) {
+                    let html = '';
+                    
+                    if (data.all_top_candidates && data.all_top_candidates.length > 0) {
+                        data.all_top_candidates.forEach((candidateData, idx) => {
+                            const candidate = candidateData.applicant;
+                            const isBest = idx === 0;
+                            const borderColor = isBest ? '#10b981' : '#3b82f6';
+                            const bgColor = isBest ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)';
+                            const title = isBest ? '🏆 BEST CANDIDATE' : `🥈 CANDIDATE #${idx + 1}`;
+                            
+                            html += `
+                                <div class="glass-effect rounded-2xl p-6 border-2" style="border-color: ${borderColor}; background: ${bgColor};">
+                                    <h4 class="text-xl font-bold mb-4" style="color: ${borderColor};">${title}</h4>
+                                    <div class="grid md:grid-cols-2 gap-4 mb-4">
+                                        <div><strong class="text-gray-300">Name:</strong> <span class="text-white">${candidate.name || 'N/A'}</span></div>
+                                        <div><strong class="text-gray-300">Email:</strong> <span class="text-white">${candidate.email || 'N/A'}</span></div>
+                                        <div><strong class="text-gray-300">College:</strong> <span class="text-white">${candidate.college || 'N/A'}</span></div>
+                                        <div><strong class="text-gray-300">Score:</strong> <span class="text-white">${candidateData.similarity_score ? candidateData.similarity_score.toFixed(3) : 'N/A'}</span></div>
+                                    </div>
+                                    <div class="mb-4">
+                                        <strong class="text-gray-300">Introduction:</strong><br>
+                                        <em class="text-gray-400">${candidate.intro || 'N/A'}</em>
+                                    </div>
+                                    <div class="flex gap-3 flex-wrap">
+                                        <button onclick="scheduleInterview('${candidate.email}', '${candidate.name}')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                            📅 Schedule Interview
+                                        </button>
+                                        <button onclick="viewResume('${candidate.resume_file_id}')" class="px-4 py-2 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors">
+                                            📄 View Resume
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
+                    
+                    document.getElementById('best-candidates-list').innerHTML = html;
+                    document.getElementById('best-candidates-section').classList.remove('hidden');
+                    
+                    // Add animation
+                    document.getElementById('best-candidates-section').classList.add('fade-in');
+                    setTimeout(() => {
+                        document.getElementById('best-candidates-section').classList.remove('fade-in');
+                    }, 500);
+                    
+                    // Show success message
+                    showSuccessToast('Candidates screened successfully! Ready to schedule interviews?');
+                } else if (data.error) {
+                    document.getElementById('best-candidates-list').innerHTML = `<div class="text-red-400 text-center py-8">❌ Error: ${data.error}</div>`;
+                    document.getElementById('best-candidates-section').classList.remove('hidden');
+                } else {
+                    document.getElementById('best-candidates-list').innerHTML = '<div class="text-gray-400 text-center py-8">No candidates found.</div>';
+                    document.getElementById('best-candidates-section').classList.remove('hidden');
+                }
+            } catch (error) {
+                document.getElementById('best-candidates-list').innerHTML = `<div class="text-red-400 text-center py-8">❌ Error: ${error.message}</div>`;
+                document.getElementById('best-candidates-section').classList.remove('hidden');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        };
+
+        // Interview scheduling function - COMPLETELY REWRITTEN FOR RELIABILITY
+        async function scheduleInterview(candidateEmail, candidateName) {
+            console.log('Opening interview modal for:', candidateName, candidateEmail);
+            
+            // First check if calendar is connected
+            const calendarReady = await testCalendarIntegration();
+            if (!calendarReady) {
+                return;
+            }
+            
+            console.log('Opening interview modal for:', candidateName, candidateEmail);
+            
+            const modal = document.createElement('div');
+            modal.id = 'interview-modal';
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.8);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 1000;
+                backdrop-filter: blur(10px);
+            `;
+            
+            const modalContent = document.createElement('div');
+            modalContent.style.cssText = `
+                background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+                padding: 2rem;
+                border-radius: 20px;
+                box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+                max-width: 500px;
+                width: 90%;
+                border: 1px solid rgba(255,255,255,0.1);
+            `;
+            
+            // Set default date to tomorrow
+            const now = new Date();
+            const tomorrow = new Date(now);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const defaultDate = tomorrow.toISOString().split('T')[0];
+            const defaultTime = '14:00';
+            
+            modalContent.innerHTML = `
+                <h3 class="text-2xl font-bold mb-6 text-center" style="color: #667eea;">📅 Schedule Interview</h3>
+                
+                <div class="bg-gray-800/50 rounded-xl p-4 mb-6 border border-gray-700">
+                    <p class="text-white mb-1"><strong>Candidate:</strong> ${candidateName}</p>
+                    <p class="text-gray-400"><strong>Email:</strong> ${candidateEmail}</p>
+                </div>
+                
+                <form id="interview-form" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2 text-gray-300">Interview Date:</label>
+                        <input type="date" 
+                               id="interview-date-input" 
+                               name="interview-date"
+                               value="${defaultDate}" 
+                               required
+                               style="color: white !important; -webkit-text-fill-color: white !important; background: rgba(31, 41, 55, 0.9) !important; border: 2px solid rgba(255, 255, 255, 0.15); border-radius: 8px; padding: 12px; width: 100%; font-size: 16px;">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2 text-gray-300">Interview Time:</label>
+                        <input type="time" 
+                               id="interview-time-input" 
+                               name="interview-time"
+                               value="${defaultTime}" 
+                               required
+                               style="color: white !important; -webkit-text-fill-color: white !important; background: rgba(31, 41, 55, 0.9) !important; border: 2px solid rgba(255, 255, 255, 0.15); border-radius: 8px; padding: 12px; width: 100%; font-size: 16px;">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2 text-gray-300">Interviewer Email (optional):</label>
+                        <input type="email" 
+                               id="interviewer-email-input" 
+                               name="interviewer-email"
+                               placeholder="interviewer@company.com" 
+                               style="color: white !important; -webkit-text-fill-color: white !important; background: rgba(31, 41, 55, 0.9) !important; border: 2px solid rgba(255, 255, 255, 0.15); border-radius: 8px; padding: 12px; width: 100%; font-size: 16px;">
+                    </div>
+                    
+                    <div class="flex gap-3 mt-6">
+                        <button type="button" id="cancel-interview-btn" class="flex-1 px-4 py-3 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors">Cancel</button>
+                        <button type="submit" id="schedule-interview-btn" class="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-lg hover:from-blue-700 hover:to-green-700 transition-all duration-300">Schedule Interview</button>
+                    </div>
+                </form>
+            `;
+            
+            modal.appendChild(modalContent);
+            document.body.appendChild(modal);
+            
+            // Wait for DOM to be ready and then add event listeners
+            setTimeout(() => {
+                const form = document.getElementById('interview-form');
+                const cancelBtn = document.getElementById('cancel-interview-btn');
+                const dateInput = document.getElementById('interview-date-input');
+                const timeInput = document.getElementById('interview-time-input');
+                
+                console.log('Form elements found:', {
+                    form: !!form,
+                    cancelBtn: !!cancelBtn,
+                    dateInput: !!dateInput,
+                    timeInput: !!timeInput
+                });
+                
+                // Cancel button
+                if (cancelBtn) {
+                    cancelBtn.onclick = () => {
+                        console.log('Closing interview modal');
+                        document.body.removeChild(modal);
+                    };
+                }
+                
+                // Form submission
+                if (form) {
+                    form.onsubmit = async (e) => {
+                        e.preventDefault();
+                        console.log('Form submitted');
+                        
+                        // Get form values
+                        const interviewDate = dateInput?.value;
+                        const interviewTime = timeInput?.value;
+                        const interviewerEmail = document.getElementById('interviewer-email-input')?.value || '';
+                        
+                        console.log('Form values:', {
+                            date: interviewDate,
+                            time: interviewTime,
+                            interviewerEmail: interviewerEmail
+                        });
+                        
+                        // Validation
+                        if (!interviewDate) {
+                            alert('❌ Please select an interview date.');
+                            dateInput?.focus();
+                            return;
+                        }
+                        
+                        if (!interviewTime) {
+                            alert('❌ Please select an interview time.');
+                            timeInput?.focus();
+                            return;
+                        }
+                        
+                        // Validate future date
+                        const selectedDateTime = new Date(`${interviewDate}T${interviewTime}`);
+                        const now = new Date();
+                        if (selectedDateTime <= now) {
+                            alert('❌ Interview date and time must be in the future.');
+                            return;
+                        }
+                        
+                        // Disable submit button and show loading
+                        const submitBtn = document.getElementById('schedule-interview-btn');
+                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Scheduling...';
+                        submitBtn.disabled = true;
+                        
+                        try {
+                            console.log('Sending request to backend...');
+                            const res = await fetch('/schedule-interview', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    candidate_email: candidateEmail,
+                                    candidate_name: candidateName,
+                                    interview_date: interviewDate,
+                                    interview_time: interviewTime,
+                                    interviewer_email: interviewerEmail
+                                })
+                            });
+                            
+                            const data = await res.json();
+                            console.log('Backend response:', data);
+                            
+                            if (data.status === 'success') {
+                                let message = `✅ ${data.message}\n\n📅 Date: ${interviewDate}\n⏰ Time: ${interviewTime}`;
+                                if (data.event_link) {
+                                    message += `\n\n🔗 Calendar Event: ${data.event_link}`;
+                                }
+                                alert(message);
+                                document.body.removeChild(modal);
+                            } else {
+                                alert(`❌ Error: ${data.error}`);
+                            }
+                        } catch (error) {
+                            console.error('Error scheduling interview:', error);
+                            alert(`❌ Error scheduling interview: ${error.message}`);
+                        } finally {
+                            submitBtn.innerHTML = 'Schedule Interview';
+                            submitBtn.disabled = false;
+                        }
+                    };
+                }
+            }, 100);
+        }
+
+        // Resume viewing function
+        function viewResume(fileId) {
+            window.open(`/view-resume/${fileId}`, '_blank');
+        }
+
+        // Status management functions
+        function showStatus(message, type = 'info') {
+            const statusElement = document.getElementById('post-status');
+            if (statusElement) {
+                statusElement.innerHTML = message;
+                statusElement.classList.remove('hidden');
+                
+                // Set colors based on type
+                switch(type) {
+                    case 'success':
+                        statusElement.style.backgroundColor = '#10b981';
+                        break;
+                    case 'error':
+                        statusElement.style.backgroundColor = '#ef4444';
+                        break;
+                    case 'info':
+                        statusElement.style.backgroundColor = '#3b82f6';
+                        break;
+                    default:
+                        statusElement.style.backgroundColor = '#6b7280';
+                }
+                
+                statusElement.style.color = 'white';
+                statusElement.style.padding = '1rem';
+                statusElement.style.borderRadius = '8px';
+            }
+        }
+
+        function hideStatus() {
+            const statusElement = document.getElementById('post-status');
+            if (statusElement) {
+                statusElement.classList.add('hidden');
+            }
+        }
+
+        // Google Calendar functions
+        async function checkGoogleCalendarAuth() {
+            try {
+                const res = await fetch('/check-google-calendar-auth');
+                const data = await res.json();
+                
+                const statusElement = document.getElementById('calendar-auth-status');
+                const authBtn = document.getElementById('google-calendar-auth-btn');
+                const badge = document.getElementById('gcal-status-badge');
+                const connectBtn = document.getElementById('google-calendar-connect-btn');
+                const connectText = document.getElementById('gcal-connect-text');
+                
+                if (data.authenticated) {
+                    if (statusElement) {
+                        statusElement.innerHTML = '✅ <strong>Connected to Google Calendar</strong><br><small>You can now schedule interviews automatically</small>';
+                        statusElement.style.backgroundColor = '#10b981';
+                        statusElement.style.color = 'white';
+                    }
+                    if (authBtn) {
+                        authBtn.innerHTML = '<i class="fas fa-sync mr-2"></i> Reconnect Calendar';
+                        authBtn.className = 'w-full px-6 py-3 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-800 hover:border-gray-500 transition-all duration-300';
+                    }
+
+                    // Update auth page badge/button
+                    if (badge) {
+                        badge.textContent = 'Connected';
+                        badge.className = 'px-3 py-1 bg-green-600 text-white text-sm rounded-full';
+                    }
+                    if (connectBtn && connectText) {
+                        connectText.textContent = 'Connected to Google Calendar';
+                        connectBtn.className = 'w-full px-6 py-3 border border-green-600 text-green-300 rounded-lg hover:bg-gray-800 hover:border-green-500 transition-all duration-300 flex items-center justify-center';
+                        connectBtn.disabled = true;
+                    }
+                } else {
+                    if (statusElement) {
+                        statusElement.innerHTML = '❌ <strong>Not connected to Google Calendar</strong><br><small>Connect your calendar to enable automatic interview scheduling</small>';
+                        statusElement.style.backgroundColor = '#ef4444';
+                        statusElement.style.color = 'white';
+                    }
+                    if (authBtn) {
+                        authBtn.innerHTML = '<i class="fas fa-calendar-plus mr-2"></i> Connect Calendar';
+                        authBtn.className = 'w-full px-6 py-3 bg-blue-600 text-white text-lg font-semibold rounded-xl hover:bg-blue-700 transition-all duration-300 transform hover:scale-105';
+                    }
+
+                    if (badge) {
+                        badge.textContent = 'Not Connected';
+                        badge.className = 'px-3 py-1 bg-purple-500 text-white text-sm rounded-full';
+                    }
+                    if (connectBtn && connectText) {
+                        connectText.textContent = 'Connect Google Calendar';
+                        connectBtn.className = 'w-full px-6 py-3 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition-all duration-300 flex items-center justify-center';
+                        connectBtn.disabled = false;
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking Google Calendar auth:', error);
+            }
+        }
+
+        async function authenticateGoogleCalendar() {
+            const authBtn = document.getElementById('google-calendar-auth-btn');
+            const resultElement = document.getElementById('calendar-auth-result');
+            
+            if (authBtn) {
+                authBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Connecting...';
+                authBtn.disabled = true;
+            }
+            if (resultElement) {
+                resultElement.classList.add('hidden');
+            }
+            
+            try {
+                const res = await fetch('/google-calendar-auth');
+                const data = await res.json();
+                
+                if (data.status === 'success') {
+                    if (resultElement) {
+                        resultElement.innerHTML = '✅ ' + data.message;
+                        resultElement.style.backgroundColor = '#10b981';
+                        resultElement.style.color = 'white';
+                        resultElement.classList.remove('hidden');
+                    }
+                    await checkGoogleCalendarAuth();
+                } else if (data.error) {
+                    if (resultElement) {
+                        resultElement.innerHTML = '❌ ' + data.error;
+                        resultElement.style.backgroundColor = '#ef4444';
+                        resultElement.style.color = 'white';
+                        resultElement.classList.remove('hidden');
+                        
+                        if (data.instructions) {
+                            resultElement.innerHTML += '<br><br><strong>Setup Instructions:</strong><ul>' + 
+                                data.instructions.map(instruction => `<li>${instruction}</li>`).join('') + 
+                                '</ul>';
+                        }
+                    }
+                }
+            } catch (error) {
+                if (resultElement) {
+                    resultElement.innerHTML = '❌ Error: ' + error.message;
+                    resultElement.style.backgroundColor = '#ef4444';
+                    resultElement.style.color = 'white';
+                    resultElement.classList.remove('hidden');
+                }
+            } finally {
+                if (authBtn) {
+                    authBtn.disabled = false;
+                }
+                await checkGoogleCalendarAuth();
+            }
+        }
+
+        // Test calendar integration
+        async function testCalendarIntegration() {
+            try {
+                const res = await fetch('/check-google-calendar-auth');
+                const data = await res.json();
+                
+                if (!data.authenticated) {
+                    alert('❌ Google Calendar not connected! Please connect your calendar first in the Authentication page.');
+                    return false;
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('Error testing calendar integration:', error);
+                alert('❌ Error checking calendar connection. Please try again.');
+                return false;
+            }
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const authBtn = document.getElementById('google-calendar-auth-btn');
+            if (authBtn) {
+                authBtn.onclick = authenticateGoogleCalendar;
+            }
+        });
+
+        // Initialize
+        window.onload = function() {
+            checkAuth();
+            checkGoogleCalendarAuth();
+            
+            // Set default date and time for interview scheduling
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const defaultDate = tomorrow.toISOString().split('T')[0];
+            const defaultTime = '14:00';
+            
+            if (document.getElementById('interview-date')) {
+                document.getElementById('interview-date').value = defaultDate;
+            }
+            if (document.getElementById('interview-time')) {
+                document.getElementById('interview-time').value = defaultTime;
+            }
+            
+            // Add smooth scrolling and animations
+            addScrollAnimations();
+            
+            // Crazy welcome message
+            setTimeout(() => {
+                showSuccessToast('Welcome to the CRAZIEST HR experience ever! Click the + button to explore!');
+            }, 2000);
+            
+            // Easter egg: Konami code
+            let konamiCode = [];
+            const konamiSequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA'];
+            
+            document.addEventListener('keydown', (e) => {
+                konamiCode.push(e.code);
+                if (konamiCode.length > konamiSequence.length) {
+                    konamiCode.shift();
+                }
+                
+                if (konamiCode.join(',') === konamiSequence.join(',')) {
+                    // Konami code activated!
+                    showSuccessToast('🎮 Konami Code Activated! Crazy Mode Enabled!');
+                    const crazyModeCheckbox = document.getElementById('crazy-mode');
+                    if (crazyModeCheckbox) {
+                        crazyModeCheckbox.checked = true;
+                        toggleCrazyMode();
+                    }
+                    konamiCode = [];
+                }
+            });
+        };
+        
+        // Add scroll animations and particle system
+        function addScrollAnimations() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('fade-in');
+                    }
+                });
+            }, observerOptions);
+            
+            // Observe all cards and sections
+            document.querySelectorAll('.glass-effect, .card-hover').forEach(el => {
+                observer.observe(el);
+            });
+            
+            // Initialize particle system
+            initParticleSystem();
+        }
+        
+        // Crazy particle system
+        function initParticleSystem() {
+            const particleCount = 15;
+            
+            for (let i = 0; i < particleCount; i++) {
+                createParticle();
+            }
+            
+            // Create new particles periodically
+            setInterval(createParticle, 3000);
+        }
+        
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            
+            // Random properties
+            const size = Math.random() * 4 + 2;
+            const startX = Math.random() * window.innerWidth;
+            const startY = window.innerHeight + 20;
+            const endX = startX + (Math.random() - 0.5) * 200;
+            const endY = startY - Math.random() * 400 - 200;
+            const duration = Math.random() * 4 + 4;
+            const delay = Math.random() * 2;
+            
+            particle.style.cssText = `
+                width: ${size}px;
+                height: ${size}px;
+                left: ${startX}px;
+                top: ${startY}px;
+                animation: float-particle ${duration}s ease-in-out ${delay}s infinite;
+            `;
+            
+            // Custom animation for this particle
+            particle.style.setProperty('--end-x', endX + 'px');
+            particle.style.setProperty('--end-y', endY + 'px');
+            
+            document.body.appendChild(particle);
+            
+            // Remove particle after animation
+            setTimeout(() => {
+                if (particle.parentElement) {
+                    particle.remove();
+                }
+            }, (duration + delay) * 1000);
+        }
+        
+        // Enhanced page navigation with smooth transitions
+        function showPage(pageName) {
+            // Hide all pages with fade out
+            document.querySelectorAll('.page-section').forEach(page => {
+                if (page.classList.contains('active')) {
+                    page.style.opacity = '0';
+                    page.style.transform = 'translateY(20px)';
+                    setTimeout(() => {
+                        page.classList.remove('active');
+                    }, 300);
+                }
+            });
+            
+            // Show selected page with fade in
+            setTimeout(() => {
+                const targetPage = document.getElementById(pageName + '-page');
+                if (targetPage) {
+                    targetPage.classList.add('active');
+                    targetPage.style.opacity = '1';
+                    targetPage.style.transform = 'translateY(0)';
+                    
+                    // Add animation classes
+                    targetPage.classList.add('fade-in');
+                    setTimeout(() => {
+                        targetPage.classList.remove('fade-in');
+                    }, 500);
+                    
+                    // Scroll to top smoothly
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            }, 300);
+            
+            // Update navigation active state
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.classList.remove('text-white');
+                link.classList.add('text-gray-300');
+            });
+            
+            // If navigating to auth page, refresh connection statuses
+            if (pageName === 'auth') {
+                checkAuth();
+                checkGoogleCalendarAuth();
+            }
+        }
+        
+
+        // Show success toast
+        function showSuccessToast(message) {
+            const toast = document.getElementById('success-toast');
+            const toastMessage = document.getElementById('toast-message');
+            if (toast && toastMessage) {
+                toastMessage.textContent = message;
+                
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+        }
+        
+        // Clean floating menu system
+        function toggleQuickActions() {
+            const menu = document.getElementById('floating-menu');
+            const fabIcon = document.getElementById('fab-icon');
+            
+            if (!menu || !fabIcon) {
+                console.error('Menu or icon elements not found');
+                return;
+            }
+            
+            if (menu.classList.contains('show')) {
+                menu.classList.remove('show');
+                fabIcon.className = 'fas fa-plus';
+            } else {
+                menu.classList.add('show');
+                fabIcon.className = 'fas fa-times';
+                
+                // Update workflow progress
+                updateWorkflowProgress();
+                // Update status indicators
+                updateStatusIndicators();
+            }
+        }
+        
+        // Update workflow progress in floating menu
+        function updateWorkflowProgress() {
+            const progressRing = document.getElementById('workflow-progress');
+            const progressPercentage = document.getElementById('workflow-percentage');
+            
+            // Calculate progress based on completed steps
+            let completedSteps = 0;
+            const totalSteps = 4;
+            
+            // Check LinkedIn auth
+            const linkedinBadge = document.getElementById('linkedin-status-badge');
+            if (linkedinBadge && linkedinBadge.textContent === 'Connected') {
+                completedSteps++;
+            }
+            
+            // Check Google Calendar auth
+            const gcalBadge = document.getElementById('gcal-status-badge');
+            if (gcalBadge && gcalBadge.textContent === 'Connected') {
+                completedSteps++;
+            }
+            
+            // Check if JD exists
+            if (typeof currentJD !== 'undefined' && currentJD) {
+                completedSteps++;
+            }
+            
+            // Check if candidates were screened
+            const bestCandidatesSection = document.getElementById('best-candidates-section');
+            if (bestCandidatesSection && !bestCandidatesSection.classList.contains('hidden')) {
+                completedSteps++;
+            }
+            
+            const progress = (completedSteps / totalSteps) * 100;
+            const circumference = 2 * Math.PI * 26; // r = 26
+            const offset = circumference - (progress / 100) * circumference;
+            
+            if (progressRing) {
+                progressRing.style.strokeDashoffset = offset;
+            }
+            if (progressPercentage) {
+                progressPercentage.textContent = Math.round(progress) + '%';
+            }
+        }
+        
+        // Update status indicators in floating menu
+        function updateStatusIndicators() {
+            // LinkedIn status
+            const linkedinStatus = document.getElementById('auth-status-indicator');
+            if (linkedinStatus) {
+                const linkedinBadge = document.getElementById('linkedin-status-badge');
+                if (linkedinBadge && linkedinBadge.textContent === 'Connected') {
+                    linkedinStatus.textContent = '✅';
+                } else {
+                    linkedinStatus.textContent = '⚪';
+                }
+            }
+            
+            // JD status
+            const jdStatus = document.getElementById('jd-status-indicator');
+            if (jdStatus) {
+                if (typeof currentJD !== 'undefined' && currentJD) {
+                    jdStatus.textContent = '✅';
+                } else {
+                    jdStatus.textContent = '⚪';
+                }
+            }
+            
+            // Candidates status
+            const candidatesStatus = document.getElementById('candidates-status-indicator');
+            if (candidatesStatus) {
+                const bestCandidatesSection = document.getElementById('best-candidates-section');
+                if (bestCandidatesSection && !bestCandidatesSection.classList.contains('hidden')) {
+                    candidatesStatus.textContent = '✅';
+                } else {
+                    candidatesStatus.textContent = '⚪';
+                }
+            }
+            
+            // Interviews status
+            const interviewsStatus = document.getElementById('interviews-status-indicator');
+            if (interviewsStatus) {
+                // This could be enhanced to check actual interview scheduling
+                interviewsStatus.textContent = '⚪';
+            }
+        }
+        
+        // Enhanced navigation function
+        function navigateToPage(pageName) {
+            // Close floating menu
+            toggleQuickActions();
+            // Navigate to page
+            showPage(pageName);
+        }
+        
+        // Crazy Options Functions
+        function toggleCrazyOptions() {
+            const panel = document.getElementById('crazy-options-panel');
+            if (panel) {
+                panel.classList.toggle('show');
+            }
+        }
+        
+        function toggleMatrixEffect() {
+            const checkbox = document.getElementById('matrix-effect');
+            const canvas = document.getElementById('matrix-rain');
+            
+            if (checkbox && canvas) {
+                if (checkbox.checked) {
+                    canvas.classList.add('active');
+                    initMatrixRain();
+                } else {
+                    canvas.classList.remove('active');
+                    stopMatrixRain();
+                }
+            }
+        }
+        
+        function toggleParticleEffect() {
+            const checkbox = document.getElementById('particle-effect');
+            
+            if (checkbox) {
+                if (checkbox.checked) {
+                    initParticleSystem();
+                } else {
+                    // Stop creating new particles
+                    clearInterval(window.particleInterval);
+                }
+            }
+        }
+        
+        function toggleNeonEffect() {
+            const checkbox = document.getElementById('neon-effect');
+            const neonElements = document.querySelectorAll('.neon-glow');
+            
+            if (checkbox) {
+                neonElements.forEach(element => {
+                    if (checkbox.checked) {
+                        element.style.animationPlayState = 'running';
+                    } else {
+                        element.style.animationPlayState = 'paused';
+                    }
+                });
+            }
+        }
+        
+        function toggle3DEffect() {
+            const checkbox = document.getElementById('3d-effect');
+            const threeDElements = document.querySelectorAll('.crazy-3d');
+            
+            if (checkbox) {
+                threeDElements.forEach(element => {
+                    if (checkbox.checked) {
+                        element.style.pointerEvents = 'auto';
+                    } else {
+                        element.style.pointerEvents = 'none';
+                    }
+                });
+            }
+        }
+        
+        function toggleFloatingEffect() {
+            const checkbox = document.getElementById('floating-effect');
+            const floatingElements = document.querySelectorAll('.floating-element');
+            
+            if (checkbox) {
+                floatingElements.forEach(element => {
+                    if (checkbox.checked) {
+                        element.style.animationPlayState = 'running';
+                    } else {
+                        element.style.animationPlayState = 'paused';
+                    }
+                });
+            }
+        }
+        
+        function toggleCrazyMode() {
+            const checkbox = document.getElementById('crazy-mode');
+            
+            if (checkbox) {
+                if (checkbox.checked) {
+                    // Enable all effects
+                    const matrixEffect = document.getElementById('matrix-effect');
+                    const particleEffect = document.getElementById('particle-effect');
+                    const neonEffect = document.getElementById('neon-effect');
+                    const threeDEffect = document.getElementById('3d-effect');
+                    const floatingEffect = document.getElementById('floating-effect');
+                    
+                    if (matrixEffect) matrixEffect.checked = true;
+                    if (particleEffect) particleEffect.checked = true;
+                    if (neonEffect) neonEffect.checked = true;
+                    if (threeDEffect) threeDEffect.checked = true;
+                    if (floatingEffect) floatingEffect.checked = true;
+                    
+                    // Apply all effects
+                    toggleMatrixEffect();
+                    toggleParticleEffect();
+                    toggleNeonEffect();
+                    toggle3DEffect();
+                    toggleFloatingEffect();
+                    
+                    showSuccessToast('🚀 Crazy Mode Activated! All effects enabled!');
+                } else {
+                    // Disable all effects
+                    const matrixEffect = document.getElementById('matrix-effect');
+                    const particleEffect = document.getElementById('particle-effect');
+                    const neonEffect = document.getElementById('neon-effect');
+                    const threeDEffect = document.getElementById('3d-effect');
+                    const floatingEffect = document.getElementById('floating-effect');
+                    
+                    if (matrixEffect) matrixEffect.checked = false;
+                    if (particleEffect) particleEffect.checked = false;
+                    if (neonEffect) neonEffect.checked = false;
+                    if (threeDEffect) threeDEffect.checked = false;
+                    if (floatingEffect) floatingEffect.checked = false;
+                    
+                    // Remove all effects
+                    toggleMatrixEffect();
+                    toggleParticleEffect();
+                    toggleNeonEffect();
+                    toggle3DEffect();
+                    toggleFloatingEffect();
+                }
+            }
+        }
+        
+        // Matrix Rain Effect
+        let matrixRainInterval;
+        
+        function initMatrixRain() {
+            const canvas = document.getElementById('matrix-rain');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            const matrix = "ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%+-/~{[|`]}";
+            const matrixArray = matrix.split("");
+            
+            const fontSize = 10;
+            const columns = canvas.width / fontSize;
+            
+            const drops = [];
+            for (let x = 0; x < columns; x++) {
+                drops[x] = 1;
+            }
+            
+            function draw() {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.04)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.fillStyle = '#0F0';
+                ctx.font = fontSize + 'px monospace';
+                
+                for (let i = 0; i < drops.length; i++) {
+                    const text = matrixArray[Math.floor(Math.random() * matrixArray.length)];
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                    
+                    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                }
+            }
+            
+            matrixRainInterval = setInterval(draw, 35);
+        }
+        
+        function stopMatrixRain() {
+            if (matrixRainInterval) {
+                clearInterval(matrixRainInterval);
+            }
+        }
+
+        // Test function to ensure JavaScript is working
+        function testJavaScript() {
+            console.log('JavaScript is working!');
+            console.log('Floating menu element:', document.getElementById('floating-menu'));
+            console.log('FAB element:', document.getElementById('main-fab'));
+            console.log('FAB icon element:', document.getElementById('fab-icon'));
+        }
+        
+        // Initialize everything when page loads
+        window.onload = function() {
+            console.log('Page loaded, initializing...');
+            testJavaScript();
+            
+            // Show welcome message
+            showSuccessToast('🚀 Welcome to HR Automator! Click the + button to get started!');
+            
+            // Konami Code Easter Egg
+            let konamiCode = [];
+            const konamiSequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA'];
+            
+            document.addEventListener('keydown', function(e) {
+                konamiCode.push(e.code);
+                if (konamiCode.length > konamiSequence.length) {
+                    konamiCode.shift();
+                }
+                
+                if (konamiCode.join(',') === konamiSequence.join(',')) {
+                    showSuccessToast('🎮 Konami Code Activated! Crazy Mode Enabled!');
+                    // Enable crazy mode
+                    const crazyModeCheckbox = document.getElementById('crazy-mode');
+                    if (crazyModeCheckbox) {
+                        crazyModeCheckbox.checked = true;
+                        toggleCrazyMode();
+                    }
+                }
+            });
+        };
+    </script>
+</body>
+</html>
