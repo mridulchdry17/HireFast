@@ -1,0 +1,371 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center">
+    <div class="max-w-4xl mx-auto px-4">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-5xl font-bold gradient-text mb-4">
+                HR Automator
+            </h1>
+            <p class="text-xl text-gray-300 mb-8">
+                Streamline your hiring process with AI-powered job descriptions and candidate selection
+            </p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="grid md:grid-cols-2 gap-8">
+            <!-- Job Description Generation -->
+            <div class="glass-effect rounded-2xl p-8 card-hover">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 gradient-bg rounded-xl flex items-center justify-center mr-4">
+                        <i class="fas fa-file-alt text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-white">Job Description</h3>
+                        <p class="text-gray-400">Generate AI-powered job descriptions</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <input 
+                        type="text" 
+                        id="roleInput" 
+                        placeholder="Enter job role (e.g., Software Engineer)"
+                        class="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
+                    >
+                    <button 
+                        onclick="generateJD()" 
+                        class="w-full gradient-bg text-white py-3 px-6 rounded-xl font-semibold hover:opacity-90 transition-opacity"
+                    >
+                        Generate Job Description
+                    </button>
+                </div>
+                
+                <div id="jdResult" class="mt-6 hidden">
+                    <div class="bg-white/5 rounded-xl p-4">
+                        <h4 class="text-white font-semibold mb-2">Generated Job Description:</h4>
+                        <p id="jdText" class="text-gray-300 text-sm leading-relaxed"></p>
+                    </div>
+                    <div class="flex gap-3 mt-4">
+                        <button onclick="approveJD(true)" class="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
+                            Approve & Post
+                        </button>
+                        <button onclick="approveJD(false)" class="flex-1 bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors">
+                            Regenerate
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Candidate Selection -->
+            <div class="glass-effect rounded-2xl p-8 card-hover">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 gradient-bg rounded-xl flex items-center justify-center mr-4">
+                        <i class="fas fa-users text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-white">Candidate Selection</h3>
+                        <p class="text-gray-400">Find the best candidates automatically</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <button 
+                        onclick="fetchApplications()" 
+                        class="w-full bg-blue-600 text-white py-3 px-6 rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+                    >
+                        Fetch Applications
+                    </button>
+                    <button 
+                        onclick="selectBestCandidates()" 
+                        class="w-full bg-purple-600 text-white py-3 px-6 rounded-xl font-semibold hover:bg-purple-700 transition-colors"
+                    >
+                        Select Best Candidates
+                    </button>
+                </div>
+                
+                <div id="candidateResult" class="mt-6 hidden">
+                    <div class="bg-white/5 rounded-xl p-4">
+                        <h4 class="text-white font-semibold mb-2">Best Candidate:</h4>
+                        <div id="candidateInfo" class="text-gray-300 text-sm"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Authentication Status -->
+        <div class="mt-12 text-center">
+            <div id="authStatus" class="inline-flex items-center px-4 py-2 rounded-full text-sm">
+                <i class="fas fa-circle mr-2"></i>
+                <span>Checking authentication...</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Action Button -->
+<div class="floating-action-container">
+    <button class="floating-action" onclick="toggleMenu()">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <div id="floatingMenu" class="floating-menu">
+        <div class="floating-menu-header">
+            <h3>Quick Actions</h3>
+            <p>Access key features</p>
+        </div>
+        
+        <div class="floating-menu-actions">
+            <a href="#" onclick="checkAuth()" class="floating-menu-item">
+                <i class="fas fa-user-check"></i>
+                <span>Check Auth</span>
+            </a>
+            <a href="#" onclick="googleCalendarAuth()" class="floating-menu-item">
+                <i class="fas fa-calendar"></i>
+                <span>Google Calendar</span>
+            </a>
+            <a href="#" onclick="testSheet()" class="floating-menu-item">
+                <i class="fas fa-table"></i>
+                <span>Test Sheet</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Global variables
+let currentJD = '';
+let currentRole = '';
+
+// Authentication check
+async function checkAuth() {
+    try {
+        const response = await fetch('/check-auth');
+        const data = await response.json();
+        
+        const statusEl = document.getElementById('authStatus');
+        if (data.authenticated) {
+            statusEl.className = 'inline-flex items-center px-4 py-2 rounded-full text-sm bg-green-600 text-white';
+            statusEl.innerHTML = '<i class="fas fa-check-circle mr-2"></i><span>Authenticated</span>';
+        } else {
+            statusEl.className = 'inline-flex items-center px-4 py-2 rounded-full text-sm bg-red-600 text-white';
+            statusEl.innerHTML = '<i class="fas fa-times-circle mr-2"></i><span>Not Authenticated</span>';
+        }
+    } catch (error) {
+        console.error('Auth check failed:', error);
+    }
+}
+
+// Generate Job Description
+async function generateJD() {
+    const role = document.getElementById('roleInput').value.trim();
+    if (!role) {
+        alert('Please enter a job role');
+        return;
+    }
+    
+    currentRole = role;
+    
+    try {
+        const response = await fetch('/generate-jd', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ role: role })
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            alert('Error: ' + data.error);
+            return;
+        }
+        
+        currentJD = data.job_description;
+        document.getElementById('jdText').textContent = currentJD;
+        document.getElementById('jdResult').classList.remove('hidden');
+    } catch (error) {
+        console.error('JD generation failed:', error);
+        alert('Failed to generate job description');
+    }
+}
+
+// Approve Job Description
+async function approveJD(approved) {
+    if (!currentJD || !currentRole) {
+        alert('No job description to approve');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/approve-jd', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                role: currentRole,
+                job_description: currentJD,
+                approval: approved
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            alert('Error: ' + data.error);
+            return;
+        }
+        
+        if (approved) {
+            // Post to LinkedIn
+            await postToLinkedIn();
+        } else {
+            // Regenerate
+            await generateJD();
+        }
+    } catch (error) {
+        console.error('JD approval failed:', error);
+        alert('Failed to process job description');
+    }
+}
+
+// Post to LinkedIn
+async function postToLinkedIn() {
+    try {
+        const response = await fetch('/post-jd', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                role: currentRole,
+                job_description: currentJD
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            alert('Error: ' + data.error);
+            return;
+        }
+        
+        alert('Job description posted successfully to LinkedIn!');
+    } catch (error) {
+        console.error('LinkedIn posting failed:', error);
+        alert('Failed to post to LinkedIn');
+    }
+}
+
+// Fetch Applications
+async function fetchApplications() {
+    try {
+        const response = await fetch('/fetch-applications');
+        const data = await response.json();
+        
+        if (data.error) {
+            alert('Error: ' + data.error);
+            return;
+        }
+        
+        alert(`Found ${data.applicants.length} applications`);
+    } catch (error) {
+        console.error('Fetch applications failed:', error);
+        alert('Failed to fetch applications');
+    }
+}
+
+// Select Best Candidates
+async function selectBestCandidates() {
+    if (!currentJD) {
+        alert('Please generate a job description first');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/select-best-resumes', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                job_description: currentJD
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.error) {
+            alert('Error: ' + data.error);
+            return;
+        }
+        
+        const candidate = data.best_candidate;
+        const candidateInfo = `
+            <strong>Name:</strong> ${candidate.applicant.name}<br>
+            <strong>Email:</strong> ${candidate.applicant.email}<br>
+            <strong>College:</strong> ${candidate.applicant.college}<br>
+            <strong>Match Score:</strong> ${(candidate.similarity_score * 100).toFixed(1)}%
+        `;
+        
+        document.getElementById('candidateInfo').innerHTML = candidateInfo;
+        document.getElementById('candidateResult').classList.remove('hidden');
+    } catch (error) {
+        console.error('Candidate selection failed:', error);
+        alert('Failed to select candidates');
+    }
+}
+
+// Google Calendar Auth
+async function googleCalendarAuth() {
+    try {
+        const response = await fetch('/google-calendar-auth');
+        const data = await response.json();
+        
+        if (data.error) {
+            alert('Error: ' + data.error);
+            return;
+        }
+        
+        alert('Google Calendar authentication successful!');
+    } catch (error) {
+        console.error('Google Calendar auth failed:', error);
+        alert('Failed to authenticate with Google Calendar');
+    }
+}
+
+// Test Sheet
+async function testSheet() {
+    try {
+        const response = await fetch('/test-sheet');
+        const data = await response.json();
+        
+        if (data.error) {
+            alert('Error: ' + data.error);
+            return;
+        }
+        
+        alert(`Sheet has ${data.row_count} rows`);
+    } catch (error) {
+        console.error('Test sheet failed:', error);
+        alert('Failed to test sheet');
+    }
+}
+
+// Toggle floating menu
+function toggleMenu() {
+    const menu = document.getElementById('floatingMenu');
+    menu.classList.toggle('show');
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    checkAuth();
+});
+</script>
+{% endblock %}
