@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - HireFast</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .sidebar {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            margin: 0.25rem 0;
+            border-radius: 0.75rem;
+            color: #cbd5e1;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .nav-item.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #10b981 0%, #3b82f6 100%);
+            height: 8px;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .status-pill {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-completed {
+            background: #10b981;
+            color: white;
+        }
+        
+        .status-current {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .status-pending {
+            background: #8b5cf6;
+            color: white;
+        }
+        
+        .workflow-step {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .workflow-step:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(8px);
+        }
+        
+        .workflow-step.completed {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        .workflow-step.current {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -100%;
+                top: 0;
+                height: 100vh;
+                width: 280px;
+                z-index: 1000;
+                transition: left 0.3s ease;
+            }
+            
+            .sidebar.open {
+                left: 0;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <div class="sidebar w-64 p-6">
+            <div class="mb-8">
+                <h1 class="text-2xl font-bold gradient-text">HireFast</h1>
+                <p class="text-sm text-gray-400 mt-1">AI-Powered HR Automation</p>
+            </div>
+            
+            <nav class="space-y-2">
+                <a href="/dashboard" class="nav-item active">
+                    <i class="fas fa-tachometer-alt w-5 mr-3"></i>
+                    Dashboard
+                </a>
+                <a href="/job-posting" class="nav-item">
+                    <i class="fas fa-plus-circle w-5 mr-3"></i>
+                    Create Job Post
+                </a>
+                <a href="/candidates" class="nav-item">
+                    <i class="fas fa-users w-5 mr-3"></i>
+                    Candidates
+                </a>
+                <a href="/scheduling" class="nav-item">
+                    <i class="fas fa-calendar-alt w-5 mr-3"></i>
+                    Schedule Interviews
+                </a>
+                <a href="/analytics" class="nav-item">
+                    <i class="fas fa-chart-line w-5 mr-3"></i>
+                    Analytics
+                </a>
+                <a href="/settings" class="nav-item">
+                    <i class="fas fa-cog w-5 mr-3"></i>
+                    Settings
+                </a>
+            </nav>
+            
+            <div class="mt-auto pt-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-3">
+                        <span class="text-white font-bold text-sm">JD</span>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-sm">John Doe</p>
+                        <p class="text-xs text-gray-400">HR Manager</p>
+                    </div>
+                </div>
+                <button onclick="logout()" class="nav-item w-full text-left">
+                    <i class="fas fa-sign-out-alt w-5 mr-3"></i>
+                    Logout
+                </button>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Header -->
+            <header class="glass-effect p-6 border-b border-gray-700">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-3xl font-bold text-white">Dashboard</h2>
+                        <p class="text-gray-400 mt-1">Welcome back! Here's what's happening with your hiring process.</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                            <span class="text-sm text-gray-300">LinkedIn Connected</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                            <span class="text-sm text-gray-300">Google Calendar Connected</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Dashboard Content -->
+            <main class="flex-1 overflow-y-auto p-6">
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="stat-card card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-400 text-sm">Active Job Posts</p>
+                                <p class="text-3xl font-bold text-white">12</p>
+                            </div>
+                            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-briefcase text-white text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <div class="flex items-center text-sm">
+                                <span class="text-green-400">+3 this week</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-400 text-sm">Total Applications</p>
+                                <p class="text-3xl font-bold text-white">247</p>
+                            </div>
+                            <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-600 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-users text-white text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <div class="flex items-center text-sm">
+                                <span class="text-green-400">+18 today</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-400 text-sm">Interviews Scheduled</p>
+                                <p class="text-3xl font-bold text-white">8</p>
+                            </div>
+                            <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-calendar-alt text-white text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <div class="flex items-center text-sm">
+                                <span class="text-blue-400">3 this week</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-400 text-sm">Hires This Month</p>
+                                <p class="text-3xl font-bold text-white">5</p>
+                            </div>
+                            <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-trophy text-white text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <div class="flex items-center text-sm">
+                                <span class="text-green-400">+2 from last month</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                        <div class="glass-effect rounded-2xl p-6">
+                        <h3 class="text-xl font-bold mb-6 text-white">Quick Actions</h3>
+                        <div class="space-y-4">
+                            <button onclick="window.location.href='/job-posting'" class="w-full btn-primary justify-center">
+                                <i class="fas fa-plus"></i>
+                                Create New Job Post
+                            </button>
+                            <button onclick="window.location.href='/candidates'" class="w-full btn-secondary justify-center">
+                                <i class="fas fa-users"></i>
+                                View All Candidates
+                            </button>
+                            <button onclick="window.location.href='/scheduling'" class="w-full btn-secondary justify-center">
+                                <i class="fas fa-calendar-plus"></i>
+                                Schedule Interview
+                            </button>
+                        </div>
+                    </div>
+                    
+                        <div class="glass-effect rounded-2xl p-6">
+                        <h3 class="text-xl font-bold mb-6 text-white">Recent Activity</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                <div class="flex-1">
+                                    <p class="text-sm">New application for Software Engineer</p>
+                                    <p class="text-xs text-gray-400">2 minutes ago</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                <div class="flex-1">
+                                    <p class="text-sm">Interview scheduled with Sarah Johnson</p>
+                                    <p class="text-xs text-gray-400">1 hour ago</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                <div class="flex-1">
+                                    <p class="text-sm">Job post published to LinkedIn</p>
+                                    <p class="text-xs text-gray-400">3 hours ago</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Hiring Workflow -->
+                        <div class="glass-effect rounded-2xl p-6">
+                    <h3 class="text-xl font-bold mb-6 text-white">Current Hiring Workflow</h3>
+                    <div class="space-y-4">
+                        <div class="workflow-step completed">
+                            <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-4">
+                                <i class="fas fa-check text-white text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-white">Job Description Created</h4>
+                                <p class="text-sm text-gray-400">Software Engineer - Full Stack Developer</p>
+                            </div>
+                            <span class="status-pill status-completed">Completed</span>
+                        </div>
+                        
+                        <div class="workflow-step completed">
+                            <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-4">
+                                <i class="fas fa-check text-white text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-white">Posted to LinkedIn</h4>
+                                <p class="text-sm text-gray-400">Published 2 days ago</p>
+                            </div>
+                            <span class="status-pill status-completed">Completed</span>
+                        </div>
+                        
+                        <div class="workflow-step current">
+                            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center mr-4">
+                                <i class="fas fa-users text-white text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-white">Candidate Screening</h4>
+                                <p class="text-sm text-gray-400">247 applications received</p>
+                            </div>
+                            <span class="status-pill status-current">In Progress</span>
+                        </div>
+                        
+                        <div class="workflow-step">
+                            <div class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center mr-4">
+                                <i class="fas fa-calendar-alt text-white text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-white">Interview Scheduling</h4>
+                                <p class="text-sm text-gray-400">Waiting for top candidates</p>
+                            </div>
+                            <span class="status-pill status-pending">Pending</span>
+                        </div>
+                        
+                        <div class="workflow-step">
+                            <div class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center mr-4">
+                                <i class="fas fa-handshake text-white text-sm"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-white">Final Decision</h4>
+                                <p class="text-sm text-gray-400">Awaiting interview results</p>
+                            </div>
+                            <span class="status-pill status-pending">Pending</span>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <script>
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = '/logout';
+            }
+        }
+        
+        // Add mobile menu toggle functionality
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('open');
+        }
+        
+        // Add mobile menu button for small screens
+        if (window.innerWidth <= 768) {
+            const header = document.querySelector('header');
+            const menuButton = document.createElement('button');
+            menuButton.innerHTML = '<i class="fas fa-bars"></i>';
+            menuButton.className = 'md:hidden p-2 rounded-lg bg-gray-700 text-white';
+            menuButton.onclick = toggleSidebar;
+            header.querySelector('.flex').prepend(menuButton);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Interview Demo - HireFast</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .demo-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen py-8">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold mb-4 text-white">
+                    <i class="fas fa-robot text-blue-400"></i>
+                    AI Interview Demo
+                </h1>
+                <p class="text-xl text-gray-300">
+                    Test the AI interviewer functionality
+                </p>
+            </div>
+            
+            <!-- Demo Form -->
+            <div class="demo-card p-8 mb-8 fade-in">
+                <h2 class="text-2xl font-bold mb-6 text-white">Create Test Interview</h2>
+                
+                <form id="demoForm" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">
+                                Candidate Name
+                            </label>
+                            <input type="text" id="candidateName" 
+                                   class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
+                                   placeholder="John Doe" required style="color: #f8fafc !important;">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">
+                                Candidate Email
+                            </label>
+                            <input type="email" id="candidateEmail" 
+                                   class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
+                                   placeholder="john@example.com" required style="color: #f8fafc !important;">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">
+                                Job Role
+                            </label>
+                            <select id="jobRole" 
+                                    class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-400" style="color: #f8fafc !important;">
+                                <option value="Software Engineer">Software Engineer</option>
+                                <option value="Data Scientist">Data Scientist</option>
+                                <option value="Product Manager">Product Manager</option>
+                                <option value="UX Designer">UX Designer</option>
+                                <option value="DevOps Engineer">DevOps Engineer</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">
+                                Resume File ID (Optional)
+                            </label>
+                            <input type="text" id="resumeFileId" 
+                                   class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400"
+                                   placeholder="Google Drive file ID" style="color: #f8fafc !important;">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">
+                            Sample Resume Text (Optional)
+                        </label>
+                            <textarea id="resumeText" 
+                                      class="w-full p-3 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 resize-none"
+                                      rows="4"
+                                      placeholder="Enter sample resume text here for testing..." style="color: #f8fafc !important;"></textarea>
+                    </div>
+                    
+                    <div class="flex gap-4">
+                        <button type="submit" id="createInterviewBtn" class="btn-primary">
+                            <i class="fas fa-plus mr-2"></i>
+                            Create AI Interview
+                        </button>
+                        <button type="button" id="viewAllInterviewsBtn" class="btn-secondary">
+                            <i class="fas fa-list mr-2"></i>
+                            View All Interviews
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Results Section -->
+            <div id="resultsSection" class="demo-card p-8 fade-in" style="display: none;">
+                <h3 class="text-2xl font-bold mb-6 text-white">Interview Created!</h3>
+                <div id="resultsContent"></div>
+            </div>
+            
+            <!-- All Interviews Section -->
+            <div id="allInterviewsSection" class="demo-card p-8 fade-in" style="display: none;">
+                <h3 class="text-2xl font-bold mb-6 text-white">All AI Interviews</h3>
+                <div id="allInterviewsContent"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // DOM elements
+        const demoForm = document.getElementById('demoForm');
+        const createInterviewBtn = document.getElementById('createInterviewBtn');
+        const viewAllInterviewsBtn = document.getElementById('viewAllInterviewsBtn');
+        const resultsSection = document.getElementById('resultsSection');
+        const resultsContent = document.getElementById('resultsContent');
+        const allInterviewsSection = document.getElementById('allInterviewsSection');
+        const allInterviewsContent = document.getElementById('allInterviewsContent');
+        
+        // Event listeners
+        demoForm.addEventListener('submit', createInterview);
+        viewAllInterviewsBtn.addEventListener('click', viewAllInterviews);
+        
+        // Functions
+        async function createInterview(e) {
+            e.preventDefault();
+            
+            const candidateName = document.getElementById('candidateName').value;
+            const candidateEmail = document.getElementById('candidateEmail').value;
+            const jobRole = document.getElementById('jobRole').value;
+            const resumeFileId = document.getElementById('resumeFileId').value;
+            const resumeText = document.getElementById('resumeText').value;
+            
+            try {
+                showLoading(createInterviewBtn);
+                
+                const response = await fetch('/create-ai-interview', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        candidate_name: candidateName,
+                        candidate_email: candidateEmail,
+                        job_role: jobRole,
+                        resume_file_id: resumeFileId,
+                        candidate_id: candidateEmail
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    hideLoading(createInterviewBtn);
+                    showResults(data);
+                } else {
+                    showError(data.error);
+                    hideLoading(createInterviewBtn);
+                }
+            } catch (error) {
+                showError('Failed to create interview: ' + error.message);
+                hideLoading(createInterviewBtn);
+            }
+        }
+        
+        async function viewAllInterviews() {
+            try {
+                showLoading(viewAllInterviewsBtn);
+                
+                const response = await fetch('/api/ai-interview/all');
+                const data = await response.json();
+                
+                if (data.success) {
+                    hideLoading(viewAllInterviewsBtn);
+                    showAllInterviews(data.interviews);
+                } else {
+                    showError(data.error);
+                    hideLoading(viewAllInterviewsBtn);
+                }
+            } catch (error) {
+                showError('Failed to load interviews: ' + error.message);
+                hideLoading(viewAllInterviewsBtn);
+            }
+        }
+        
+        function showResults(data) {
+            resultsContent.innerHTML = `
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-check-circle text-green-400"></i>
+                        <span class="text-gray-300">${data.message}</span>
+                    </div>
+                    
+                    <div class="bg-gray-800 p-4 rounded-lg">
+                        <h4 class="font-semibold text-white mb-2">Interview Details:</h4>
+                        <div class="space-y-2 text-sm">
+                            <div><strong>Candidate:</strong> ${data.interview.candidate_name}</div>
+                            <div><strong>Email:</strong> ${data.interview.candidate_email}</div>
+                            <div><strong>Position:</strong> ${data.interview.job_role}</div>
+                            <div><strong>Status:</strong> <span class="text-yellow-400">${data.interview.status}</span></div>
+                            <div><strong>Interview ID:</strong> <code class="bg-gray-700 px-2 py-1 rounded">${data.interview.id}</code></div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-4">
+                        <a href="${data.interview_link}" target="_blank" class="btn-primary">
+                            <i class="fas fa-external-link-alt mr-2"></i>
+                            Open Interview
+                        </a>
+                        <button onclick="copyToClipboard('${data.interview_link}')" class="btn-secondary">
+                            <i class="fas fa-copy mr-2"></i>
+                            Copy Link
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            resultsSection.style.display = 'block';
+            allInterviewsSection.style.display = 'none';
+        }
+        
+        function showAllInterviews(interviews) {
+            if (interviews.length === 0) {
+                allInterviewsContent.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fas fa-inbox text-4xl text-gray-400 mb-4"></i>
+                        <p class="text-gray-300">No interviews found. Create one above!</p>
+                    </div>
+                `;
+            } else {
+                allInterviewsContent.innerHTML = `
+                    <div class="space-y-4">
+                        ${interviews.map(interview => `
+                            <div class="bg-gray-800 p-4 rounded-lg">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <h4 class="font-semibold text-white">${interview.candidate_name}</h4>
+                                        <p class="text-gray-300 text-sm">${interview.candidate_email}</p>
+                                        <p class="text-gray-400 text-sm">${interview.job_role}</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                                            interview.status === 'completed' ? 'bg-green-900 text-green-300' :
+                                            interview.status === 'in_progress' ? 'bg-blue-900 text-blue-300' :
+                                            'bg-yellow-900 text-yellow-300'
+                                        }">
+                                            ${interview.status.replace('_', ' ').toUpperCase()}
+                                        </span>
+                                        ${interview.overall_score ? `
+                                            <div class="mt-2">
+                                                <span class="text-sm text-gray-300">Score: </span>
+                                                <span class="font-bold text-white">${interview.overall_score}/10</span>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                                <div class="mt-3 flex gap-2">
+                                    <a href="${interview.interview_link}" target="_blank" class="btn-primary text-sm px-3 py-1">
+                                        <i class="fas fa-external-link-alt mr-1"></i>
+                                        View
+                                    </a>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            allInterviewsSection.style.display = 'block';
+            resultsSection.style.display = 'none';
+        }
+        
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(window.location.origin + text).then(() => {
+                alert('Interview link copied to clipboard!');
+            });
+        }
+        
+        function showLoading(button) {
+            button.disabled = true;
+            button.innerHTML = '<div class="loading-spinner"></div>';
+        }
+        
+        function hideLoading(button) {
+            button.disabled = false;
+            if (button.id === 'createInterviewBtn') {
+                button.innerHTML = '<i class="fas fa-plus mr-2"></i>Create AI Interview';
+            } else if (button.id === 'viewAllInterviewsBtn') {
+                button.innerHTML = '<i class="fas fa-list mr-2"></i>View All Interviews';
+            }
+        }
+        
+        function showError(message) {
+            alert('Error: ' + message);
+        }
+    </script>
+</body>
+</html>

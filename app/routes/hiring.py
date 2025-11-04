@@ -54,7 +54,7 @@ def approve_jd_api():
 
 @hiring_bp.route('/post-jd', methods=['POST'])
 def post_jd_api():
-    """Post job description to LinkedIn."""
+    """Post job description to LinkedIn and store it for candidate matching."""
     data = request.get_json()
     if not data or 'role' not in data or 'job_description' not in data:
         return jsonify({'error': 'Role and job_description are required'}), 400
@@ -69,7 +69,35 @@ def post_jd_api():
         data.get('job_description')
     )
     
+    # Store the JD in session for later use in candidate matching
+    if result.get('post_status') == 'success':
+        session['last_posted_jd'] = data.get('job_description')
+        session['last_posted_role'] = data.get('role')
+        session.permanent = True
+    
     return jsonify(result)
+
+@hiring_bp.route('/get-latest-jd')
+def get_latest_jd_api():
+    """Get the latest posted job description from session."""
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'User not authenticated'}), 401
+    
+    latest_jd = session.get('last_posted_jd')
+    latest_role = session.get('last_posted_role')
+    
+    if not latest_jd:
+        return jsonify({
+            'error': 'No job description found. Please post a job first.',
+            'has_jd': False
+        }), 404
+    
+    return jsonify({
+        'job_description': latest_jd,
+        'role': latest_role,
+        'has_jd': True
+    })
 
 @hiring_bp.route('/fetch-applications')
 def fetch_applications_api():

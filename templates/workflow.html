@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hiring Workflow - HireFast</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .workflow-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .workflow-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-4px);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .step-completed {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+        
+        .step-current {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+        }
+        
+        .step-pending {
+            background: rgba(255, 255, 255, 0.1);
+            color: #9ca3af;
+        }
+        
+        .workflow-step {
+            position: relative;
+            padding: 2rem;
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .workflow-step::after {
+            content: '';
+            position: absolute;
+            bottom: -1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 2rem;
+            background: linear-gradient(to bottom, rgba(102, 126, 234, 0.5), transparent);
+        }
+        
+        .workflow-step:last-child::after {
+            display: none;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .input-field {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            color: #f8fafc;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .input-field::placeholder {
+            color: #9ca3af;
+        }
+        
+        .textarea-field {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            color: #f8fafc;
+            width: 100%;
+            min-height: 120px;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+        
+        .textarea-field:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .textarea-field::placeholder {
+            color: #9ca3af;
+        }
+        
+        .select-field {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            color: #f8fafc;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+        
+        .select-field:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .select-field option {
+            background: #1e293b;
+            color: #f8fafc;
+        }
+    </style>
+</head>
+<body>
+    <div class="min-h-screen py-8">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-bold mb-4 text-white">
+                    <i class="fas fa-sitemap text-blue-400"></i>
+                    Hiring Workflow
+                </h1>
+                <p class="text-xl text-gray-300">
+                    Complete end-to-end hiring process with AI automation
+                </p>
+            </div>
+            
+            <!-- Workflow Steps -->
+            <div class="space-y-8">
+                <!-- Step 1: Job Description -->
+                <div class="workflow-card workflow-step step-current fade-in">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-xl">
+                            1
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-white">Create Job Description</h2>
+                            <p class="text-gray-300">Generate AI-powered job descriptions for your role</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">
+                                Job Role
+                            </label>
+                            <input type="text" id="jobRole" class="input-field" 
+                                   placeholder="e.g., Software Engineer, Data Scientist">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">
+                                Company Name
+                            </label>
+                            <input type="text" id="companyName" class="input-field" 
+                                   placeholder="Your Company Name">
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <button id="generateJD" class="btn-primary">
+                            <i class="fas fa-magic"></i>
+                            Generate Job Description
+                        </button>
+                    </div>
+                    
+                    <div id="jdResult" class="mt-6 hidden">
+                        <h3 class="text-lg font-semibold text-white mb-3">Generated Job Description:</h3>
+                        <div class="bg-gray-800 p-4 rounded-lg">
+                            <p id="jdText" class="text-gray-300"></p>
+                        </div>
+                        <div class="mt-4 flex gap-4">
+                            <button id="approveJD" class="btn-primary">
+                                <i class="fas fa-check"></i>
+                                Approve & Continue
+                            </button>
+                            <button id="regenerateJD" class="btn-secondary">
+                                <i class="fas fa-redo"></i>
+                                Regenerate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Step 2: Post to LinkedIn -->
+                <div class="workflow-card workflow-step step-pending fade-in">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 rounded-full bg-gray-500 flex items-center justify-center text-white font-bold text-xl">
+                            2
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-white">Post to LinkedIn</h2>
+                            <p class="text-gray-300">Share your job posting on LinkedIn</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-800 p-4 rounded-lg mb-4">
+                        <p class="text-gray-300">Connect your LinkedIn account to post job descriptions automatically.</p>
+                    </div>
+                    
+                    <div class="flex gap-4">
+                        <button id="connectLinkedIn" class="btn-primary">
+                            <i class="fab fa-linkedin"></i>
+                            Connect LinkedIn
+                        </button>
+                        <button id="postToLinkedIn" class="btn-secondary" disabled>
+                            <i class="fas fa-share"></i>
+                            Post Job Description
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Step 3: Screen Candidates -->
+                <div class="workflow-card workflow-step step-pending fade-in">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 rounded-full bg-gray-500 flex items-center justify-center text-white font-bold text-xl">
+                            3
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-white">Screen Candidates</h2>
+                            <p class="text-gray-300">AI-powered resume screening and candidate selection</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-800 p-4 rounded-lg mb-4">
+                        <p class="text-gray-300">Automatically analyze resumes and rank candidates based on job requirements.</p>
+                    </div>
+                    
+                    <div class="flex gap-4">
+                        <button id="fetchApplications" class="btn-primary">
+                            <i class="fas fa-download"></i>
+                            Fetch Applications
+                        </button>
+                        <button id="screenCandidates" class="btn-secondary" disabled>
+                            <i class="fas fa-filter"></i>
+                            Screen Candidates
+                        </button>
+                    </div>
+                    
+                    <div id="candidatesResult" class="mt-6 hidden">
+                        <h3 class="text-lg font-semibold text-white mb-3">Top Candidates:</h3>
+                        <div id="candidatesList" class="space-y-3"></div>
+                    </div>
+                </div>
+                
+                <!-- Step 4: AI Interview -->
+                <div class="workflow-card workflow-step step-pending fade-in">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 rounded-full bg-gray-500 flex items-center justify-center text-white font-bold text-xl">
+                            4
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-white">AI Interview</h2>
+                            <p class="text-gray-300">Conduct automated AI interviews with top candidates</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-800 p-4 rounded-lg mb-4">
+                        <p class="text-gray-300">Conduct AI interviews directly on the platform. Upload resumes and get personalized questions instantly.</p>
+                    </div>
+                    
+                    <div class="flex gap-4">
+                        <a href="/direct-ai-interview" class="btn-primary">
+                            <i class="fas fa-microphone"></i>
+                            Take AI Interview
+                        </a>
+                        <a href="/ai-interview-demo" class="btn-secondary">
+                            <i class="fas fa-play"></i>
+                            Try Demo
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Step 5: Schedule Final Interview -->
+                <div class="workflow-card workflow-step step-pending fade-in">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div class="w-12 h-12 rounded-full bg-gray-500 flex items-center justify-center text-white font-bold text-xl">
+                            5
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-white">Schedule Final Interview</h2>
+                            <p class="text-gray-300">Schedule in-person or video interviews with top candidates</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-800 p-4 rounded-lg mb-4">
+                        <p class="text-gray-300">Use Google Calendar integration to schedule final interviews.</p>
+                    </div>
+                    
+                    <div class="flex gap-4">
+                        <button id="connectCalendar" class="btn-primary">
+                            <i class="fas fa-calendar"></i>
+                            Connect Google Calendar
+                        </button>
+                        <button id="scheduleInterview" class="btn-secondary" disabled>
+                            <i class="fas fa-clock"></i>
+                            Schedule Interview
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Direct AI Interview Modal -->
+            <div id="directInterviewModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+                <div class="workflow-card p-8 max-w-2xl w-full mx-4">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-2xl font-bold text-white">Direct AI Interview</h3>
+                        <button id="closeModal" class="text-gray-400 hover:text-white">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">
+                                Your Name
+                            </label>
+                            <input type="text" id="candidateName" class="input-field" 
+                                   placeholder="Enter your name">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">
+                                Email Address
+                            </label>
+                            <input type="email" id="candidateEmail" class="input-field" 
+                                   placeholder="Enter your email">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">
+                                Job Position
+                            </label>
+                            <select id="interviewJobRole" class="select-field">
+                                <option value="Software Engineer">Software Engineer</option>
+                                <option value="Data Scientist">Data Scientist</option>
+                                <option value="Product Manager">Product Manager</option>
+                                <option value="UX Designer">UX Designer</option>
+                                <option value="DevOps Engineer">DevOps Engineer</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">
+                                Upload Resume (Optional)
+                            </label>
+                            <input type="file" id="resumeUpload" class="input-field" 
+                                   accept=".pdf,.doc,.docx">
+                            <p class="text-sm text-gray-400 mt-1">Upload your resume for personalized questions</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">
+                                Or Paste Resume Text
+                            </label>
+                            <textarea id="resumeText" class="textarea-field" 
+                                      placeholder="Paste your resume content here..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-4 mt-6">
+                        <button id="startDirectInterview" class="btn-primary">
+                            <i class="fas fa-play"></i>
+                            Start AI Interview
+                        </button>
+                        <button id="cancelDirectInterview" class="btn-secondary">
+                            <i class="fas fa-times"></i>
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Global variables
+        let currentStep = 1;
+        let generatedJD = '';
+        let selectedCandidates = [];
+        
+        // DOM elements
+        const generateJDBtn = document.getElementById('generateJD');
+        const jdResult = document.getElementById('jdResult');
+        const jdText = document.getElementById('jdText');
+        const approveJDBtn = document.getElementById('approveJD');
+        const regenerateJDBtn = document.getElementById('regenerateJD');
+        const directInterviewModal = document.getElementById('directInterviewModal');
+        const startDirectInterviewBtn = document.getElementById('startDirectInterview');
+        const closeModalBtn = document.getElementById('closeModal');
+        const cancelDirectInterviewBtn = document.getElementById('cancelDirectInterview');
+        
+        // Event listeners
+        generateJDBtn.addEventListener('click', generateJobDescription);
+        approveJDBtn.addEventListener('click', approveJobDescription);
+        regenerateJDBtn.addEventListener('click', generateJobDescription);
+        document.getElementById('directAIInterview').addEventListener('click', openDirectInterviewModal);
+        startDirectInterviewBtn.addEventListener('click', startDirectInterview);
+        closeModalBtn.addEventListener('click', closeDirectInterviewModal);
+        cancelDirectInterviewBtn.addEventListener('click', closeDirectInterviewModal);
+        
+        // Functions
+        async function generateJobDescription() {
+            const jobRole = document.getElementById('jobRole').value;
+            if (!jobRole) {
+                alert('Please enter a job role');
+                return;
+            }
+            
+            try {
+                showLoading(generateJDBtn);
+                
+                const response = await fetch('/generate-jd', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ role: jobRole })
+                });
+                
+                const data = await response.json();
+                
+                if (data.job_description) {
+                    generatedJD = data.job_description;
+                    jdText.textContent = generatedJD;
+                    jdResult.classList.remove('hidden');
+                    hideLoading(generateJDBtn);
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to generate job description'));
+                    hideLoading(generateJDBtn);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+                hideLoading(generateJDBtn);
+            }
+        }
+        
+        function approveJobDescription() {
+            if (!generatedJD) {
+                alert('Please generate a job description first');
+                return;
+            }
+            
+            // Move to next step
+            currentStep = 2;
+            updateWorkflowSteps();
+            
+            // Enable LinkedIn posting
+            document.getElementById('postToLinkedIn').disabled = false;
+        }
+        
+        function openDirectInterviewModal() {
+            directInterviewModal.classList.remove('hidden');
+            directInterviewModal.classList.add('flex');
+        }
+        
+        function closeDirectInterviewModal() {
+            directInterviewModal.classList.add('hidden');
+            directInterviewModal.classList.remove('flex');
+        }
+        
+        async function startDirectInterview() {
+            const candidateName = document.getElementById('candidateName').value;
+            const candidateEmail = document.getElementById('candidateEmail').value;
+            const jobRole = document.getElementById('interviewJobRole').value;
+            const resumeFile = document.getElementById('resumeUpload').files[0];
+            const resumeText = document.getElementById('resumeText').value;
+            
+            if (!candidateName || !candidateEmail) {
+                alert('Please fill in your name and email');
+                return;
+            }
+            
+            try {
+                showLoading(startDirectInterviewBtn);
+                
+                // Create AI interview
+                const response = await fetch('/create-ai-interview', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        candidate_name: candidateName,
+                        candidate_email: candidateEmail,
+                        job_role: jobRole,
+                        candidate_id: candidateEmail
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    // Redirect to interview
+                    window.location.href = data.interview_link;
+                } else {
+                    alert('Error: ' + data.error);
+                    hideLoading(startDirectInterviewBtn);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+                hideLoading(startDirectInterviewBtn);
+            }
+        }
+        
+        function updateWorkflowSteps() {
+            const steps = document.querySelectorAll('.workflow-step');
+            steps.forEach((step, index) => {
+                const stepNumber = index + 1;
+                const stepCircle = step.querySelector('.w-12');
+                
+                if (stepNumber < currentStep) {
+                    step.classList.remove('step-current', 'step-pending');
+                    step.classList.add('step-completed');
+                    stepCircle.classList.remove('bg-gray-500', 'bg-blue-500');
+                    stepCircle.classList.add('bg-green-500');
+                } else if (stepNumber === currentStep) {
+                    step.classList.remove('step-completed', 'step-pending');
+                    step.classList.add('step-current');
+                    stepCircle.classList.remove('bg-gray-500', 'bg-green-500');
+                    stepCircle.classList.add('bg-blue-500');
+                } else {
+                    step.classList.remove('step-completed', 'step-current');
+                    step.classList.add('step-pending');
+                    stepCircle.classList.remove('bg-green-500', 'bg-blue-500');
+                    stepCircle.classList.add('bg-gray-500');
+                }
+            });
+        }
+        
+        function showLoading(button) {
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+        }
+        
+        function hideLoading(button) {
+            button.disabled = false;
+            if (button.id === 'generateJD') {
+                button.innerHTML = '<i class="fas fa-magic"></i> Generate Job Description';
+            } else if (button.id === 'startDirectInterview') {
+                button.innerHTML = '<i class="fas fa-play"></i> Start AI Interview';
+            }
+        }
+    </script>
+</body>
+</html>

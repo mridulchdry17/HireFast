@@ -59,6 +59,7 @@ const api = {
     }
 };
 
+
 // Initialize application
 document.addEventListener('DOMContentLoaded', function() {
     console.log('HireFast application loaded');

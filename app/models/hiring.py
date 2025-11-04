@@ -25,3 +25,6 @@ class Candidate(TypedDict):
     """Model for candidate with similarity score."""
     applicant: Applicant
     similarity_score: float
+    ai_interview_status: Optional[str]  # 'not_sent', 'sent', 'in_progress', 'completed'
+    ai_interview_score: Optional[float]
+    ai_interview_link: Optional[str]
