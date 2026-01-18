@@ -1,5 +1,7 @@
 # HireFast - AI-Powered HR Automation Platform
 
+🔗 Demo Video: https://www.loom.com/share/50cbd33284db4b2b91b11dbb0357df43
+
 A modern, structured Flask application that automates the hiring process using AI for job description generation, candidate selection, and interview scheduling.
 
 ## 🏗️ Project Structure
@@ -228,3 +230,4 @@ If you're migrating from the old monolithic structure:
 4. Test all functionality to ensure everything works
 
 The new structure provides better maintainability, testability, and scalability while preserving all existing functionality.
+
