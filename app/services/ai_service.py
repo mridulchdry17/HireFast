@@ -3,7 +3,7 @@ AI and LLM service for job description generation.
 """
 import os
 from langchain_groq import ChatGroq
-from langchain.prompts import PromptTemplate
+from langchain_core.prompts import PromptTemplate
 from app.config import Config
 
 class AIService:

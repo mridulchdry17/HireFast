@@ -6,7 +6,7 @@ from typing import TypedDict, Optional
 from langchain_groq import ChatGroq
 import secrets
 import requests
-from langchain.prompts import PromptTemplate
+from langchain_core.prompts import PromptTemplate
 import re
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
