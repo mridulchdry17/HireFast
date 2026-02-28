@@ -69,3 +69,52 @@ Role: {{role}}
             return {'role': role, 'job_description': jd.content}
         except Exception as e:
             return {'post_status': 'error', 'error': f'JD generation failed: {str(e)}'}
+
+    def summarize_and_score_resume(self, resume_text: str, job_description: str) -> dict:
+        """
+        Analyze a resume against a job description.
+        
+        Args:
+            resume_text: Text extracted from resume
+            job_description: Job description to match against
+            
+        Returns:
+            Dictionary with score and short summary
+        """
+        template = """
+        You are an expert technical recruiter. Analyze the following candidate's resume against the provided job description.
+        
+        Job Description:
+        {jd}
+        
+        Resume Content:
+        {resume}
+        
+        Tasks:
+        1. Calculate a match percentage (0.0 to 1.0) based on skills, experience, and role requirements.
+        2. Provide a 1-sentence summary of why they are or aren't a good fit.
+        
+        Return the result in this exact JSON format:
+        {{"score": 0.85, "summary": "Candidate has strong Python experience but lacks the required Cloud certification."}}
+        
+        JSON Result:
+        """
+        
+        prompt = template.format(jd=job_description, resume=resume_text)
+        
+        try:
+            import json
+            response = self.llm.invoke(prompt)
+            # Try to find JSON in the response
+            content = response.content.strip()
+            if "{" in content and "}" in content:
+                json_part = content[content.find("{"):content.rfind("}")+1]
+                data = json.loads(json_part)
+                return {
+                    'score': float(data.get('score', 0.0)),
+                    'summary': data.get('summary', 'Analysis completed.')
+                }
+            return {'score': 0.0, 'summary': 'Could not parse AI response.'}
+        except Exception as e:
+            print(f"AI Scoring error: {e}")
+            return {'score': 0.0, 'summary': f'Error during analysis: {str(e)}'}

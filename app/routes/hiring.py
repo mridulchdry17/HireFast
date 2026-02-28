@@ -5,6 +5,7 @@ from flask import Blueprint, request, jsonify, session, send_file
 import io
 from app.services.ai_service import AIService
 from app.services.linkedin_service import LinkedInService
+from app.services.job_service import JobService
 from app.services.google_service import GoogleService
 from app.services.resume_service import ResumeService
 from app.models.hiring import HRHiringState
@@ -33,8 +34,23 @@ def generate_jd_api():
         employment_type=data.get('employment_type'),
         additional_requirements=data.get('additional_requirements')
     )
+    
     if result.get('post_status') == 'error':
         return jsonify(result), 500
+        
+    # Save the generated JD using JobService
+    try:
+        new_job = JobService.create_job(
+            role=data.get('role'),
+            company_name=data.get('company_name'),
+            location=data.get('location'),
+            employment_type=data.get('employment_type'),
+            job_description=result.get('job_description')
+        )
+        result['job_id'] = new_job.id
+    except Exception as e:
+        print(f"Error saving JD to database: {e}")
+        
     return jsonify(result)
 
 @hiring_bp.route('/approve-jd', methods=['POST'])
@@ -60,6 +76,19 @@ def approve_jd_api():
     
     if result.get('post_status') == 'error':
         return jsonify(result), 500
+        
+    # If regenerated, use JobService
+    if not approval:
+        try:
+            new_job = JobService.create_job(
+                role=role,
+                company_name=data.get('company_name'),
+                job_description=result.get('job_description')
+            )
+            result['job_id'] = new_job.id
+        except Exception as e:
+            print(f"Error saving JD to database: {e}")
+            
     return jsonify(result)
 
 @hiring_bp.route('/post-jd', methods=['POST'])
@@ -76,7 +105,8 @@ def post_jd_api():
     result = linkedin_service.post_job_description(
         user_id,
         data.get('role'),
-        data.get('job_description')
+        data.get('job_description'),
+        job_id=data.get('job_id')
     )
     
     # Store the JD in session for later use in candidate matching
@@ -113,11 +143,24 @@ def get_latest_jd_api():
 
 @hiring_bp.route('/fetch-applications')
 def fetch_applications_api():
-    """Fetch applications from Google Sheet."""
+    """Fetch applications from both Google Sheet and Internal DB."""
     try:
-        applicants = google_service.fetch_applications()
-        return jsonify({'applicants': applicants})
+        # 1. Fetch from Internal DB (Clean Architecture)
+        internal_applicants = JobService.get_all_applications()
+        
+        # 2. Fetch from Google Sheet (Legacy)
+        try:
+            google_applicants = google_service.fetch_applications()
+        except Exception as e:
+            print(f"Warning: Failed to fetch Google applicants: {e}")
+            google_applicants = []
+            
+        # 3. Merge them
+        all_applicants = internal_applicants + google_applicants
+        
+        return jsonify({'applicants': all_applicants})
     except Exception as e:
+        print(f"Error fetching all applications: {e}")
         return jsonify({'error': f'Failed to fetch applications: {str(e)}'}), 500
 
 @hiring_bp.route('/select-best-resumes', methods=['POST'])

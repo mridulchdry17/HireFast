@@ -50,7 +50,7 @@ class LinkedInService:
         except Exception as e:
             return {'error': f'Profile request failed: {str(e)}'}
     
-    def post_job_description(self, user_id: str, role: str, job_description: str) -> Dict:
+    def post_job_description(self, user_id: str, role: str, job_description: str, job_id: str = None) -> Dict:
         """
         Post job description to LinkedIn.
         
@@ -58,6 +58,7 @@ class LinkedInService:
             user_id: User ID
             role: Job role
             job_description: Job description text
+            job_id: ID of the job posting in our database
             
         Returns:
             Dictionary with post status and IDs
@@ -65,8 +66,12 @@ class LinkedInService:
         if user_id not in self.user_tokens:
             return {'post_status': 'error', 'error': 'User not authenticated'}
         
-        # Append the application link
-        form_link = get_form_link_for_role(role)
+        # Determine the application link: Internal Portal first, then Google Form fallback
+        if job_id:
+            form_link = f"http://127.0.0.1:5000/apply/{job_id}"
+        else:
+            form_link = get_form_link_for_role(role)
+            
         jd_with_link = f"{job_description.strip()}\n\nApply here: {form_link}"
         
         # Split into chunks

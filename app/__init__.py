@@ -3,7 +3,8 @@ Flask application factory for HireFast.
 """
 from flask import Flask, render_template, jsonify, request
 from app.config import config
-from app.routes import auth_bp, hiring_bp, calendar_bp, ai_interview_bp
+from app.routes import auth_bp, hiring_bp, calendar_bp, ai_interview_bp, candidate_portal_bp
+from app.models.db_models import db
 import os
 
 def create_app(config_name='default'):
@@ -21,11 +22,21 @@ def create_app(config_name='default'):
                 static_folder=os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static'))
     app.config.from_object(config[config_name])
     
+    # Initialize DB
+    db.init_app(app)
+    
+    # Create upload and db folders
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    
+    with app.app_context():
+        db.create_all()
+    
     # Register blueprints
     app.register_blueprint(auth_bp)
     app.register_blueprint(hiring_bp)
     app.register_blueprint(calendar_bp)
     app.register_blueprint(ai_interview_bp)
+    app.register_blueprint(candidate_portal_bp)
     
     # Main routes
     @app.route('/')

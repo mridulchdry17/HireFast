@@ -13,6 +13,16 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or os.urandom(24)
     DEBUG = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
     
+    # Database settings
+    BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+        f"sqlite:///{os.path.join(BASE_DIR, 'hirefast.db')}"
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    
+    # Storage settings
+    UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
+    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB limit
+    
     # LinkedIn OAuth 2.0 settings
     LINKEDIN_CLIENT_ID = os.environ.get("LINKEDIN_CLIENT_ID")
     LINKEDIN_CLIENT_SECRET = os.environ.get("LINKEDIN_CLIENT_SECRET")

@@ -10,6 +10,7 @@ google-auth-httplib2
 google-api-python-client
 requests
 scikit-learn
+flask-sqlalchemy
 PyPDF2
 groq
 sounddevice
