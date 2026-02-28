@@ -518,7 +518,11 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        role: jobTitle
+                        role: jobTitle,
+                        company_name: companyName,
+                        location: document.getElementById('location').value,
+                        employment_type: document.getElementById('employmentType').value,
+                        additional_requirements: document.getElementById('additionalRequirements').value
                     })
                 });
                 

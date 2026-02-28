@@ -5,38 +5,19 @@ import re
 from typing import List, Optional
 from app.config import Config
 
-def split_text_for_post(text: str, max_length: int = 1300) -> List[str]:
+def split_text_for_post(text: str, max_length: int = 3000) -> List[str]:
     """
-    Split text into chunks suitable for LinkedIn posts.
-    
-    Args:
-        text: Text to split
-        max_length: Maximum length per chunk
-        
-    Returns:
-        List of text chunks
+    Ensure the text is suitable for a single LinkedIn post while preserving formatting.
+    LinkedIn standard posts allow up to 3000 characters.
     """
-    text = re.sub(r'\*\*|\*', '', text)  # Remove Markdown
-    text = re.sub(r'\n+', ' ', text)  # Replace newlines with spaces
-    words = text.split()
-    chunks = []
-    current = ''
+    # Remove Markdown bold/italics
+    text = re.sub(r'\*\*|\*', '', text)
     
-    for word in words:
-        if len(current) + len(word) + 1 <= max_length:
-            current += (' ' if current else '') + word
-        else:
-            if current:
-                chunks.append(current)
-            current = word
+    # Trim to max_length to ensure it fits in one post if necessary
+    if len(text) > max_length:
+        text = text[:max_length-3] + "..."
     
-    if current:
-        chunks.append(current)
-    
-    for idx, chunk in enumerate(chunks):
-        print(f"Chunk {idx+1} length: {len(chunk)}")
-    
-    return chunks
+    return [text]
 
 def get_form_link_for_role(role: str) -> str:
     """

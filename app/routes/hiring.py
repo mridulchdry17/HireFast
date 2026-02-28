@@ -26,7 +26,15 @@ def generate_jd_api():
     if not data or 'role' not in data:
         return jsonify({'error': 'Role is required'}), 400
     
-    result = ai_service.generate_job_description(data.get('role'))
+    result = ai_service.generate_job_description(
+        role=data.get('role'),
+        company_name=data.get('company_name'),
+        location=data.get('location'),
+        employment_type=data.get('employment_type'),
+        additional_requirements=data.get('additional_requirements')
+    )
+    if result.get('post_status') == 'error':
+        return jsonify(result), 500
     return jsonify(result)
 
 @hiring_bp.route('/approve-jd', methods=['POST'])
@@ -50,6 +58,8 @@ def approve_jd_api():
             'approval': approval
         }
     
+    if result.get('post_status') == 'error':
+        return jsonify(result), 500
     return jsonify(result)
 
 @hiring_bp.route('/post-jd', methods=['POST'])
@@ -75,6 +85,8 @@ def post_jd_api():
         session['last_posted_role'] = data.get('role')
         session.permanent = True
     
+    if result.get('post_status') == 'error':
+        return jsonify(result), 500
     return jsonify(result)
 
 @hiring_bp.route('/get-latest-jd')
