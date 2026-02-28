@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,42 +10,42 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
             color: #f8fafc;
             min-height: 100vh;
         }
-        
+
         .gradient-text {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        
+
         .glass-effect {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        
+
         .card-hover {
             transition: all 0.3s ease;
         }
-        
+
         .card-hover:hover {
             transform: translateY(-4px);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
-        
+
         .btn-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -59,12 +60,12 @@
             border: none;
             cursor: pointer;
         }
-        
+
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
         }
-        
+
         .btn-secondary {
             background: rgba(255, 255, 255, 0.1);
             color: white;
@@ -79,18 +80,18 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             cursor: pointer;
         }
-        
+
         .btn-secondary:hover {
             background: rgba(255, 255, 255, 0.2);
             transform: translateY(-2px);
         }
-        
+
         .sidebar {
             background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(20px);
             border-right: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
+
         .nav-item {
             display: flex;
             align-items: center;
@@ -101,17 +102,17 @@
             text-decoration: none;
             transition: all 0.3s ease;
         }
-        
+
         .nav-item:hover {
             background: rgba(255, 255, 255, 0.1);
             color: white;
         }
-        
+
         .nav-item.active {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
-        
+
         .candidate-card {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(20px);
@@ -124,14 +125,14 @@
             flex-direction: column;
             min-height: 320px;
         }
-        
+
         .candidate-card:hover {
             background: rgba(255, 255, 255, 0.1);
             transform: translateY(-4px);
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
             border-color: rgba(102, 126, 234, 0.3);
         }
-        
+
         .candidate-avatar {
             width: 70px;
             height: 70px;
@@ -145,7 +146,7 @@
             font-size: 1.75rem;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
-        
+
         .match-score {
             background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%);
             color: white;
@@ -156,7 +157,7 @@
             box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
             white-space: nowrap;
         }
-        
+
         .status-badge {
             padding: 0.25rem 0.75rem;
             border-radius: 9999px;
@@ -164,32 +165,32 @@
             font-weight: 600;
             text-transform: uppercase;
         }
-        
+
         .status-new {
             background: #3b82f6;
             color: white;
         }
-        
+
         .status-reviewed {
             background: #8b5cf6;
             color: white;
         }
-        
+
         .status-interviewed {
             background: #f59e0b;
             color: white;
         }
-        
+
         .status-hired {
             background: #10b981;
             color: white;
         }
-        
+
         .status-rejected {
             background: #ef4444;
             color: white;
         }
-        
+
         .loading-spinner {
             display: inline-block;
             width: 20px;
@@ -199,20 +200,29 @@
             border-top-color: white;
             animation: spin 1s ease-in-out infinite;
         }
-        
+
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
-        
+
         .fade-in {
             animation: fadeIn 0.5s ease-in;
         }
-        
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        
+
         .modal {
             position: fixed;
             top: 0;
@@ -225,7 +235,7 @@
             justify-content: center;
             z-index: 1000;
         }
-        
+
         .modal-content {
             background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(20px);
@@ -236,7 +246,7 @@
             max-height: 90vh;
             overflow-y: auto;
         }
-        
+
         .resume-viewer {
             width: 100%;
             min-height: 600px;
@@ -244,7 +254,7 @@
             border-radius: 0.75rem;
             background: #f8fafc;
         }
-        
+
         @media (max-width: 768px) {
             .sidebar {
                 position: fixed;
@@ -255,17 +265,18 @@
                 z-index: 1000;
                 transition: left 0.3s ease;
             }
-            
+
             .sidebar.open {
                 left: 0;
             }
-            
+
             .main-content {
                 margin-left: 0;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="flex h-screen">
         <!-- Sidebar -->
@@ -274,7 +285,7 @@
                 <h1 class="text-2xl font-bold gradient-text">HireFast</h1>
                 <p class="text-sm text-gray-400 mt-1">AI-Powered HR Automation</p>
             </div>
-            
+
             <nav class="space-y-2">
                 <a href="/dashboard" class="nav-item">
                     <i class="fas fa-tachometer-alt w-5 mr-3"></i>
@@ -292,6 +303,10 @@
                     <i class="fas fa-calendar-alt w-5 mr-3"></i>
                     Schedule Interviews
                 </a>
+                <a href="/connect-calendar" class="nav-item">
+                    <i class="fas fa-calendar-check w-5 mr-3"></i>
+                    Connect Calendar
+                </a>
                 <a href="/analytics" class="nav-item">
                     <i class="fas fa-chart-line w-5 mr-3"></i>
                     Analytics
@@ -301,10 +316,11 @@
                     Settings
                 </a>
             </nav>
-            
+
             <div class="mt-auto pt-6">
                 <div class="flex items-center mb-4">
-                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-3">
+                    <div
+                        class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-3">
                         <span class="text-white font-bold text-sm">JD</span>
                     </div>
                     <div>
@@ -318,7 +334,7 @@
                 </button>
             </div>
         </div>
-        
+
         <!-- Main Content -->
         <div class="flex-1 flex flex-col overflow-hidden">
             <!-- Header -->
@@ -326,7 +342,8 @@
                 <div class="flex justify-between items-center">
                     <div>
                         <h2 class="text-3xl font-bold text-white">Candidates</h2>
-                        <p class="text-gray-400 mt-1">Automatically ranked by match score using your latest LinkedIn job post</p>
+                        <p class="text-gray-400 mt-1">Automatically ranked by match score using your latest LinkedIn job
+                            post</p>
                     </div>
                     <div class="flex items-center space-x-4">
                         <button id="refreshBtn" class="btn-secondary">
@@ -336,19 +353,21 @@
                     </div>
                 </div>
             </header>
-            
+
             <!-- Content -->
             <main class="flex-1 overflow-y-auto p-6">
                 <!-- Job Description Info & Auto-Analysis Status -->
                 <div id="jdInfoCard" class="glass-effect rounded-2xl p-6 mb-6">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center space-x-4">
-                            <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                            <div
+                                class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
                                 <i class="fas fa-file-alt text-white text-xl"></i>
                             </div>
                             <div>
                                 <h3 class="text-lg font-bold text-white">Auto-Ranking Candidates</h3>
-                                <p id="jdStatus" class="text-sm text-gray-400">Using latest posted job description from LinkedIn...</p>
+                                <p id="jdStatus" class="text-sm text-gray-400">Using latest posted job description from
+                                    LinkedIn...</p>
                             </div>
                         </div>
                         <div id="analyzingStatus" class="hidden">
@@ -363,13 +382,14 @@
                         </button>
                     </div>
                 </div>
-                
+
                 <!-- Filters -->
                 <div class="glass-effect rounded-2xl p-6 mb-6">
                     <div class="flex flex-wrap items-center gap-4">
                         <div class="flex items-center space-x-2">
                             <label class="text-sm font-medium text-gray-300">Filter by Status:</label>
-                            <select id="statusFilter" class="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white">
+                            <select id="statusFilter"
+                                class="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white">
                                 <option value="">All Statuses</option>
                                 <option value="new">New</option>
                                 <option value="reviewed">Reviewed</option>
@@ -380,19 +400,20 @@
                         </div>
                         <div class="flex items-center space-x-2">
                             <label class="text-sm font-medium text-gray-300">Sort by:</label>
-                            <select id="sortFilter" class="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white">
+                            <select id="sortFilter"
+                                class="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white">
                                 <option value="match">Match Score (High to Low)</option>
                                 <option value="name">Name</option>
                                 <option value="date">Application Date</option>
                             </select>
                         </div>
                         <div class="flex items-center space-x-2 flex-1">
-                            <input type="text" id="searchInput" placeholder="Search candidates..." 
-                                   class="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 flex-1">
+                            <input type="text" id="searchInput" placeholder="Search candidates..."
+                                class="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-400 flex-1">
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Resume Viewer Section (Inline, appears here when viewing resume) -->
                 <div id="resumeViewerSection" class="hidden glass-effect rounded-2xl p-6 mb-6">
                     <div class="flex justify-between items-center mb-6">
@@ -402,14 +423,15 @@
                         </button>
                     </div>
                     <div class="bg-gray-900 rounded-lg p-4 border border-gray-700">
-                        <iframe id="resumeFrame" class="resume-viewer w-full border-0 rounded-lg" style="height: 800px;" src=""></iframe>
+                        <iframe id="resumeFrame" class="resume-viewer w-full border-0 rounded-lg" style="height: 800px;"
+                            src=""></iframe>
                     </div>
                     <div id="resumeLoading" class="text-center py-8 text-gray-400 hidden">
                         <div class="loading-spinner mx-auto mb-4"></div>
                         <p>Loading resume...</p>
                     </div>
                 </div>
-                
+
                 <!-- Schedule Interview Section (Inline, appears here when needed) -->
                 <div id="scheduleSection" class="hidden glass-effect rounded-2xl p-6 mb-6">
                     <div class="flex justify-between items-center mb-6">
@@ -440,8 +462,10 @@
                             </div>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium mb-2 text-gray-300">Interviewer Email (Optional)</label>
-                            <input type="email" id="interviewerEmail" class="form-input" placeholder="interviewer@company.com">
+                            <label class="block text-sm font-medium mb-2 text-gray-300">Interviewer Email
+                                (Optional)</label>
+                            <input type="email" id="interviewerEmail" class="form-input"
+                                placeholder="interviewer@company.com">
                         </div>
                         <div class="flex space-x-4">
                             <button type="submit" class="btn-primary flex-1">
@@ -454,7 +478,7 @@
                         </div>
                     </form>
                 </div>
-                
+
                 <!-- Stats Summary -->
                 <div id="statsSummary" class="glass-effect rounded-2xl p-6 mb-6 hidden">
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -476,7 +500,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Candidates Grid -->
                 <div id="candidatesContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <!-- Loading state -->
@@ -485,7 +509,7 @@
                         <p class="text-gray-400">Loading candidates...</p>
                     </div>
                 </div>
-                
+
                 <!-- Empty state -->
                 <div id="emptyState" class="col-span-full text-center py-12 hidden">
                     <i class="fas fa-users text-6xl text-gray-600 mb-4"></i>
@@ -499,53 +523,52 @@
             </main>
         </div>
     </div>
-    
+
     <script>
         let candidates = [];
         let filteredCandidates = [];
-        
+
         function logout() {
             if (confirm('Are you sure you want to logout?')) {
                 window.location.href = '/logout';
             }
         }
-        
+
         function showMessage(message, type = 'info') {
             // Create a simple notification
             const notification = document.createElement('div');
-            notification.className = `fixed top-4 right-4 p-4 rounded-lg text-white z-50 ${
-                type === 'error' ? 'bg-red-600' : 
-                type === 'success' ? 'bg-green-600' : 
-                'bg-blue-600'
-            }`;
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg text-white z-50 ${type === 'error' ? 'bg-red-600' :
+                    type === 'success' ? 'bg-green-600' :
+                        'bg-blue-600'
+                }`;
             notification.textContent = message;
-            
+
             document.body.appendChild(notification);
-            
+
             setTimeout(() => {
                 notification.remove();
             }, 3000);
         }
-        
+
         function renderCandidates() {
             const container = document.getElementById('candidatesContainer');
             const loadingState = document.getElementById('loadingState');
             const emptyState = document.getElementById('emptyState');
-            
+
             if (!container) return;
-            
+
             if (filteredCandidates.length === 0) {
                 if (loadingState) loadingState.classList.add('hidden');
                 if (emptyState) emptyState.classList.remove('hidden');
                 return;
             }
-            
+
             if (loadingState) loadingState.classList.add('hidden');
             if (emptyState) emptyState.classList.add('hidden');
-            
+
             // Update stats
             updateStatsSummary();
-            
+
             container.innerHTML = filteredCandidates.map((candidate, index) => `
                 <div class="candidate-card card-hover fade-in">
                     <!-- Match Score Badge (Top Right) -->
@@ -609,31 +632,31 @@
                 </div>
             `).join('');
         }
-        
+
         function updateStatsSummary() {
             const statsSummary = document.getElementById('statsSummary');
             if (!statsSummary || filteredCandidates.length === 0) {
                 if (statsSummary) statsSummary.classList.add('hidden');
                 return;
             }
-            
+
             statsSummary.classList.remove('hidden');
-            
+
             const analyzed = filteredCandidates.filter(c => c.similarity_score !== null && c.similarity_score !== undefined);
             const scores = analyzed.map(c => c.similarity_score || 0);
-            
+
             const totalCountEl = document.getElementById('totalCandidatesCount');
             const analyzedCountEl = document.getElementById('analyzedCount');
             const bestMatchEl = document.getElementById('bestMatchScore');
             const avgMatchEl = document.getElementById('avgMatchScore');
-            
+
             if (totalCountEl) totalCountEl.textContent = filteredCandidates.length;
             if (analyzedCountEl) analyzedCountEl.textContent = analyzed.length;
-            
+
             if (scores.length > 0) {
                 const bestScore = Math.max(...scores);
                 const avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
-                
+
                 if (bestMatchEl) bestMatchEl.textContent = Math.round(bestScore * 100) + '%';
                 if (avgMatchEl) avgMatchEl.textContent = Math.round(avgScore * 100) + '%';
             } else {
@@ -641,26 +664,26 @@
                 if (avgMatchEl) avgMatchEl.textContent = 'N/A';
             }
         }
-        
+
         function filterCandidates() {
             const statusFilterEl = document.getElementById('statusFilter');
             const sortFilterEl = document.getElementById('sortFilter');
             const searchInputEl = document.getElementById('searchInput');
-            
+
             const statusFilter = statusFilterEl ? statusFilterEl.value : '';
             const sortFilter = sortFilterEl ? sortFilterEl.value : 'match';
             const searchInput = searchInputEl ? searchInputEl.value.toLowerCase() : '';
-            
+
             filteredCandidates = candidates.filter(candidate => {
                 const matchesStatus = !statusFilter || candidate.status === statusFilter;
-                const matchesSearch = !searchInput || 
+                const matchesSearch = !searchInput ||
                     candidate.name.toLowerCase().includes(searchInput) ||
                     candidate.email.toLowerCase().includes(searchInput) ||
                     candidate.college.toLowerCase().includes(searchInput);
-                
+
                 return matchesStatus && matchesSearch;
             });
-            
+
             // Sort candidates
             filteredCandidates.sort((a, b) => {
                 switch (sortFilter) {
@@ -673,15 +696,15 @@
                         return (b.similarity_score || 0) - (a.similarity_score || 0);
                 }
             });
-            
+
             renderCandidates();
         }
-        
+
         async function loadCandidates() {
             try {
                 const response = await fetch('/fetch-applications');
                 const data = await response.json();
-                
+
                 if (data.applicants) {
                     candidates = data.applicants.map(applicant => ({
                         ...applicant,
@@ -701,11 +724,11 @@
                 return false;
             }
         }
-        
+
         async function getLatestJD() {
             try {
                 const response = await fetch('/get-latest-jd');
-                
+
                 if (response.status === 404) {
                     const jdStatus = document.getElementById('jdStatus');
                     if (jdStatus) {
@@ -714,9 +737,9 @@
                     }
                     return null;
                 }
-                
+
                 const data = await response.json();
-                
+
                 if (data.has_jd && data.job_description) {
                     const jdStatus = document.getElementById('jdStatus');
                     if (jdStatus) {
@@ -741,15 +764,15 @@
                 return null;
             }
         }
-        
+
         async function autoAnalyzeCandidates() {
             // Show analyzing status
             const analyzingStatus = document.getElementById('analyzingStatus');
             const reAnalyzeBtn = document.getElementById('reAnalyzeBtn');
-            
+
             if (analyzingStatus) analyzingStatus.classList.remove('hidden');
             if (reAnalyzeBtn) reAnalyzeBtn.classList.add('hidden');
-            
+
             try {
                 // First, load candidates
                 const candidatesLoaded = await loadCandidates();
@@ -758,17 +781,17 @@
                     showMessage('No candidates to analyze', 'error');
                     return;
                 }
-                
+
                 // Get the latest JD from LinkedIn post
                 const jobDescription = await getLatestJD();
-                
+
                 if (!jobDescription || jobDescription.trim() === '') {
                     if (analyzingStatus) analyzingStatus.classList.add('hidden');
                     if (reAnalyzeBtn) reAnalyzeBtn.classList.remove('hidden');
                     showMessage('Please post a job description first to LinkedIn', 'error');
                     return;
                 }
-                
+
                 // Call API to get best candidates with similarity scores
                 const response = await fetch('/select-best-resumes', {
                     method: 'POST',
@@ -779,14 +802,14 @@
                         job_description: jobDescription
                     })
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.all_top_candidates && data.all_top_candidates.length > 0) {
                     // Update all candidates with their similarity scores
                     data.all_top_candidates.forEach(candidateData => {
-                        const candidateIndex = candidates.findIndex(c => 
-                            c.email === candidateData.applicant.email || 
+                        const candidateIndex = candidates.findIndex(c =>
+                            c.email === candidateData.applicant.email ||
                             (c.name === candidateData.applicant.name && c.email && candidateData.applicant.email)
                         );
                         if (candidateIndex !== -1) {
@@ -800,12 +823,12 @@
                             });
                         }
                     });
-                    
+
                     // Sort by similarity score (highest first)
                     candidates.sort((a, b) => (b.similarity_score || 0) - (a.similarity_score || 0));
                     filteredCandidates = [...candidates];
                     filterCandidates();
-                    
+
                     const jdStatus = document.getElementById('jdStatus');
                     if (jdStatus) {
                         jdStatus.textContent = `✓ Ranked ${data.all_top_candidates.length} candidates using latest LinkedIn JD`;
@@ -813,8 +836,8 @@
                     }
                     showMessage(`Successfully ranked ${data.all_top_candidates.length} candidates!`, 'success');
                 } else if (data.best_candidate) {
-                    const candidateIndex = candidates.findIndex(c => 
-                        c.email === data.best_candidate.applicant.email || 
+                    const candidateIndex = candidates.findIndex(c =>
+                        c.email === data.best_candidate.applicant.email ||
                         c.name === data.best_candidate.applicant.name
                     );
                     if (candidateIndex !== -1) {
@@ -837,59 +860,59 @@
                 if (reAnalyzeBtn) reAnalyzeBtn.classList.remove('hidden');
             }
         }
-        
+
         // Legacy function for manual analysis (kept for backward compatibility)
         async function findBestMatches() {
             await autoAnalyzeCandidates();
         }
-        
+
         function viewResume(fileId) {
             if (!fileId || fileId === 'undefined' || fileId === 'null') {
                 showMessage('Resume file ID not available for this candidate', 'error');
                 return;
             }
-            
+
             const resumeSection = document.getElementById('resumeViewerSection');
             const frame = document.getElementById('resumeFrame');
             const loadingDiv = document.getElementById('resumeLoading');
-            
+
             if (!resumeSection || !frame || !loadingDiv) {
                 showMessage('Resume viewer elements not found', 'error');
                 return;
             }
-            
+
             // Show loading state
             loadingDiv.classList.remove('hidden');
             frame.style.display = 'none';
-            
+
             // Set the iframe source to view the resume
             const resumeUrl = `/view-resume/${fileId}`;
             frame.src = resumeUrl;
-            
+
             // Show the resume section
             resumeSection.classList.remove('hidden');
-            
+
             // Scroll to the resume viewer section
             resumeSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            
+
             // Hide loading when iframe loads
-            frame.onload = function() {
+            frame.onload = function () {
                 if (loadingDiv) loadingDiv.classList.add('hidden');
                 if (frame) frame.style.display = 'block';
             };
-            
+
             // Handle errors
-            frame.onerror = function() {
+            frame.onerror = function () {
                 if (loadingDiv) loadingDiv.classList.add('hidden');
                 showMessage('Failed to load resume. The file may not be accessible.', 'error');
             };
         }
-        
+
         function closeResumeViewer() {
             const resumeSection = document.getElementById('resumeViewerSection');
             const frame = document.getElementById('resumeFrame');
             const loadingDiv = document.getElementById('resumeLoading');
-            
+
             if (frame) {
                 frame.src = '';
                 frame.style.display = 'none';
@@ -897,33 +920,33 @@
             if (loadingDiv) loadingDiv.classList.add('hidden');
             if (resumeSection) resumeSection.classList.add('hidden');
         }
-        
+
         function scheduleInterview(name, email) {
             const scheduleSection = document.getElementById('scheduleSection');
             const candidateNameInput = document.getElementById('candidateName');
             const candidateEmailInput = document.getElementById('candidateEmail');
-            
+
             if (!scheduleSection) {
                 showMessage('Schedule section not found', 'error');
                 return;
             }
-            
+
             if (candidateNameInput) candidateNameInput.value = name || '';
             if (candidateEmailInput) candidateEmailInput.value = email || '';
-            
+
             scheduleSection.classList.remove('hidden');
             // Scroll to the schedule section
             scheduleSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
-        
+
         function closeScheduleSection() {
             const scheduleSection = document.getElementById('scheduleSection');
             const scheduleForm = document.getElementById('scheduleForm');
-            
+
             if (scheduleSection) scheduleSection.classList.add('hidden');
             if (scheduleForm) scheduleForm.reset();
         }
-        
+
         // Event listeners - Add null checks
         const refreshBtn = document.getElementById('refreshBtn');
         if (refreshBtn) {
@@ -932,38 +955,38 @@
                 await autoAnalyzeCandidates();
             });
         }
-        
+
         const reAnalyzeBtn = document.getElementById('reAnalyzeBtn');
         if (reAnalyzeBtn) {
             reAnalyzeBtn.addEventListener('click', autoAnalyzeCandidates);
         }
-        
+
         const statusFilter = document.getElementById('statusFilter');
         if (statusFilter) {
             statusFilter.addEventListener('change', filterCandidates);
         }
-        
+
         const sortFilter = document.getElementById('sortFilter');
         if (sortFilter) {
             sortFilter.addEventListener('change', filterCandidates);
         }
-        
+
         const searchInput = document.getElementById('searchInput');
         if (searchInput) {
             searchInput.addEventListener('input', filterCandidates);
         }
-        
+
         const scheduleForm = document.getElementById('scheduleForm');
         if (scheduleForm) {
             scheduleForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                
+
                 const candidateNameInput = document.getElementById('candidateName');
                 const candidateEmailInput = document.getElementById('candidateEmail');
                 const interviewDateInput = document.getElementById('interviewDate');
                 const interviewTimeInput = document.getElementById('interviewTime');
                 const interviewerEmailInput = document.getElementById('interviewerEmail');
-                
+
                 const formData = {
                     candidate_name: candidateNameInput ? candidateNameInput.value : '',
                     candidate_email: candidateEmailInput ? candidateEmailInput.value : '',
@@ -971,7 +994,7 @@
                     interview_time: interviewTimeInput ? interviewTimeInput.value : '',
                     interviewer_email: interviewerEmailInput ? interviewerEmailInput.value : ''
                 };
-            
+
                 try {
                     const response = await fetch('/schedule-interview', {
                         method: 'POST',
@@ -980,9 +1003,9 @@
                         },
                         body: JSON.stringify(formData)
                     });
-                    
+
                     const data = await response.json();
-                    
+
                     if (data.status === 'success') {
                         showMessage('Interview scheduled successfully!', 'success');
                         closeScheduleSection();
@@ -994,15 +1017,15 @@
                 }
             });
         }
-        
+
         // No need for modal click handlers since we're using inline sections
-        
+
         // Add mobile menu toggle functionality
         function toggleSidebar() {
             const sidebar = document.querySelector('.sidebar');
             sidebar.classList.toggle('open');
         }
-        
+
         // Add mobile menu button for small screens
         if (window.innerWidth <= 768) {
             const header = document.querySelector('header');
@@ -1012,7 +1035,7 @@
             menuButton.onclick = toggleSidebar;
             header.querySelector('.flex').prepend(menuButton);
         }
-        
+
         // Auto-load and analyze candidates on page load
         // Wait for DOM to be fully ready
         if (document.readyState === 'loading') {
@@ -1029,4 +1052,5 @@
         }
     </script>
 </body>
+
 </html>

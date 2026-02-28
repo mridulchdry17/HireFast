@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,88 +10,39 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
             color: #f8fafc;
             min-height: 100vh;
         }
-        
+
         .gradient-text {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        
+
         .glass-effect {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
-        .card-hover {
-            transition: all 0.3s ease;
-        }
-        
-        .card-hover:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.75rem;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
-        }
-        
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.75rem;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            cursor: pointer;
-        }
-        
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
-        
+
         .sidebar {
             background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(20px);
             border-right: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
+
         .nav-item {
             display: flex;
             align-items: center;
@@ -101,31 +53,41 @@
             text-decoration: none;
             transition: all 0.3s ease;
         }
-        
+
         .nav-item:hover {
             background: rgba(255, 255, 255, 0.1);
             color: white;
         }
-        
+
         .nav-item.active {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
-        
-        .interview-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
+
+        .panel {
+            background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 1.5rem;
             padding: 1.5rem;
-            transition: all 0.3s ease;
         }
-        
-        .interview-card:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateY(-4px);
+
+        /* Calendar */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
         }
-        
+
+        .calendar-header-day {
+            text-align: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #64748b;
+            padding: 0.5rem 0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
         .calendar-day {
             aspect-ratio: 1;
             display: flex;
@@ -133,162 +95,249 @@
             justify-content: center;
             border-radius: 0.5rem;
             cursor: pointer;
-            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
             position: relative;
+            color: #94a3b8;
         }
-        
+
         .calendar-day:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(102, 126, 234, 0.2);
+            color: white;
         }
-        
+
+        .calendar-day.today {
+            color: #667eea;
+            font-weight: 700;
+        }
+
         .calendar-day.selected {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
+            font-weight: 700;
         }
-        
-        .calendar-day.has-interview {
-            background: rgba(16, 185, 129, 0.2);
-            border: 1px solid rgba(16, 185, 129, 0.4);
-        }
-        
+
         .calendar-day.has-interview::after {
             content: '';
             position: absolute;
-            bottom: 2px;
-            right: 2px;
-            width: 6px;
-            height: 6px;
+            bottom: 3px;
+            width: 5px;
+            height: 5px;
             background: #10b981;
             border-radius: 50%;
         }
-        
-        .time-slot {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 0.75rem;
-            padding: 1rem;
-            margin: 0.5rem 0;
-            cursor: pointer;
-            transition: all 0.3s ease;
+
+        .calendar-day.other-month {
+            color: #374151;
+            cursor: default;
         }
-        
-        .time-slot:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(102, 126, 234, 0.5);
+
+        .calendar-day.other-month:hover {
+            background: transparent;
         }
-        
-        .time-slot.selected {
-            background: rgba(102, 126, 234, 0.2);
-            border-color: #667eea;
-        }
-        
-        .time-slot.booked {
-            background: rgba(239, 68, 68, 0.2);
-            border-color: rgba(239, 68, 68, 0.4);
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-        
-        .status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        
-        .status-scheduled {
-            background: #3b82f6;
-            color: white;
-        }
-        
-        .status-completed {
-            background: #10b981;
-            color: white;
-        }
-        
-        .status-cancelled {
-            background: #ef4444;
-            color: white;
-        }
-        
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .fade-in {
-            animation: fadeIn 0.5s ease-in;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        
-        .modal-content {
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 1.5rem;
-            padding: 2rem;
-            max-width: 90vw;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        
+
+        /* Form */
         .form-input {
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 0.75rem;
-            padding: 0.75rem 1rem;
-            color: #f8fafc !important;
+            padding: 0.7rem 1rem;
+            color: #f8fafc;
             width: 100%;
             transition: all 0.3s ease;
+            font-size: 0.9rem;
+            font-family: inherit;
         }
-        
+
         .form-input:focus {
             outline: none;
             border-color: #667eea;
-            background: rgba(15, 23, 42, 0.95);
-            color: #f8fafc !important;
+            background: rgba(15, 23, 42, 0.9);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
         }
-        
+
         .form-input::placeholder {
-            color: #94a3b8;
+            color: #475569;
         }
-        
+
         select.form-input {
-            color: #f8fafc !important;
+            cursor: pointer;
         }
-        
+
         select.form-input option {
-            background: rgba(15, 23, 42, 0.95);
+            background: #1e293b;
             color: #f8fafc;
         }
-        
+
+        input[type="time"],
+        input[type="date"] {
+            color-scheme: dark;
+        }
+
+        input[type="time"]::-webkit-calendar-picker-indicator,
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.7);
+            cursor: pointer;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #94a3b8;
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            transform: none;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.07);
+            color: #94a3b8;
+            padding: 0.8rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: white;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .interview-item {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 1rem;
+            padding: 1rem 1.2rem;
+            transition: all 0.2s ease;
+        }
+
+        .interview-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+
+        .status-badge {
+            padding: 0.2rem 0.6rem;
+            border-radius: 9999px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-scheduled {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .status-completed {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-cancelled {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .alert {
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34d399;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #f87171;
+        }
+
+        .cal-nav-btn {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .cal-nav-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+        }
+
         @media (max-width: 768px) {
             .sidebar {
                 position: fixed;
@@ -299,56 +348,39 @@
                 z-index: 1000;
                 transition: left 0.3s ease;
             }
-            
+
             .sidebar.open {
                 left: 0;
-            }
-            
-            .main-content {
-                margin-left: 0;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="flex h-screen">
         <!-- Sidebar -->
-        <div class="sidebar w-64 p-6">
+        <div class="sidebar w-64 p-6 flex-shrink-0 flex flex-col">
             <div class="mb-8">
                 <h1 class="text-2xl font-bold gradient-text">HireFast</h1>
                 <p class="text-sm text-gray-400 mt-1">AI-Powered HR Automation</p>
             </div>
-            
-            <nav class="space-y-2">
-                <a href="/dashboard" class="nav-item">
-                    <i class="fas fa-tachometer-alt w-5 mr-3"></i>
-                    Dashboard
-                </a>
-                <a href="/job-posting" class="nav-item">
-                    <i class="fas fa-plus-circle w-5 mr-3"></i>
-                    Create Job Post
-                </a>
-                <a href="/candidates" class="nav-item">
-                    <i class="fas fa-users w-5 mr-3"></i>
-                    Candidates
-                </a>
-                <a href="/scheduling" class="nav-item active">
-                    <i class="fas fa-calendar-alt w-5 mr-3"></i>
-                    Schedule Interviews
-                </a>
-                <a href="/analytics" class="nav-item">
-                    <i class="fas fa-chart-line w-5 mr-3"></i>
-                    Analytics
-                </a>
-                <a href="/settings" class="nav-item">
-                    <i class="fas fa-cog w-5 mr-3"></i>
-                    Settings
-                </a>
+
+            <nav class="space-y-1">
+                <a href="/dashboard" class="nav-item"><i class="fas fa-tachometer-alt w-5 mr-3"></i>Dashboard</a>
+                <a href="/job-posting" class="nav-item"><i class="fas fa-plus-circle w-5 mr-3"></i>Create Job Post</a>
+                <a href="/candidates" class="nav-item"><i class="fas fa-users w-5 mr-3"></i>Candidates</a>
+                <a href="/scheduling" class="nav-item active"><i class="fas fa-calendar-alt w-5 mr-3"></i>Schedule
+                    Interviews</a>
+                <a href="/connect-calendar" class="nav-item"><i class="fas fa-calendar-check w-5 mr-3"></i>Connect
+                    Calendar</a>
+                <a href="/analytics" class="nav-item"><i class="fas fa-chart-line w-5 mr-3"></i>Analytics</a>
+                <a href="/settings" class="nav-item"><i class="fas fa-cog w-5 mr-3"></i>Settings</a>
             </nav>
-            
+
             <div class="mt-auto pt-6">
                 <div class="flex items-center mb-4">
-                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-3">
+                    <div
+                        class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-3">
                         <span class="text-white font-bold text-sm">JD</span>
                     </div>
                     <div>
@@ -357,442 +389,395 @@
                     </div>
                 </div>
                 <button onclick="logout()" class="nav-item w-full text-left">
-                    <i class="fas fa-sign-out-alt w-5 mr-3"></i>
-                    Logout
+                    <i class="fas fa-sign-out-alt w-5 mr-3"></i>Logout
                 </button>
             </div>
         </div>
-        
+
         <!-- Main Content -->
         <div class="flex-1 flex flex-col overflow-hidden">
             <!-- Header -->
-            <header class="glass-effect p-6 border-b border-gray-700">
-                <div class="flex justify-between items-center">
+            <header class="glass-effect px-8 py-5 border-b border-gray-700 flex-shrink-0">
+                <div class="flex items-center justify-between">
                     <div>
-                        <h2 class="text-3xl font-bold">Schedule Interviews</h2>
-                        <p class="text-gray-400 mt-1">Manage your interview calendar and schedule new interviews</p>
+                        <h2 class="text-2xl font-bold">Schedule Interviews</h2>
+                        <p class="text-gray-400 text-sm mt-0.5">Manage and schedule candidate interviews</p>
                     </div>
-                    <div class="flex items-center space-x-4">
-                        <div class="flex items-center space-x-2">
-                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
-                            <span class="text-sm text-gray-300">Google Calendar Connected</span>
-                        </div>
-                        <button id="newInterviewBtn" class="btn-primary">
-                            <i class="fas fa-plus"></i>
-                            New Interview
-                        </button>
+                    <div class="flex items-center space-x-3">
+                        <div id="statusDot" class="w-2.5 h-2.5 bg-red-500 rounded-full"></div>
+                        <span id="statusText" class="text-sm text-gray-400">Checking calendar…</span>
+                        <a id="connectCalendarBtn" href="/connect-calendar"
+                            class="hidden ml-3 px-4 py-2 text-sm font-semibold rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:opacity-90 transition">
+                            <i class="fas fa-plug mr-1"></i> Connect Calendar
+                        </a>
                     </div>
                 </div>
             </header>
-            
-            <!-- Content -->
+
+            <!-- Page Body: 3-column layout -->
             <main class="flex-1 overflow-y-auto p-6">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <!-- Calendar -->
-                    <div class="lg:col-span-2">
-                        <div class="glass-effect rounded-2xl p-6">
-                            <div class="flex justify-between items-center mb-6">
-                                <h3 class="text-xl font-bold">Interview Calendar</h3>
-                                <div class="flex items-center space-x-4">
-                                    <button id="prevMonth" class="btn-secondary">
-                                        <i class="fas fa-chevron-left"></i>
-                                    </button>
-                                    <span id="currentMonth" class="font-semibold">December 2024</span>
-                                    <button id="nextMonth" class="btn-secondary">
-                                        <i class="fas fa-chevron-right"></i>
-                                    </button>
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 h-full">
+
+                    <!-- LEFT: Calendar -->
+                    <div class="xl:col-span-1 space-y-4">
+                        <div class="panel">
+                            <!-- Month navigation -->
+                            <div class="flex items-center justify-between mb-4">
+                                <button class="cal-nav-btn" onclick="changeMonth(-1)"><i
+                                        class="fas fa-chevron-left text-xs"></i></button>
+                                <h3 id="calendarTitle" class="text-base font-bold"></h3>
+                                <button class="cal-nav-btn" onclick="changeMonth(1)"><i
+                                        class="fas fa-chevron-right text-xs"></i></button>
+                            </div>
+
+                            <!-- Day headers -->
+                            <div class="calendar-grid mb-1">
+                                <div class="calendar-header-day">Su</div>
+                                <div class="calendar-header-day">Mo</div>
+                                <div class="calendar-header-day">Tu</div>
+                                <div class="calendar-header-day">We</div>
+                                <div class="calendar-header-day">Th</div>
+                                <div class="calendar-header-day">Fr</div>
+                                <div class="calendar-header-day">Sa</div>
+                            </div>
+                            <div id="calendarGrid" class="calendar-grid"></div>
+
+                            <!-- Legend -->
+                            <div class="flex items-center gap-4 mt-4 pt-3 border-t border-gray-700">
+                                <div class="flex items-center gap-1.5 text-xs text-gray-400">
+                                    <span class="inline-block w-2 h-2 bg-green-500 rounded-full"></span> Has interview
                                 </div>
-                            </div>
-                            
-                            <!-- Calendar Grid -->
-                            <div class="grid grid-cols-7 gap-2 mb-4">
-                                <div class="text-center text-sm font-semibold text-gray-400 py-2">Sun</div>
-                                <div class="text-center text-sm font-semibold text-gray-400 py-2">Mon</div>
-                                <div class="text-center text-sm font-semibold text-gray-400 py-2">Tue</div>
-                                <div class="text-center text-sm font-semibold text-gray-400 py-2">Wed</div>
-                                <div class="text-center text-sm font-semibold text-gray-400 py-2">Thu</div>
-                                <div class="text-center text-sm font-semibold text-gray-400 py-2">Fri</div>
-                                <div class="text-center text-sm font-semibold text-gray-400 py-2">Sat</div>
-                            </div>
-                            
-                            <div id="calendarGrid" class="grid grid-cols-7 gap-2">
-                                <!-- Calendar days will be generated here -->
-                            </div>
-                        </div>
-                        
-                        <!-- Time Slots -->
-                        <div id="timeSlotsSection" class="glass-effect rounded-2xl p-6 mt-6 hidden">
-                            <h3 class="text-xl font-bold mb-6">Available Time Slots</h3>
-                            <div id="timeSlots" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                <!-- Time slots will be generated here -->
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Upcoming Interviews -->
-                    <div class="space-y-6">
-                        <div class="glass-effect rounded-2xl p-6">
-                            <h3 class="text-xl font-bold mb-6">Upcoming Interviews</h3>
-                            <div id="upcomingInterviews" class="space-y-4">
-                                <!-- Sample interviews -->
-                                <div class="interview-card">
-                                    <div class="flex items-center justify-between mb-3">
-                                        <h4 class="font-semibold">Sarah Johnson</h4>
-                                        <span class="status-badge status-scheduled">Scheduled</span>
-                                    </div>
-                                    <p class="text-gray-400 text-sm mb-2">Software Engineer</p>
-                                    <div class="flex items-center text-sm text-gray-300">
-                                        <i class="fas fa-calendar mr-2"></i>
-                                        <span>Dec 15, 2024 at 2:00 PM</span>
-                                    </div>
-                                    <div class="flex items-center text-sm text-gray-300 mt-1">
-                                        <i class="fas fa-video mr-2"></i>
-                                        <span>Google Meet</span>
-                                    </div>
-                                </div>
-                                
-                                <div class="interview-card">
-                                    <div class="flex items-center justify-between mb-3">
-                                        <h4 class="font-semibold">Michael Chen</h4>
-                                        <span class="status-badge status-scheduled">Scheduled</span>
-                                    </div>
-                                    <p class="text-gray-400 text-sm mb-2">Data Scientist</p>
-                                    <div class="flex items-center text-sm text-gray-300">
-                                        <i class="fas fa-calendar mr-2"></i>
-                                        <span>Dec 16, 2024 at 10:00 AM</span>
-                                    </div>
-                                    <div class="flex items-center text-sm text-gray-300 mt-1">
-                                        <i class="fas fa-video mr-2"></i>
-                                        <span>Google Meet</span>
-                                    </div>
-                                </div>
-                                
-                                <div class="interview-card">
-                                    <div class="flex items-center justify-between mb-3">
-                                        <h4 class="font-semibold">Emily Rodriguez</h4>
-                                        <span class="status-badge status-scheduled">Scheduled</span>
-                                    </div>
-                                    <p class="text-gray-400 text-sm mb-2">UX Designer</p>
-                                    <div class="flex items-center text-sm text-gray-300">
-                                        <i class="fas fa-calendar mr-2"></i>
-                                        <span>Dec 18, 2024 at 3:30 PM</span>
-                                    </div>
-                                    <div class="flex items-center text-sm text-gray-300 mt-1">
-                                        <i class="fas fa-video mr-2"></i>
-                                        <span>Google Meet</span>
-                                    </div>
+                                <div class="flex items-center gap-1.5 text-xs text-gray-400">
+                                    <span
+                                        class="inline-block w-4 h-4 rounded bg-gradient-to-br from-purple-500 to-blue-500 opacity-70"></span>
+                                    Selected
                                 </div>
                             </div>
                         </div>
-                        
-                        <!-- Quick Stats -->
-                        <div class="glass-effect rounded-2xl p-6">
-                            <h3 class="text-xl font-bold mb-6">This Week</h3>
-                            <div class="space-y-4">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-gray-300">Interviews Scheduled</span>
-                                    <span class="font-bold text-blue-400">8</span>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-gray-300">Completed</span>
-                                    <span class="font-bold text-green-400">5</span>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-gray-300">Cancelled</span>
-                                    <span class="font-bold text-red-400">1</span>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-gray-300">Success Rate</span>
-                                    <span class="font-bold text-purple-400">83%</span>
-                                </div>
+
+                        <!-- Upcoming interviews list -->
+                        <div class="panel">
+                            <h3 class="text-sm font-bold text-gray-300 mb-3 uppercase tracking-wider">Upcoming
+                                Interviews</h3>
+                            <div id="upcomingList" class="space-y-2 text-sm text-gray-400">
+                                <p class="text-center py-4 text-gray-600">No upcoming interviews</p>
                             </div>
                         </div>
                     </div>
+
+                    <!-- RIGHT: Inline Schedule Form -->
+                    <div class="xl:col-span-2">
+                        <div class="panel h-full flex flex-col">
+                            <div class="flex items-center gap-3 mb-6">
+                                <div
+                                    class="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center">
+                                    <i class="fas fa-calendar-plus text-white text-sm"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-bold">Schedule New Interview</h3>
+                                    <p id="selectedDateLabel" class="text-xs text-gray-400 mt-0.5">Select a date from
+                                        the calendar or fill in manually</p>
+                                </div>
+                            </div>
+
+                            <!-- Alert area -->
+                            <div id="alertArea"></div>
+
+                            <form id="scheduleForm" class="flex-1 flex flex-col gap-4">
+                                <!-- Row 1 -->
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="form-label">Candidate Name <span
+                                                class="text-purple-400">*</span></label>
+                                        <input type="text" id="candidateName" class="form-input"
+                                            placeholder="e.g. John Smith" required>
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Candidate Email <span
+                                                class="text-purple-400">*</span></label>
+                                        <input type="email" id="candidateEmail" class="form-input"
+                                            placeholder="candidate@email.com" required>
+                                    </div>
+                                </div>
+
+                                <!-- Row 2 -->
+                                <div>
+                                    <label class="form-label">Position</label>
+                                    <input type="text" id="position" class="form-input"
+                                        placeholder="e.g. Software Engineer">
+                                </div>
+
+                                <!-- Row 3: Date + Time + Duration -->
+                                <div class="grid grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="form-label">Interview Date <span
+                                                class="text-purple-400">*</span></label>
+                                        <input type="date" id="interviewDate" class="form-input" required>
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Interview Time <span
+                                                class="text-purple-400">*</span></label>
+                                        <input type="time" id="interviewTime" class="form-input" value="10:00" required>
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Duration</label>
+                                        <select id="duration" class="form-input">
+                                            <option value="30">30 minutes</option>
+                                            <option value="45">45 minutes</option>
+                                            <option value="60" selected>60 minutes</option>
+                                            <option value="90">90 minutes</option>
+                                            <option value="120">2 hours</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Row 4 -->
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="form-label">Interviewer Email (Optional)</label>
+                                        <input type="email" id="interviewerEmail" class="form-input"
+                                            placeholder="interviewer@company.com">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Interview Type</label>
+                                        <select id="interviewType" class="form-input">
+                                            <option>Video Call (Google Meet)</option>
+                                            <option>Phone Screen</option>
+                                            <option>In-Person</option>
+                                            <option>Technical Assessment</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Row 5: Notes -->
+                                <div>
+                                    <label class="form-label">Notes (Optional)</label>
+                                    <textarea id="notes" class="form-input" rows="3"
+                                        placeholder="Any additional notes for the interview…"
+                                        style="resize:vertical;"></textarea>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="grid grid-cols-2 gap-3 mt-auto pt-2">
+                                    <button type="button" class="btn-secondary" onclick="resetForm()">
+                                        <i class="fas fa-undo"></i> Clear Form
+                                    </button>
+                                    <button type="submit" id="submitBtn" class="btn-primary">
+                                        <i class="fas fa-calendar-check"></i> Schedule Interview
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
                 </div>
             </main>
         </div>
     </div>
-    
-    <!-- New Interview Modal -->
-    <div id="newInterviewModal" class="modal hidden">
-        <div class="modal-content w-full max-w-2xl">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-bold">Schedule New Interview</h3>
-                <button onclick="closeNewInterviewModal()" class="text-gray-400 hover:text-white">
-                    <i class="fas fa-times text-2xl"></i>
-                </button>
-            </div>
-            <form id="newInterviewForm" class="space-y-6">
-                <div>
-                    <label class="block text-sm font-medium mb-2">Candidate Name *</label>
-                    <input type="text" id="candidateName" class="form-input" placeholder="Enter candidate name" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-2">Candidate Email *</label>
-                    <input type="email" id="candidateEmail" class="form-input" placeholder="candidate@email.com" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-2">Position</label>
-                    <input type="text" id="position" class="form-input" placeholder="e.g., Software Engineer">
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Interview Date *</label>
-                        <input type="date" id="interviewDate" class="form-input" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-2">Interview Time *</label>
-                        <input type="time" id="interviewTime" class="form-input" required>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-2">Interviewer Email (Optional)</label>
-                    <input type="email" id="interviewerEmail" class="form-input" placeholder="interviewer@company.com">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-2">Interview Type</label>
-                    <select id="interviewType" class="form-input">
-                        <option value="video">Video Call (Google Meet)</option>
-                        <option value="phone">Phone Call</option>
-                        <option value="in-person">In-Person</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-2">Notes (Optional)</label>
-                    <textarea id="interviewNotes" class="form-input" rows="3" placeholder="Any additional notes for the interview..."></textarea>
-                </div>
-                <div class="flex space-x-4">
-                    <button type="submit" class="btn-primary flex-1">
-                        <i class="fas fa-calendar-plus"></i>
-                        Schedule Interview
-                    </button>
-                    <button type="button" onclick="closeNewInterviewModal()" class="btn-secondary">
-                        Cancel
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-    
+
     <script>
+        // ── Calendar ──────────────────────────────────────────────────────────
         let currentDate = new Date();
         let selectedDate = null;
-        
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                window.location.href = '/logout';
-            }
-        }
-        
-        function showMessage(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `fixed top-4 right-4 p-4 rounded-lg text-white z-50 ${
-                type === 'error' ? 'bg-red-600' : 
-                type === 'success' ? 'bg-green-600' : 
-                'bg-blue-600'
-            }`;
-            notification.textContent = message;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
-        }
-        
+
         function generateCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            const title = document.getElementById('calendarTitle');
+
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
-            
-            // Update month display
-            const monthNames = [
-                'January', 'February', 'March', 'April', 'May', 'June',
-                'July', 'August', 'September', 'October', 'November', 'December'
-            ];
-            document.getElementById('currentMonth').textContent = `${monthNames[month]} ${year}`;
-            
-            // Get first day of month and number of days
-            const firstDay = new Date(year, month, 1);
-            const lastDay = new Date(year, month + 1, 0);
-            const daysInMonth = lastDay.getDate();
-            const startingDayOfWeek = firstDay.getDay();
-            
-            const calendarGrid = document.getElementById('calendarGrid');
-            calendarGrid.innerHTML = '';
-            
-            // Add empty cells for days before the first day of the month
-            for (let i = 0; i < startingDayOfWeek; i++) {
-                const emptyDay = document.createElement('div');
-                emptyDay.className = 'calendar-day';
-                calendarGrid.appendChild(emptyDay);
+
+            const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            title.textContent = `${months[month]} ${year}`;
+
+            grid.innerHTML = '';
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+
+            // Blanks before first
+            for (let i = 0; i < firstDay; i++) {
+                const blank = document.createElement('div');
+                blank.className = 'calendar-day other-month';
+                grid.appendChild(blank);
             }
-            
-            // Add days of the month
-            for (let day = 1; day <= daysInMonth; i++) {
-                const dayElement = document.createElement('div');
-                dayElement.className = 'calendar-day';
-                dayElement.textContent = day;
-                dayElement.dataset.day = day;
-                
-                // Check if this day has interviews (sample data)
-                const hasInterview = Math.random() > 0.8; // 20% chance
-                if (hasInterview) {
-                    dayElement.classList.add('has-interview');
-                }
-                
-                dayElement.addEventListener('click', () => selectDate(day, dayElement));
-                calendarGrid.appendChild(dayElement);
+
+            // Days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const el = document.createElement('div');
+                el.className = 'calendar-day';
+                el.textContent = day;
+
+                const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+                if (isToday) el.classList.add('today');
+
+                // Mark some days as having interviews (demo)
+                if ([5, 12, 18, 23].includes(day)) el.classList.add('has-interview');
+
+                el.addEventListener('click', () => selectDay(day, el));
+                grid.appendChild(el);
             }
         }
-        
-        function selectDate(day, element) {
-            // Remove previous selection
-            document.querySelectorAll('.calendar-day.selected').forEach(el => {
-                el.classList.remove('selected');
-            });
-            
-            // Add selection to clicked day
-            element.classList.add('selected');
-            selectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-            
-            // Show time slots
-            showTimeSlots();
+
+        function selectDay(day, el) {
+            // Deselect previous
+            document.querySelectorAll('.calendar-day.selected').forEach(d => d.classList.remove('selected'));
+            el.classList.add('selected');
+
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            selectedDate = new Date(year, month, day);
+
+            // Fill date field
+            const yyyy = year;
+            const mm = String(month + 1).padStart(2, '0');
+            const dd = String(day).padStart(2, '0');
+            document.getElementById('interviewDate').value = `${yyyy}-${mm}-${dd}`;
+
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            document.getElementById('selectedDateLabel').textContent = `Scheduling for ${months[month]} ${day}, ${year}`;
         }
-        
-        function showTimeSlots() {
-            const timeSlotsSection = document.getElementById('timeSlotsSection');
-            const timeSlots = document.getElementById('timeSlots');
-            
-            timeSlotsSection.classList.remove('hidden');
-            
-            // Generate time slots (9 AM to 5 PM, 30-minute intervals)
-            const slots = [];
-            for (let hour = 9; hour < 17; hour++) {
-                for (let minute = 0; minute < 60; minute += 30) {
-                    const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-                    const isBooked = Math.random() > 0.7; // 30% chance of being booked
-                    
-                    slots.push({
-                        time: timeString,
-                        booked: isBooked
-                    });
-                }
-            }
-            
-            timeSlots.innerHTML = slots.map(slot => `
-                <div class="time-slot ${slot.booked ? 'booked' : ''}" 
-                     ${!slot.booked ? `onclick="selectTimeSlot('${slot.time}', this)"` : ''}>
-                    <div class="flex items-center justify-between">
-                        <span class="font-semibold">${slot.time}</span>
-                        ${slot.booked ? '<i class="fas fa-lock text-red-400"></i>' : '<i class="fas fa-check-circle text-green-400"></i>'}
-                    </div>
-                </div>
-            `).join('');
-        }
-        
-        function selectTimeSlot(time, element) {
-            // Remove previous selection
-            document.querySelectorAll('.time-slot.selected').forEach(el => {
-                el.classList.remove('selected');
-            });
-            
-            // Add selection to clicked slot
-            element.classList.add('selected');
-            
-            // Open new interview modal with pre-filled data
-            if (selectedDate) {
-                const dateString = selectedDate.toISOString().split('T')[0];
-                document.getElementById('interviewDate').value = dateString;
-                document.getElementById('interviewTime').value = time;
-                openNewInterviewModal();
-            }
-        }
-        
-        function openNewInterviewModal() {
-            document.getElementById('newInterviewModal').classList.remove('hidden');
-        }
-        
-        function closeNewInterviewModal() {
-            document.getElementById('newInterviewModal').classList.add('hidden');
-            document.getElementById('newInterviewForm').reset();
-        }
-        
-        // Event listeners
-        document.getElementById('prevMonth').addEventListener('click', () => {
-            currentDate.setMonth(currentDate.getMonth() - 1);
+
+        function changeMonth(dir) {
+            currentDate.setMonth(currentDate.getMonth() + dir);
             generateCalendar();
-        });
-        
-        document.getElementById('nextMonth').addEventListener('click', () => {
-            currentDate.setMonth(currentDate.getMonth() + 1);
-            generateCalendar();
-        });
-        
-        document.getElementById('newInterviewBtn').addEventListener('click', openNewInterviewModal);
-        
-        document.getElementById('newInterviewForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const formData = {
-                candidate_name: document.getElementById('candidateName').value,
-                candidate_email: document.getElementById('candidateEmail').value,
-                interview_date: document.getElementById('interviewDate').value,
-                interview_time: document.getElementById('interviewTime').value,
-                interviewer_email: document.getElementById('interviewerEmail').value,
-                position: document.getElementById('position').value,
-                interview_type: document.getElementById('interviewType').value,
-                notes: document.getElementById('interviewNotes').value
-            };
-            
+        }
+
+        // ── Calendar Status ─────────────────────────────────────────────────
+        async function checkStatus() {
             try {
-                const response = await fetch('/schedule-interview', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData)
-                });
-                
-                const data = await response.json();
-                
-                if (data.status === 'success') {
-                    showMessage('Interview scheduled successfully!', 'success');
-                    closeNewInterviewModal();
-                    // Refresh the calendar
-                    generateCalendar();
+                const res = await fetch('/check-calendar-status');
+                const data = await res.json();
+                const dot = document.getElementById('statusDot');
+                const txt = document.getElementById('statusText');
+                const btn = document.getElementById('connectCalendarBtn');
+
+                if (data.connected) {
+                    dot.className = 'w-2.5 h-2.5 bg-green-500 rounded-full';
+                    txt.textContent = 'Google Calendar Connected';
+                    btn.classList.add('hidden');
                 } else {
-                    showMessage(data.error || 'Failed to schedule interview', 'error');
+                    dot.className = 'w-2.5 h-2.5 bg-red-500 rounded-full';
+                    txt.textContent = 'Calendar not connected';
+                    btn.classList.remove('hidden');
                 }
-            } catch (error) {
-                showMessage('Error scheduling interview: ' + error.message, 'error');
+            } catch (e) {
+                console.error('Status check failed:', e);
+            }
+        }
+
+        // ── Form ─────────────────────────────────────────────────────────────
+        function showAlert(msg, type) {
+            const area = document.getElementById('alertArea');
+            area.innerHTML = `
+                <div class="alert alert-${type}">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                    ${msg}
+                </div>`;
+            setTimeout(() => area.innerHTML = '', 5000);
+        }
+
+        function resetForm() {
+            document.getElementById('scheduleForm').reset();
+            document.getElementById('interviewTime').value = '10:00';
+            document.getElementById('selectedDateLabel').textContent = 'Select a date from the calendar or fill in manually';
+            document.querySelectorAll('.calendar-day.selected').forEach(d => d.classList.remove('selected'));
+        }
+
+        document.getElementById('scheduleForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('candidateName').value.trim();
+            const email = document.getElementById('candidateEmail').value.trim();
+            const date = document.getElementById('interviewDate').value;
+            const time = document.getElementById('interviewTime').value;
+            const dur = document.getElementById('duration').value;
+            const iEmail = document.getElementById('interviewerEmail').value.trim();
+            const type = document.getElementById('interviewType').value;
+            const notes = document.getElementById('notes').value.trim();
+
+            if (!name || !email || !date || !time) {
+                showAlert('Please fill in all required fields.', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loading-spinner"></div> Scheduling…';
+
+            try {
+                const res = await fetch('/schedule-interview', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        candidate_name: name,
+                        candidate_email: email,
+                        position: document.getElementById('position').value.trim(),
+                        interview_date: date,
+                        interview_time: time,
+                        duration: parseInt(dur),
+                        interviewer_email: iEmail,
+                        interview_type: type,
+                        notes: notes
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.status === 'success') {
+                    showAlert(`✅ Interview scheduled with ${name} on ${date} at ${time}! Calendar invite sent.`, 'success');
+                    resetForm();
+                    // Add to upcoming list
+                    addUpcomingInterview(name, email, date, time, type);
+                } else {
+                    showAlert(data.message || data.error || 'Failed to schedule interview.', 'error');
+                }
+            } catch (err) {
+                showAlert('Network error. Please try again.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-calendar-check"></i> Schedule Interview';
             }
         });
-        
-        // Close modal when clicking outside
-        document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal')) {
-                closeNewInterviewModal();
-            }
-        });
-        
-        // Add mobile menu toggle functionality
-        function toggleSidebar() {
-            const sidebar = document.querySelector('.sidebar');
-            sidebar.classList.toggle('open');
+
+        function addUpcomingInterview(name, email, date, time, type) {
+            const list = document.getElementById('upcomingList');
+            const empty = list.querySelector('p');
+            if (empty) empty.remove();
+
+            const item = document.createElement('div');
+            item.className = 'interview-item';
+            item.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-xs font-bold text-white">
+                            ${name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                            <p class="text-sm font-semibold text-white">${name}</p>
+                            <p class="text-xs text-gray-500">${date} · ${time}</p>
+                        </div>
+                    </div>
+                    <span class="status-badge status-scheduled">Scheduled</span>
+                </div>`;
+            list.prepend(item);
         }
-        
-        // Add mobile menu button for small screens
-        if (window.innerWidth <= 768) {
-            const header = document.querySelector('header');
-            const menuButton = document.createElement('button');
-            menuButton.innerHTML = '<i class="fas fa-bars"></i>';
-            menuButton.className = 'md:hidden p-2 rounded-lg bg-gray-700 text-white';
-            menuButton.onclick = toggleSidebar;
-            header.querySelector('.flex').prepend(menuButton);
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) window.location.href = '/logout';
         }
-        
-        // Initialize calendar
+
+        // Init
         generateCalendar();
+        checkStatus();
+
+        // Set today's date as default
+        const today = new Date();
+        const dd = String(today.getDate()).padStart(2, '0');
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        document.getElementById('interviewDate').value = `${today.getFullYear()}-${mm}-${dd}`;
     </script>
 </body>
+
 </html>

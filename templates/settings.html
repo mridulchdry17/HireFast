@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,39 +10,39 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
             color: #f8fafc;
             min-height: 100vh;
         }
-        
+
         .gradient-text {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        
+
         .glass-effect {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        
+
         .sidebar {
             background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(20px);
             border-right: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
+
         .nav-item {
             display: flex;
             align-items: center;
@@ -52,17 +53,17 @@
             text-decoration: none;
             transition: all 0.3s ease;
         }
-        
+
         .nav-item:hover {
             background: rgba(255, 255, 255, 0.1);
             color: white;
         }
-        
+
         .nav-item.active {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
-        
+
         .settings-card {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(20px);
@@ -70,7 +71,7 @@
             border-radius: 1.5rem;
             padding: 1.5rem;
         }
-        
+
         .form-input {
             background: rgba(15, 23, 42, 0.8);
             border: 1px solid rgba(255, 255, 255, 0.2);
@@ -80,40 +81,40 @@
             width: 100%;
             transition: all 0.3s ease;
         }
-        
+
         .form-input:focus {
             outline: none;
             border-color: #667eea;
             background: rgba(15, 23, 42, 0.95);
             color: #f8fafc !important;
         }
-        
+
         .form-input::placeholder {
             color: #94a3b8;
         }
-        
+
         select.form-input {
             color: #f8fafc !important;
         }
-        
+
         select.form-input option {
             background: rgba(15, 23, 42, 0.95);
             color: #f8fafc;
         }
-        
+
         .toggle-switch {
             position: relative;
             display: inline-block;
             width: 60px;
             height: 34px;
         }
-        
+
         .toggle-switch input {
             opacity: 0;
             width: 0;
             height: 0;
         }
-        
+
         .slider {
             position: absolute;
             cursor: pointer;
@@ -125,7 +126,7 @@
             transition: .4s;
             border-radius: 34px;
         }
-        
+
         .slider:before {
             position: absolute;
             content: "";
@@ -137,29 +138,29 @@
             transition: .4s;
             border-radius: 50%;
         }
-        
-        input:checked + .slider {
+
+        input:checked+.slider {
             background-color: #667eea;
         }
-        
-        input:checked + .slider:before {
+
+        input:checked+.slider:before {
             transform: translateX(26px);
         }
-        
+
         .connection-status {
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
-        
+
         .status-connected {
             color: #10b981;
         }
-        
+
         .status-disconnected {
             color: #ef4444;
         }
-        
+
         @media (max-width: 768px) {
             .sidebar {
                 position: fixed;
@@ -170,13 +171,14 @@
                 z-index: 1000;
                 transition: left 0.3s ease;
             }
-            
+
             .sidebar.open {
                 left: 0;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="flex h-screen">
         <!-- Sidebar -->
@@ -185,7 +187,7 @@
                 <h1 class="text-2xl font-bold gradient-text">HireFast</h1>
                 <p class="text-sm text-gray-400 mt-1">AI-Powered HR Automation</p>
             </div>
-            
+
             <nav class="space-y-2">
                 <a href="/dashboard" class="nav-item">
                     <i class="fas fa-tachometer-alt w-5 mr-3"></i>
@@ -203,6 +205,10 @@
                     <i class="fas fa-calendar-alt w-5 mr-3"></i>
                     Schedule Interviews
                 </a>
+                <a href="/connect-calendar" class="nav-item">
+                    <i class="fas fa-calendar-check w-5 mr-3"></i>
+                    Connect Calendar
+                </a>
                 <a href="/analytics" class="nav-item">
                     <i class="fas fa-chart-line w-5 mr-3"></i>
                     Analytics
@@ -212,10 +218,11 @@
                     Settings
                 </a>
             </nav>
-            
+
             <div class="mt-auto pt-6">
                 <div class="flex items-center mb-4">
-                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-3">
+                    <div
+                        class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-3">
                         <span class="text-white font-bold text-sm">JD</span>
                     </div>
                     <div>
@@ -229,7 +236,7 @@
                 </button>
             </div>
         </div>
-        
+
         <!-- Main Content -->
         <div class="flex-1 flex flex-col overflow-hidden">
             <!-- Header -->
@@ -241,7 +248,7 @@
                     </div>
                 </div>
             </header>
-            
+
             <!-- Content -->
             <main class="flex-1 overflow-y-auto p-6">
                 <div class="max-w-4xl mx-auto space-y-8">
@@ -251,19 +258,23 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-sm font-medium mb-2">Full Name</label>
-                                <input type="text" class="form-input" value="John Doe" placeholder="Enter your full name">
+                                <input type="text" class="form-input" value="John Doe"
+                                    placeholder="Enter your full name">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium mb-2">Email Address</label>
-                                <input type="email" class="form-input" value="john.doe@company.com" placeholder="Enter your email">
+                                <input type="email" class="form-input" value="john.doe@company.com"
+                                    placeholder="Enter your email">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium mb-2">Job Title</label>
-                                <input type="text" class="form-input" value="HR Manager" placeholder="Enter your job title">
+                                <input type="text" class="form-input" value="HR Manager"
+                                    placeholder="Enter your job title">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium mb-2">Company</label>
-                                <input type="text" class="form-input" value="TechCorp Inc." placeholder="Enter your company name">
+                                <input type="text" class="form-input" value="TechCorp Inc."
+                                    placeholder="Enter your company name">
                             </div>
                         </div>
                         <div class="mt-6">
@@ -273,7 +284,7 @@
                             </button>
                         </div>
                     </div>
-                    
+
                     <!-- Integration Settings -->
                     <div class="settings-card">
                         <h3 class="text-xl font-bold mb-6">Integrations</h3>
@@ -285,7 +296,8 @@
                                     </div>
                                     <div>
                                         <h4 class="font-semibold">LinkedIn</h4>
-                                        <p class="text-sm text-gray-400">Post job descriptions and manage applications</p>
+                                        <p class="text-sm text-gray-400">Post job descriptions and manage applications
+                                        </p>
                                     </div>
                                 </div>
                                 <div class="flex items-center space-x-4">
@@ -299,7 +311,7 @@
                                     </button>
                                 </div>
                             </div>
-                            
+
                             <div class="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
                                 <div class="flex items-center space-x-4">
                                     <div class="w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center">
@@ -307,7 +319,8 @@
                                     </div>
                                     <div>
                                         <h4 class="font-semibold">Google Calendar</h4>
-                                        <p class="text-sm text-gray-400">Schedule interviews and send calendar invites</p>
+                                        <p class="text-sm text-gray-400">Schedule interviews and send calendar invites
+                                        </p>
                                     </div>
                                 </div>
                                 <div class="flex items-center space-x-4">
@@ -321,7 +334,7 @@
                                     </button>
                                 </div>
                             </div>
-                            
+
                             <div class="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
                                 <div class="flex items-center space-x-4">
                                     <div class="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center">
@@ -345,7 +358,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Notification Settings -->
                     <div class="settings-card">
                         <h3 class="text-xl font-bold mb-6">Notifications</h3>
@@ -353,14 +366,15 @@
                             <div class="flex items-center justify-between">
                                 <div>
                                     <h4 class="font-semibold">Email Notifications</h4>
-                                    <p class="text-sm text-gray-400">Receive email updates about new applications and interviews</p>
+                                    <p class="text-sm text-gray-400">Receive email updates about new applications and
+                                        interviews</p>
                                 </div>
                                 <label class="toggle-switch">
                                     <input type="checkbox" checked>
                                     <span class="slider"></span>
                                 </label>
                             </div>
-                            
+
                             <div class="flex items-center justify-between">
                                 <div>
                                     <h4 class="font-semibold">SMS Notifications</h4>
@@ -371,7 +385,7 @@
                                     <span class="slider"></span>
                                 </label>
                             </div>
-                            
+
                             <div class="flex items-center justify-between">
                                 <div>
                                     <h4 class="font-semibold">Calendar Reminders</h4>
@@ -382,7 +396,7 @@
                                     <span class="slider"></span>
                                 </label>
                             </div>
-                            
+
                             <div class="flex items-center justify-between">
                                 <div>
                                     <h4 class="font-semibold">Weekly Reports</h4>
@@ -395,7 +409,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- AI Settings -->
                     <div class="settings-card">
                         <h3 class="text-xl font-bold mb-6">AI Preferences</h3>
@@ -409,7 +423,7 @@
                                     <option>Creative & Engaging</option>
                                 </select>
                             </div>
-                            
+
                             <div>
                                 <label class="block text-sm font-medium mb-2">Candidate Screening Criteria</label>
                                 <div class="space-y-2">
@@ -431,7 +445,7 @@
                                     </label>
                                 </div>
                             </div>
-                            
+
                             <div>
                                 <label class="block text-sm font-medium mb-2">Auto-screening Threshold</label>
                                 <input type="range" min="0" max="100" value="75" class="w-full">
@@ -443,7 +457,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Security Settings -->
                     <div class="settings-card">
                         <h3 class="text-xl font-bold mb-6">Security</h3>
@@ -466,15 +480,17 @@
                             </button>
                         </div>
                     </div>
-                    
+
                     <!-- Danger Zone -->
                     <div class="settings-card border-red-500">
                         <h3 class="text-xl font-bold mb-6 text-red-400">Danger Zone</h3>
                         <div class="space-y-4">
                             <div class="p-4 bg-red-900 bg-opacity-20 border border-red-500 rounded-lg">
                                 <h4 class="font-semibold text-red-400 mb-2">Delete Account</h4>
-                                <p class="text-sm text-gray-400 mb-4">Permanently delete your account and all associated data. This action cannot be undone.</p>
-                                <button class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors">
+                                <p class="text-sm text-gray-400 mb-4">Permanently delete your account and all associated
+                                    data. This action cannot be undone.</p>
+                                <button
+                                    class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors">
                                     <i class="fas fa-trash mr-2"></i>
                                     Delete Account
                                 </button>
@@ -485,20 +501,20 @@
             </main>
         </div>
     </div>
-    
+
     <script>
         function logout() {
             if (confirm('Are you sure you want to logout?')) {
                 window.location.href = '/logout';
             }
         }
-        
+
         // Add mobile menu toggle functionality
         function toggleSidebar() {
             const sidebar = document.querySelector('.sidebar');
             sidebar.classList.toggle('open');
         }
-        
+
         // Add mobile menu button for small screens
         if (window.innerWidth <= 768) {
             const header = document.querySelector('header');
@@ -510,4 +526,5 @@
         }
     </script>
 </body>
+
 </html>

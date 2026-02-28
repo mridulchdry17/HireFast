@@ -1,8 +1,8 @@
-# Calendar Integration with Observee Auth SDK
+# Calendar Integration with Composio
 
 ## Overview
 
-The HR automation system now includes **personalized calendar integration** using Observee's Auth SDK. Each user can connect their own Google Calendar, and interview scheduling events will be sent to their personal calendar.
+The HR automation system now includes **personalized calendar integration** using Composio. Each user can connect their own Google Calendar, and interview scheduling events will be sent to their personal calendar.
 
 ## How It Works
 
@@ -48,8 +48,8 @@ The HR automation system now includes **personalized calendar integration** usin
 ### Backend Changes
 - Added `/connect-calendar` endpoint for authentication
 - Added `/check-calendar-status` endpoint for status checking
-- Updated `schedule_interview_with_observee()` to use user-specific `client_id`
-- Added `user_observee_client_ids` storage for user credentials
+- Updated `create_interview_event()` to use user-specific `user_id`
+- Uses Composio for secure OAuth management
 
 ### Frontend Changes
 - Added Calendar Integration section in UI
@@ -66,8 +66,8 @@ Starts the calendar authentication flow for the current user.
 ```json
 {
   "status": "success",
-  "auth_url": "https://observee.ai/auth/gmail?client_id=...",
-  "client_id": "user-uuid",
+  "auth_url": "https://composio.ai/...",
+  "user_id": "user-uuid",
   "message": "Please visit the URL to authenticate your Google Calendar"
 }
 ```
@@ -86,14 +86,14 @@ Checks if the current user has connected their calendar.
 
 ## Installation
 
-1. Install the Observee Agents package:
+1. Install the Composio LangChain package:
 ```bash
-pip install observee-agents
+pip install composio-langchain composio-core
 ```
 
-2. Set your Observee API key as environment variable:
+2. Set your Composio API key as environment variable:
 ```bash
-export OBSERVEE_API_KEY="obs_your_api_key_here"
+export COMPOSIO_API_KEY="ak_your_api_key_here"
 ```
 
 3. Run the application:
@@ -114,7 +114,7 @@ python app.py
 ### Calendar Not Connecting
 - Ensure user completes the full OAuth flow
 - Check that user grants calendar permissions
-- Verify Observee API key is set correctly
+- Verify Composio API key is set correctly
 
 ### Interview Scheduling Fails
 - Ensure user has connected their calendar first

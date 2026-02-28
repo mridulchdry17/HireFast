@@ -16,3 +16,5 @@ groq
 sounddevice
 soundfile
 gtts
+composio-langchain
+composio-core

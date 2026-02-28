@@ -45,6 +45,7 @@ class Config:
     
     # AI/LLM settings
     GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
+    COMPOSIO_API_KEY = os.environ.get("COMPOSIO_API_KEY")
     
     # Application form links
     ROLE_FORM_LINKS = {
