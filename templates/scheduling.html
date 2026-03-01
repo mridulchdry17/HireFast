@@ -137,6 +137,51 @@
             background: transparent;
         }
 
+        /* Interview Mode Selection */
+        .mode-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .mode-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .mode-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(102, 126, 234, 0.5);
+        }
+
+        .mode-card.active {
+            background: rgba(102, 126, 234, 0.15);
+            border-color: #667eea;
+        }
+
+        .mode-card i {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .mode-card h4 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-bottom: 0.2rem;
+        }
+
+        .mode-card p {
+            font-size: 0.7rem;
+            color: #94a3b8;
+        }
+
         /* Form */
         .form-input {
             background: rgba(15, 23, 42, 0.7);
@@ -484,6 +529,24 @@
                             <div id="alertArea"></div>
 
                             <form id="scheduleForm" class="flex-1 flex flex-col gap-4">
+                                <!-- Interview Mode Toggle -->
+                                <div>
+                                    <label class="form-label">Interview Mode</label>
+                                    <div class="mode-selector">
+                                        <div class="mode-card active" id="modeHuman"
+                                            onclick="setInterviewMode('human')">
+                                            <i class="fas fa-video text-blue-400"></i>
+                                            <h4>Human Interview</h4>
+                                            <p>GMeet invite sent via Calendar</p>
+                                        </div>
+                                        <div class="mode-card" id="modeAI" onclick="setInterviewMode('ai')">
+                                            <i class="fas fa-robot text-purple-400"></i>
+                                            <h4>AI Screening</h4>
+                                            <p>Self-paced link (48h window)</p>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="interviewMode" value="human">
+                                </div>
                                 <!-- Row 1 -->
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
@@ -508,18 +571,18 @@
                                 </div>
 
                                 <!-- Row 3: Date + Time + Duration -->
-                                <div class="grid grid-cols-3 gap-4">
+                                <div class="grid grid-cols-3 gap-4" id="dateTimeRow">
                                     <div>
-                                        <label class="form-label">Interview Date <span
+                                        <label class="form-label" id="dateLabel">Interview Date <span
                                                 class="text-purple-400">*</span></label>
                                         <input type="date" id="interviewDate" class="form-input" required>
                                     </div>
-                                    <div>
+                                    <div class="human-only">
                                         <label class="form-label">Interview Time <span
                                                 class="text-purple-400">*</span></label>
                                         <input type="time" id="interviewTime" class="form-input" value="10:00" required>
                                     </div>
-                                    <div>
+                                    <div class="human-only">
                                         <label class="form-label">Duration</label>
                                         <select id="duration" class="form-input">
                                             <option value="30">30 minutes</option>
@@ -556,6 +619,9 @@
                                         placeholder="Any additional notes for the interview…"
                                         style="resize:vertical;"></textarea>
                                 </div>
+
+                                <input type="hidden" id="application_id" value="">
+                                <input type="hidden" id="resume_path" value="">
 
                                 <!-- Actions -->
                                 <div class="grid grid-cols-2 gap-3 mt-auto pt-2">
@@ -680,9 +746,38 @@
 
         function resetForm() {
             document.getElementById('scheduleForm').reset();
+            setInterviewMode('human');
             document.getElementById('interviewTime').value = '10:00';
             document.getElementById('selectedDateLabel').textContent = 'Select a date from the calendar or fill in manually';
             document.querySelectorAll('.calendar-day.selected').forEach(d => d.classList.remove('selected'));
+        }
+
+        function setInterviewMode(mode) {
+            document.getElementById('interviewMode').value = mode;
+
+            const humanCard = document.getElementById('modeHuman');
+            const aiCard = document.getElementById('modeAI');
+            const humanOnly = document.querySelectorAll('.human-only');
+            const dateLabel = document.getElementById('dateLabel');
+            const submitBtn = document.getElementById('submitBtn');
+
+            if (mode === 'human') {
+                humanCard.classList.add('active');
+                aiCard.classList.remove('active');
+                humanOnly.forEach(el => el.style.display = 'block');
+                dateLabel.innerHTML = 'Interview Date <span class="text-purple-400">*</span>';
+                submitBtn.innerHTML = '<i class="fas fa-calendar-check"></i> Schedule Interview';
+                document.getElementById('interviewTime').disabled = false;
+                document.getElementById('duration').disabled = false;
+            } else {
+                aiCard.classList.add('active');
+                humanCard.classList.remove('active');
+                humanOnly.forEach(el => el.style.display = 'none');
+                dateLabel.innerHTML = 'Start Date <span class="text-purple-400">*</span>';
+                submitBtn.innerHTML = '<i class="fas fa-robot"></i> Send AI Interview Invite';
+                document.getElementById('interviewTime').disabled = true;
+                document.getElementById('duration').disabled = true;
+            }
         }
 
         document.getElementById('scheduleForm').addEventListener('submit', async (e) => {
@@ -719,7 +814,10 @@
                         duration: parseInt(dur),
                         interviewer_email: iEmail,
                         interview_type: type,
-                        notes: notes
+                        notes: notes,
+                        interview_mode: document.getElementById('interviewMode').value,
+                        application_id: document.getElementById('application_id').value,
+                        resume_path: document.getElementById('resume_path').value
                     })
                 });
 
@@ -771,6 +869,14 @@
         // Init
         generateCalendar();
         checkStatus();
+
+        // Populating from URL params
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('name')) document.getElementById('candidateName').value = urlParams.get('name');
+        if (urlParams.has('email')) document.getElementById('candidateEmail').value = urlParams.get('email');
+        if (urlParams.has('position')) document.getElementById('position').value = urlParams.get('position');
+        if (urlParams.has('app_id')) document.getElementById('application_id').value = urlParams.get('app_id');
+        if (urlParams.has('resume')) document.getElementById('resume_path').value = urlParams.get('resume');
 
         // Set today's date as default
         const today = new Date();

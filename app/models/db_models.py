@@ -43,6 +43,7 @@ class AIInterviewSession(db.Model):
     current_question = db.Column(db.Integer, default=0)
     overall_score = db.Column(db.Float)
     conversation_history = db.Column(db.Text)  # JSON string
+    expires_at = db.Column(db.DateTime)
     started_at = db.Column(db.DateTime)
     completed_at = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

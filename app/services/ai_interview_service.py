@@ -154,6 +154,8 @@ Respond in this EXACT JSON format (no markdown, no extra text):
         if not resume_text:
             resume_text = f"Candidate applying for {job_role}"
 
+        from datetime import datetime, timedelta
+        expires_at = datetime.utcnow() + timedelta(hours=48)
         session = AIInterviewSession(
             application_id=application_id,
             candidate_name=candidate_name,
@@ -164,11 +166,12 @@ Respond in this EXACT JSON format (no markdown, no extra text):
             total_questions=5,
             current_question=0,
             conversation_history=json.dumps([]),
+            expires_at=expires_at
         )
         db.session.add(session)
         db.session.commit()
 
-        print(f"Created interview session {session.id} for {candidate_name}")
+        print(f"Created interview session {session.id} for {candidate_name} (Expires: {expires_at})")
         return self._session_to_dict(session)
 
     def start_interview(self, session_id: str) -> Dict:
@@ -293,12 +296,26 @@ Respond in this EXACT JSON format (no markdown, no extra text):
         return {
             'session': self._session_to_dict(session),
             'conversation_history': self._get_history(session),
+            'is_expired': session.expires_at < datetime.utcnow() if session.expires_at else False,
             'last_question': {
                 'id': last_q.id,
                 'question_number': last_q.question_number,
                 'question_text': last_q.question_text,
             } if last_q else None,
         }
+
+    def extend_expiration(self, session_id: str, hours: int = 48) -> Dict:
+        """Extend the expiration time of an interview session."""
+        session = self._get_session(session_id)
+        if not session:
+            return {'error': 'Interview not found'}
+        
+        if not session.expires_at:
+            session.expires_at = datetime.utcnow()
+        
+        session.expires_at += timedelta(hours=hours)
+        db.session.commit()
+        return {'success': True, 'new_expiry': session.expires_at.isoformat()}
 
     def get_session_by_application(self, application_id: str) -> Optional[Dict]:
         """Get the interview session for a specific application (if exists)."""

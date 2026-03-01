@@ -20,12 +20,20 @@ audio_service = AudioService()
 @ai_interview_bp.route('/ai-interviewer/<session_id>')
 def ai_interviewer_page(session_id):
     """Candidate-facing AI interview page."""
-    result = ai_interview_service.get_interview_status(session_id)
-    if 'error' in result:
+    status_data = ai_interview_service.get_interview_status(session_id)
+    if 'error' in status_data:
         return redirect('/direct-ai-interview')
-    return render_template('ai_interview.html',
-                           interview=result['session'],
-                           conversation_history=result.get('conversation_history', []))
+    
+    session = status_data['session']
+    if status_data.get('is_expired') and session['status'] != 'completed':
+        return render_template('ai_interview.html', 
+                             interview=session, 
+                             is_expired=True,
+                             error="This interview link has expired. Please contact the recruiter to extend the deadline.")
+
+    return render_template('ai_interview.html', 
+                           interview=session, 
+                           conversation_history=status_data.get('conversation_history', []))
 
 
 # ─── REST API ────────────────────────────────────────────────────────────────────
@@ -177,3 +185,13 @@ def serve_audio(filename):
     if not os.path.exists(audio_path):
         return jsonify({'error': 'Audio file not found'}), 404
     return send_file(audio_path, mimetype='audio/wav')
+@ai_interview_bp.route('/api/ai-interview/<session_id>/extend', methods=['POST'])
+def extend_interview(session_id):
+    """Extend the interview deadline (Admin only)."""
+    try:
+        data = request.get_json() or {}
+        hours = data.get('hours', 48)
+        result = ai_interview_service.extend_expiration(session_id, hours)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

@@ -285,8 +285,26 @@
                 </div>
             </div>
 
+            <!-- Expiration Overlay -->
+            {% if is_expired %}
+            <div id="expirationOverlay" class="interview-card p-12 text-center fade-in bg-red-900 bg-opacity-20 border-red-500 border-2">
+                <div class="mb-6">
+                    <i class="fas fa-hourglass-end text-6xl text-red-400 mb-4"></i>
+                    <h2 class="text-3xl font-bold mb-4 text-white">Interview Link Expired</h2>
+                    <p class="text-xl text-gray-300 mb-6">
+                        This interview link has expired (48-hour window). Please contact the recruiter or hiring team to extend your deadline or request a new link.
+                    </p>
+                </div>
+                <div class="space-y-4">
+                    <div class="text-gray-400 text-sm">
+                        Session ID: {{ interview.id }}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
             <!-- Interview Content -->
-            <div id="interviewContent">
+            <div id="interviewContent" {% if is_expired %}style="display: none;"{% endif %}>
                 {% if interview.status == 'pending' %}
                 <!-- Start Interview -->
                 <div class="interview-card p-8 text-center fade-in">
@@ -441,6 +459,7 @@
         // Global variables
         const interviewId = '{{ interview.id }}';
         const interviewStatus = '{{ interview.status }}';
+        const isExpired = {{ 'true' if is_expired else 'false' }};
         let currentQuestion = null;
         let isRecording = false;
         let mediaRecorder = null;
@@ -486,6 +505,10 @@
 
         // Functions
         async function startInterview() {
+            if (isExpired) {
+                showError('This interview link has expired.');
+                return;
+            }
             try {
                 showLoading(startInterviewBtn);
 

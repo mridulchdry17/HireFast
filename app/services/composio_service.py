@@ -51,6 +51,8 @@ class ComposioService:
         interview_date: str,
         interview_time: str,
         duration_mins: int = 60,
+        description: str = None,
+        create_meeting_room: bool = True
     ) -> Dict[str, Any]:
         """Create a Google Calendar event using Composio for a specific user."""
         try:
@@ -78,15 +80,18 @@ class ComposioService:
             duration_hours = duration_mins // 60
             duration_minutes = duration_mins % 60
 
+            # Use provided description or fall back to default
+            event_description = description if description else f"Interview scheduled via HireFast.\nCandidate: {candidate_name} ({candidate_email})"
+
             params = {
                 "start_datetime": start_dt.strftime("%Y-%m-%dT%H:%M:%S"),
                 "timezone": "UTC",
                 "summary": f"Interview with {candidate_name}",
-                "description": f"Interview scheduled via HireFast.\nCandidate: {candidate_name} ({candidate_email})",
+                "description": event_description,
                 "attendees": [candidate_email],
                 "event_duration_hour": duration_hours,
                 "event_duration_minutes": duration_minutes,
-                "create_meeting_room": True,
+                "create_meeting_room": create_meeting_room,
             }
 
             print(f"[Composio] Scheduling: user={user_id} candidate={candidate_email} start={start_iso}")

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,13 +10,13 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
@@ -23,33 +24,33 @@
             min-height: 100vh;
             line-height: 1.6;
         }
-        
+
         .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-        
+
         .gradient-text {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        
+
         .glass-effect {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        
+
         .card-hover {
             transition: all 0.3s ease;
         }
-        
+
         .card-hover:hover {
             transform: translateY(-8px);
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
         }
-        
+
         .btn-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -64,12 +65,12 @@
             border: none;
             cursor: pointer;
         }
-        
+
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
         }
-        
+
         .btn-secondary {
             background: rgba(255, 255, 255, 0.1);
             color: white;
@@ -84,12 +85,12 @@
             border: 1px solid rgba(255, 255, 255, 0.2);
             cursor: pointer;
         }
-        
+
         .btn-secondary:hover {
             background: rgba(255, 255, 255, 0.2);
             transform: translateY(-2px);
         }
-        
+
         .hero-section {
             min-height: 100vh;
             display: flex;
@@ -97,7 +98,7 @@
             position: relative;
             overflow: hidden;
         }
-        
+
         .hero-bg {
             position: absolute;
             top: 0;
@@ -105,9 +106,9 @@
             right: 0;
             bottom: 0;
             background: radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.3) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.3) 0%, transparent 50%);
+                radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.3) 0%, transparent 50%);
         }
-        
+
         .feature-card {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(20px);
@@ -115,22 +116,22 @@
             border-radius: 1.5rem;
             padding: 2rem;
             transition: all 0.3s ease;
-            box-shadow: 
+            box-shadow:
                 0 1px 3px rgba(0, 0, 0, 0.3),
                 0 4px 12px rgba(0, 0, 0, 0.2),
                 0 8px 24px rgba(0, 0, 0, 0.1);
         }
-        
+
         .feature-card:hover {
             background: rgba(255, 255, 255, 0.1);
             transform: translateY(-8px);
-            box-shadow: 
+            box-shadow:
                 0 4px 12px rgba(0, 0, 0, 0.3),
                 0 12px 32px rgba(0, 0, 0, 0.2),
                 0 24px 48px rgba(0, 0, 0, 0.1);
             border-color: rgba(255, 255, 255, 0.2);
         }
-        
+
         .nav-sticky {
             position: fixed;
             top: 0;
@@ -141,43 +142,64 @@
             backdrop-filter: blur(24px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.3s ease;
-            box-shadow: 
+            box-shadow:
                 0 1px 3px rgba(0, 0, 0, 0.3),
                 0 4px 12px rgba(0, 0, 0, 0.2),
                 0 8px 24px rgba(0, 0, 0, 0.1);
         }
-        
+
         .nav-hidden {
             transform: translateY(-100%);
         }
-        
+
         .fade-in {
             animation: fadeIn 0.8s ease-out;
         }
-        
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        
+
         .slide-up {
             animation: slideUp 0.6s ease-out;
         }
-        
+
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(50px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        
+
         .pulse-animation {
             animation: pulse 2s infinite;
         }
-        
+
         @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
         }
-        
+
         .stats-number {
             font-size: 3rem;
             font-weight: 800;
@@ -186,7 +208,7 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        
+
         .testimonial-card {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(20px);
@@ -195,7 +217,7 @@
             padding: 2rem;
             position: relative;
         }
-        
+
         .testimonial-card::before {
             content: '"';
             position: absolute;
@@ -205,7 +227,7 @@
             color: rgba(102, 126, 234, 0.3);
             font-family: serif;
         }
-        
+
         .floating-elements {
             position: absolute;
             top: 0;
@@ -215,7 +237,7 @@
             pointer-events: none;
             overflow: hidden;
         }
-        
+
         .sticky-note {
             position: absolute;
             width: 80px;
@@ -228,7 +250,7 @@
             font-size: 24px;
             animation: float 6s ease-in-out infinite;
         }
-        
+
         .sticky-note:nth-child(1) {
             background: #fef3c7;
             color: #92400e;
@@ -236,7 +258,7 @@
             left: 8%;
             animation-delay: 0s;
         }
-        
+
         .sticky-note:nth-child(2) {
             background: #d1fae5;
             color: #065f46;
@@ -244,7 +266,7 @@
             right: 12%;
             animation-delay: 1s;
         }
-        
+
         .sticky-note:nth-child(3) {
             background: #fce7f3;
             color: #be185d;
@@ -252,7 +274,7 @@
             left: 15%;
             animation-delay: 2s;
         }
-        
+
         .sticky-note:nth-child(4) {
             background: #e0e7ff;
             color: #3730a3;
@@ -260,7 +282,7 @@
             right: 8%;
             animation-delay: 3s;
         }
-        
+
         .sticky-note:nth-child(5) {
             background: #f3e8ff;
             color: #6b21a8;
@@ -268,7 +290,7 @@
             right: 20%;
             animation-delay: 4s;
         }
-        
+
         .sticky-note:nth-child(6) {
             background: #fef2f2;
             color: #dc2626;
@@ -276,12 +298,19 @@
             left: 5%;
             animation-delay: 5s;
         }
-        
+
         @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-15px) rotate(2deg); }
+
+            0%,
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(-15px) rotate(2deg);
+            }
         }
-        
+
         .app-mockup {
             background: white;
             border-radius: 20px;
@@ -290,11 +319,11 @@
             transform: perspective(1000px) rotateY(-5deg) rotateX(5deg);
             transition: all 0.3s ease;
         }
-        
+
         .app-mockup:hover {
             transform: perspective(1000px) rotateY(0deg) rotateX(0deg) scale(1.05);
         }
-        
+
         .mockup-screen {
             background: #f8fafc;
             border-radius: 15px;
@@ -302,7 +331,7 @@
             min-height: 200px;
             border: 2px solid #e2e8f0;
         }
-        
+
         .mockup-header {
             display: flex;
             align-items: center;
@@ -311,7 +340,7 @@
             padding-bottom: 10px;
             border-bottom: 1px solid #e2e8f0;
         }
-        
+
         .mockup-icon {
             width: 24px;
             height: 24px;
@@ -323,13 +352,13 @@
             color: white;
             font-size: 12px;
         }
-        
+
         .mockup-content {
             color: #1f2937;
             font-size: 14px;
             line-height: 1.5;
         }
-        
+
         .gradient-text-emphasis {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             -webkit-background-clip: text;
@@ -338,23 +367,24 @@
             font-style: italic;
             font-weight: 700;
         }
-        
+
         @media (max-width: 768px) {
             .hero-section {
                 padding: 2rem 0;
                 min-height: 80vh;
             }
-            
+
             .stats-number {
                 font-size: 2rem;
             }
-            
+
             .feature-card {
                 padding: 1.5rem;
             }
         }
     </style>
 </head>
+
 <body>
     <!-- Navigation -->
     <nav class="nav-sticky" id="navbar">
@@ -367,10 +397,15 @@
                 </div>
                 <div class="hidden md:block">
                     <div class="ml-10 flex items-baseline space-x-8">
-                        <a href="#features" class="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors">Features</a>
-                        <a href="#how-it-works" class="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors">How It Works</a>
-                        <a href="#testimonials" class="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors">Testimonials</a>
-                        <a href="#contact" class="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors">Contact</a>
+                        <a href="#features"
+                            class="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors">Features</a>
+                        <a href="#how-it-works"
+                            class="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors">How
+                            It Works</a>
+                        <a href="#testimonials"
+                            class="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors">Testimonials</a>
+                        <a href="#contact"
+                            class="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors">Contact</a>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -420,7 +455,8 @@
                     Platform to <span class="gradient-text-emphasis">Crack</span> Hiring
                 </h1>
                 <p class="text-xl md:text-2xl text-gray-300 mb-8 max-w-4xl mx-auto fade-in leading-relaxed">
-                    Discover <span class="font-medium text-gray-200">top candidates</span>, send <span class="font-medium text-gray-200">personalized messages</span>, 
+                    Discover <span class="font-medium text-gray-200">top candidates</span>, send <span
+                        class="font-medium text-gray-200">personalized messages</span>,
                     and land your <span class="font-semibold text-blue-400">dream hires</span> with AI-powered tools.
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12 fade-in">
@@ -437,7 +473,7 @@
                         Take AI Interview
                     </a>
                 </div>
-                
+
                 <!-- Stats -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto slide-up">
                     <div class="text-center">
@@ -466,8 +502,10 @@
                 </h2>
                 <div class="max-w-4xl mx-auto mb-12">
                     <p class="text-xl md:text-2xl text-gray-300 leading-relaxed mb-6">
-                        Our <span class="font-semibold text-blue-400">AI-powered platform</span> automates every step of your hiring process, 
-                        from <span class="font-medium text-gray-200">job posting</span> to <span class="font-medium text-gray-200">candidate selection</span>.
+                        Our <span class="font-semibold text-blue-400">AI-powered platform</span> automates every step of
+                        your hiring process,
+                        from <span class="font-medium text-gray-200">job posting</span> to <span
+                            class="font-medium text-gray-200">candidate selection</span>.
                     </p>
                     <div class="flex flex-wrap justify-center items-center gap-6 text-sm text-gray-400">
                         <div class="flex items-center gap-2">
@@ -485,7 +523,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <div class="feature-card card-hover">
                     <div class="app-mockup mb-6">
@@ -498,8 +536,10 @@
                             </div>
                             <div class="mockup-content">
                                 <div class="mb-3">
-                                    <div class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs inline-block mb-2">Software Engineer</div>
-                                    <p class="text-sm text-gray-600">Generate compelling job descriptions in seconds...</p>
+                                    <div class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs inline-block mb-2">
+                                        Software Engineer</div>
+                                    <p class="text-sm text-gray-600">Generate compelling job descriptions in seconds...
+                                    </p>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <div class="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -510,14 +550,14 @@
                     </div>
                     <h3 class="text-2xl font-bold mb-4 text-white">AI Job Descriptions</h3>
                     <p class="text-gray-300 mb-6">
-                        Generate compelling, optimized job descriptions in seconds using advanced AI. 
+                        Generate compelling, optimized job descriptions in seconds using advanced AI.
                         Perfect for LinkedIn and other job boards.
                     </p>
                     <a href="/job-posting" class="text-blue-400 hover:text-blue-300 font-semibold">
                         Try it now <i class="fas fa-arrow-right ml-2"></i>
                     </a>
                 </div>
-                
+
                 <div class="feature-card card-hover">
                     <div class="app-mockup mb-6">
                         <div class="mockup-screen">
@@ -531,7 +571,8 @@
                                 <div class="mb-3">
                                     <div class="flex items-center justify-between mb-2">
                                         <span class="text-sm font-medium">Sarah Johnson</span>
-                                        <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">95% Match</span>
+                                        <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">95%
+                                            Match</span>
                                     </div>
                                     <p class="text-xs text-gray-600">5 years Python, React experience</p>
                                 </div>
@@ -544,14 +585,14 @@
                     </div>
                     <h3 class="text-2xl font-bold mb-4 text-white">Smart Candidate Screening</h3>
                     <p class="text-gray-300 mb-6">
-                        Automatically analyze resumes and rank candidates based on job requirements. 
+                        Automatically analyze resumes and rank candidates based on job requirements.
                         Find the best matches instantly.
                     </p>
                     <a href="/candidates" class="text-green-400 hover:text-green-300 font-semibold">
                         View candidates <i class="fas fa-arrow-right ml-2"></i>
                     </a>
                 </div>
-                
+
                 <div class="feature-card card-hover">
                     <div class="app-mockup mb-6">
                         <div class="mockup-screen">
@@ -565,7 +606,8 @@
                                 <div class="mb-3">
                                     <div class="text-sm font-medium mb-1">Dec 15, 2024</div>
                                     <div class="text-xs text-gray-600 mb-2">2:00 PM - 3:00 PM</div>
-                                    <div class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs inline-block">Google Meet</div>
+                                    <div class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs inline-block">
+                                        Google Meet</div>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
@@ -576,14 +618,14 @@
                     </div>
                     <h3 class="text-2xl font-bold mb-4 text-white">Automated Scheduling</h3>
                     <p class="text-gray-300 mb-6">
-                        Schedule interviews automatically with Google Calendar integration. 
+                        Schedule interviews automatically with Google Calendar integration.
                         Send invites and reminders seamlessly.
                     </p>
                     <a href="/scheduling" class="text-purple-400 hover:text-purple-300 font-semibold">
                         Schedule now <i class="fas fa-arrow-right ml-2"></i>
                     </a>
                 </div>
-                
+
                 <div class="feature-card card-hover">
                     <div class="app-mockup mb-6">
                         <div class="mockup-screen">
@@ -612,14 +654,14 @@
                     </div>
                     <h3 class="text-2xl font-bold mb-4 text-white">Analytics Dashboard</h3>
                     <p class="text-gray-300 mb-6">
-                        Track your hiring metrics, candidate pipeline, and performance insights 
+                        Track your hiring metrics, candidate pipeline, and performance insights
                         with detailed analytics.
                     </p>
                     <a href="/analytics" class="text-orange-400 hover:text-orange-300 font-semibold">
                         View dashboard <i class="fas fa-arrow-right ml-2"></i>
                     </a>
                 </div>
-                
+
                 <div class="feature-card card-hover">
                     <div class="app-mockup mb-6">
                         <div class="mockup-screen">
@@ -631,7 +673,8 @@
                             </div>
                             <div class="mockup-content">
                                 <div class="mb-3">
-                                    <div class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs inline-block mb-2">Posted</div>
+                                    <div class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs inline-block mb-2">
+                                        Posted</div>
                                     <p class="text-sm text-gray-600">Software Engineer - Remote</p>
                                     <div class="flex items-center gap-1 mt-2">
                                         <i class="fas fa-eye text-xs text-gray-500"></i>
@@ -647,14 +690,14 @@
                     </div>
                     <h3 class="text-2xl font-bold mb-4 text-white">LinkedIn Integration</h3>
                     <p class="text-gray-300 mb-6">
-                        Post job descriptions directly to LinkedIn with one click. 
+                        Post job descriptions directly to LinkedIn with one click.
                         Reach thousands of qualified candidates instantly.
                     </p>
                     <a href="/linkedin" class="text-indigo-400 hover:text-indigo-300 font-semibold">
                         Connect LinkedIn <i class="fas fa-arrow-right ml-2"></i>
                     </a>
                 </div>
-                
+
                 <div class="feature-card card-hover">
                     <div class="app-mockup mb-6">
                         <div class="mockup-screen">
@@ -668,7 +711,8 @@
                                 <div class="mb-3">
                                     <div class="flex items-center justify-between mb-2">
                                         <span class="text-sm font-medium">Sarah Johnson</span>
-                                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">In Progress</span>
+                                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">In
+                                            Progress</span>
                                     </div>
                                     <p class="text-xs text-gray-600">Question 3 of 5</p>
                                     <div class="w-full bg-gray-200 rounded-full h-1 mt-2">
@@ -684,14 +728,14 @@
                     </div>
                     <h3 class="text-2xl font-bold mb-4 text-white">AI Interviewer</h3>
                     <p class="text-gray-300 mb-6">
-                        Conduct automated AI interviews with voice and text support. 
+                        Conduct automated AI interviews with voice and text support.
                         Get instant evaluation and feedback for candidates.
                     </p>
                     <a href="/direct-ai-interview" class="text-blue-400 hover:text-blue-300 font-semibold">
                         Try AI Interview <i class="fas fa-arrow-right ml-2"></i>
                     </a>
                 </div>
-                
+
                 <div class="feature-card card-hover">
                     <div class="app-mockup mb-6">
                         <div class="mockup-screen">
@@ -704,13 +748,16 @@
                             <div class="mockup-content">
                                 <div class="mb-3">
                                     <div class="flex items-center gap-2 mb-2">
-                                        <div class="w-6 h-6 bg-teal-500 rounded-full flex items-center justify-center text-white text-xs font-bold">MJ</div>
+                                        <div
+                                            class="w-6 h-6 bg-teal-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                                            MJ</div>
                                         <div>
                                             <div class="text-sm font-medium">Michael Johnson</div>
                                             <div class="text-xs text-gray-500">Senior Developer</div>
                                         </div>
                                     </div>
-                                    <div class="bg-teal-100 text-teal-800 px-2 py-1 rounded text-xs inline-block">PDF</div>
+                                    <div class="bg-teal-100 text-teal-800 px-2 py-1 rounded text-xs inline-block">PDF
+                                    </div>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <div class="w-2 h-2 bg-teal-500 rounded-full"></div>
@@ -721,7 +768,7 @@
                     </div>
                     <h3 class="text-2xl font-bold mb-4 text-white">Resume Management</h3>
                     <p class="text-gray-300 mb-6">
-                        Centralized resume storage and analysis. View, compare, and manage 
+                        Centralized resume storage and analysis. View, compare, and manage
                         all candidate documents in one place.
                     </p>
                     <a href="/resumes" class="text-teal-400 hover:text-teal-300 font-semibold">
@@ -737,19 +784,19 @@
         // Navigation scroll effect
         let lastScrollTop = 0;
         const navbar = document.getElementById('navbar');
-        
+
         window.addEventListener('scroll', () => {
             const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            
+
             if (scrollTop > lastScrollTop && scrollTop > 100) {
                 navbar.classList.add('nav-hidden');
             } else {
                 navbar.classList.remove('nav-hidden');
             }
-            
+
             lastScrollTop = scrollTop;
         });
-        
+
         // Smooth scrolling for navigation links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
@@ -763,10 +810,10 @@
                 }
             });
         });
-        
+
         // Check authentication status on page load
         let isAuthenticated = false;
-        
+
         async function checkAuthStatus() {
             try {
                 const response = await fetch('/check-auth');
@@ -779,12 +826,12 @@
                 updateButtonStates();
             }
         }
-        
+
         function updateButtonStates() {
             const loginBtn = document.getElementById('loginBtn');
             const getStartedBtn = document.getElementById('getStartedBtn');
             const startHiringBtn = document.getElementById('startHiringBtn');
-            
+
             if (isAuthenticated) {
                 loginBtn.innerHTML = '<i class="fas fa-user"></i> Dashboard';
                 getStartedBtn.innerHTML = '<i class="fas fa-tachometer-alt"></i> Dashboard';
@@ -795,38 +842,39 @@
                 startHiringBtn.innerHTML = '<i class="fas fa-play"></i> Start Hiring Now';
             }
         }
-        
+
         // Button event listeners
-        document.getElementById('loginBtn').addEventListener('click', () => {
-            if (isAuthenticated) {
-                window.location.href = '/dashboard';
-            } else {
-                window.location.href = '/login';
-            }
-        });
-        
-        document.getElementById('getStartedBtn').addEventListener('click', () => {
-            if (isAuthenticated) {
-                window.location.href = '/dashboard';
-            } else {
-                window.location.href = '/login';
-            }
-        });
-        
-        document.getElementById('startHiringBtn').addEventListener('click', () => {
-            if (isAuthenticated) {
-                window.location.href = '/dashboard';
-            } else {
-                window.location.href = '/login';
-            }
-        });
-        
-        document.getElementById('watchDemoBtn').addEventListener('click', () => {
-            alert('Demo video coming soon!');
-        });
-        
+        const loginBtn = document.getElementById('loginBtn');
+        if (loginBtn) {
+            loginBtn.addEventListener('click', () => {
+                window.location.href = isAuthenticated ? '/dashboard' : '/login';
+            });
+        }
+
+        const getStartedBtn = document.getElementById('getStartedBtn');
+        if (getStartedBtn) {
+            getStartedBtn.addEventListener('click', () => {
+                window.location.href = isAuthenticated ? '/dashboard' : '/login';
+            });
+        }
+
+        const startHiringBtn = document.getElementById('startHiringBtn');
+        if (startHiringBtn) {
+            startHiringBtn.addEventListener('click', () => {
+                window.location.href = isAuthenticated ? '/dashboard' : '/login';
+            });
+        }
+
+        const watchDemoBtn = document.getElementById('watchDemoBtn');
+        if (watchDemoBtn) {
+            watchDemoBtn.addEventListener('click', () => {
+                alert('Demo video coming soon!');
+            });
+        }
+
         // Check auth status on page load
         checkAuthStatus();
     </script>
 </body>
+
 </html>

@@ -1,10 +1,12 @@
 from flask import Blueprint, request, jsonify, redirect, session
 from app.services.composio_service import ComposioService
+from app.services.ai_interview_service import AIInterviewService
 
 calendar_bp = Blueprint('calendar', __name__)
 
-# Initialize Composio service
+# Initialize services
 composio_service = ComposioService()
+ai_interview_service = AIInterviewService()
 
 def _get_user_id():
     """Get user ID from session, falling back to query param for testing."""
@@ -53,22 +55,53 @@ def schedule_interview_api():
     interview_time = data.get('interview_time', '')
     duration = data.get('duration', 60)  # Default to 60 mins if not provided
     
+    interview_mode = data.get('interview_mode', 'human')
+    notes = data.get('notes', '')
+    
+    # If AI Screening, create the session first
+    description = notes
+    create_meeting_room = True
+
+    if interview_mode == 'ai':
+        # Create persistent session
+        ai_session = ai_interview_service.create_interview_session(
+            application_id=data.get('application_id'), # Optional if scheduled from direct form
+            candidate_name=candidate_name,
+            candidate_email=candidate_email,
+            job_role=data.get('position', 'Candidate'),
+            resume_path=data.get('resume_path', '')
+        )
+        
+        # Get absolute URL for the interview link
+        relative_link = ai_session['interview_link']
+        base_url = request.url_root.rstrip('/')
+        interview_link = f"{base_url}{relative_link}"
+        
+        description = f"AI Screening Interview.\n\nPlease complete this interview within 48 hours at this link: {interview_link}\n\n{notes}"
+        create_meeting_room = False
+        # For AI interviews, time/duration is just a placeholder in calendar
+        # but we'll use the user's selected date/time as the "Invitation start"
+    
     # Create the calendar event using Composio
+    # We pass the custom description (with link) to Composio
     result = composio_service.create_interview_event(
         user_id,
         candidate_email, 
         candidate_name, 
         interview_date, 
         interview_time,
-        duration_mins=int(duration)
+        duration_mins=int(duration),
+        description=description,
+        create_meeting_room=create_meeting_room
     )
     
     if result.get('status') == 'success':
         return jsonify({
             'status': 'success',
-            'message': 'Interview scheduled successfully via Composio!',
+            'message': f'{"AI Screening invite" if interview_mode == "ai" else "Interview"} scheduled successfully!',
             'candidate_name': candidate_name,
-            'candidate_email': candidate_email
+            'candidate_email': candidate_email,
+            'interview_mode': interview_mode
         })
     else:
         return jsonify({'error': result.get('message', 'Failed to schedule event')}), 500
