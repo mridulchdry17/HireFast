@@ -1,108 +1,95 @@
 """
-AI Interview Service for conducting automated interviews.
+AI Interview Service — uses SQLite DB for persistence (no more in-memory loss on restart).
+Fixes:
+  - Sessions stored in DB via AIInterviewSession / AIInterviewQuestion models
+  - Resume loaded from local uploads/ folder (not Google Drive)
+  - Real question text passed to evaluator (not hardcoded placeholder)
 """
 import os
-import secrets
+import io
+import json
 import uuid
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 from groq import Groq
-from app.models.ai_interview import (
-    AIInterview, InterviewQuestion, InterviewAnswer, 
-    InterviewEvaluation, InterviewSession
-)
 from app.config import Config
 
+
 class AIInterviewService:
-    """Service for managing AI-powered interviews."""
-    
+    """Service for managing AI-powered interviews using DB persistence."""
+
     def __init__(self):
-        print(f"🔍 DEBUG: AIInterviewService initialized")
         self.groq_client = Groq(api_key=Config.GROQ_API_KEY)
-        self.interviews = {}  # In-memory storage for demo (replace with database)
-        self.conversation_histories = {}  # Track conversation context
-        print(f"🔍 DEBUG: Groq client initialized with API key: {Config.GROQ_API_KEY[:10]}...")
-    
-    def generate_llm_response_groq(self, prompt: str, model: str = "llama-3.3-70b-versatile",
-                                 temperature: float = 0.7) -> str:
-        """Use Groq chat completions to get a response."""
-        messages = [{"role": "user", "content": prompt}]
+
+    # ─── LLM helpers ────────────────────────────────────────────────────────────
+
+    def _llm(self, prompt: str, temperature: float = 0.7) -> str:
         resp = self.groq_client.chat.completions.create(
-            messages=messages,
-            model=model,
+            messages=[{"role": "user", "content": prompt}],
+            model="llama-3.3-70b-versatile",
             temperature=temperature,
         )
         return resp.choices[0].message.content
-    
-    def generate_question_groq(self, resume_text: str, conversation_history: List[Dict[str, str]]) -> str:
-        """Generate the next interview question based on resume and conversation history."""
-        # Build history text
-        history_text = "\n".join([
-            f"Q: {h['question']}\nA: {h['answer']}" 
-            for h in conversation_history
-        ])
-        
-        prompt = f"""
-You are an experienced technical interviewer conducting a professional interview. 
-Use the candidate's resume and past conversation to ask one relevant, insightful question.
+
+    def _generate_question(self, resume_text: str, history: List[Dict]) -> str:
+        history_text = "\n".join(
+            f"Q: {h['question']}\nA: {h['answer']}" for h in history
+        )
+        prompt = f"""You are an experienced technical interviewer conducting a professional interview.
+Use the candidate's resume and past conversation to ask ONE relevant, insightful question.
 
 Resume Summary:
 {resume_text}
 
 Conversation so far:
-{history_text}
+{history_text if history_text else "No previous questions yet — ask an opening question."}
 
 Guidelines:
-- Ask a follow-up question that builds on previous answers
+- Build on previous answers if any exist
 - Focus on technical skills, experience, or behavioral aspects
 - Keep questions clear and specific
 - Avoid repeating previous questions
-- Make questions relevant to the role and experience level
 
-Ask the next question to continue the interview. Return only the question text.
-"""
-        return self.generate_llm_response_groq(prompt)
-    
-    def evaluate_answer_groq(self, question: str, answer: str) -> Dict[str, Any]:
-        """Evaluate a candidate's answer and provide detailed feedback."""
-        prompt = f"""
-You are an expert interview evaluator. Analyze the candidate's answer and provide a comprehensive evaluation.
+Return ONLY the question text, nothing else."""
+        return self._llm(prompt)
+
+    def _evaluate_answer(self, question: str, answer: str) -> Dict[str, Any]:
+        prompt = f"""You are an expert interview evaluator. Analyze the candidate's answer.
 
 Question: {question}
 Candidate's Answer: {answer}
 
-Evaluate the answer on these criteria:
+Evaluate on these criteria:
 1. Technical Accuracy (0-10)
 2. Clarity of Communication (0-10)
 3. Depth of Understanding (0-10)
 4. Problem-Solving Approach (0-10)
 5. Relevance to Question (0-10)
 
-Provide your response in this exact JSON format:
+Respond in this EXACT JSON format (no markdown, no extra text):
 {{
-    "overall_score": <number between 0-10>,
-    "technical_accuracy": <number between 0-10>,
-    "communication_clarity": <number between 0-10>,
-    "depth_of_understanding": <number between 0-10>,
-    "problem_solving": <number between 0-10>,
-    "relevance": <number between 0-10>,
+    "overall_score": <number 0-10>,
+    "technical_accuracy": <number 0-10>,
+    "communication_clarity": <number 0-10>,
+    "depth_of_understanding": <number 0-10>,
+    "problem_solving": <number 0-10>,
+    "relevance": <number 0-10>,
     "feedback": "<2-3 sentence overall feedback>",
     "strengths": ["<strength 1>", "<strength 2>"],
-    "weaknesses": ["<weakness 1>", "<weakness 2>"],
-    "suggestions": ["<suggestion 1>", "<suggestion 2>"]
-}}
-
-Be constructive and specific in your feedback.
-"""
-        
+    "weaknesses": ["<weakness 1>"],
+    "suggestions": ["<suggestion 1>"]
+}}"""
         try:
-            response = self.generate_llm_response_groq(prompt)
-            # Parse JSON response
-            import json
-            evaluation = json.loads(response)
-            return evaluation
+            raw = self._llm(prompt, temperature=0.3)
+            # Strip markdown code fences if present
+            raw = raw.strip()
+            if raw.startswith("```"):
+                raw = raw.split("```")[1]
+                if raw.startswith("json"):
+                    raw = raw[4:]
+            return json.loads(raw.strip())
         except Exception as e:
-            # Fallback evaluation if JSON parsing fails
+            print(f"Evaluation JSON parse error: {e}")
             return {
                 "overall_score": 5.0,
                 "technical_accuracy": 5.0,
@@ -110,227 +97,238 @@ Be constructive and specific in your feedback.
                 "depth_of_understanding": 5.0,
                 "problem_solving": 5.0,
                 "relevance": 5.0,
-                "feedback": f"Answer received. Evaluation error: {str(e)}",
+                "feedback": "Answer received.",
                 "strengths": ["Provided an answer"],
-                "weaknesses": ["Could not evaluate due to technical error"],
-                "suggestions": ["Please try again"]
+                "weaknesses": [],
+                "suggestions": [],
             }
-    
-    def create_interview_session(self, candidate_id: str, candidate_name: str, 
-                               candidate_email: str, job_role: str, resume_text: str) -> AIInterview:
-        """Create a new AI interview session."""
-        interview_id = str(uuid.uuid4())
-        interview_link = f"/ai-interviewer/{interview_id}"
-        
-        print(f"🔍 DEBUG: Creating interview session with ID: {interview_id}")
-        print(f"🔍 DEBUG: Candidate: {candidate_name}, Role: {job_role}")
-        
-        interview = AIInterview(
-            id=interview_id,
-            candidate_id=candidate_id,
+
+    # ─── Resume helpers ─────────────────────────────────────────────────────────
+
+    def _load_resume_text(self, resume_path: str) -> str:
+        """Read PDF from local uploads/ folder and extract text."""
+        if not resume_path:
+            return ""
+        upload_folder = getattr(Config, 'UPLOAD_FOLDER', 'uploads')
+        full_path = os.path.join(upload_folder, resume_path)
+        if not os.path.exists(full_path):
+            print(f"Resume not found on disk: {full_path}")
+            return ""
+        try:
+            from pypdf import PdfReader
+            with open(full_path, 'rb') as f:
+                reader = PdfReader(io.BytesIO(f.read()))
+            return " ".join(page.extract_text() or "" for page in reader.pages).strip()
+        except Exception as e:
+            print(f"PDF extraction error: {e}")
+            return ""
+
+    # ─── DB helpers ─────────────────────────────────────────────────────────────
+
+    def _get_session(self, session_id: str):
+        from app.models.db_models import AIInterviewSession
+        return AIInterviewSession.query.get(session_id)
+
+    def _get_history(self, session) -> List[Dict]:
+        if not session.conversation_history:
+            return []
+        try:
+            return json.loads(session.conversation_history)
+        except Exception:
+            return []
+
+    def _save_history(self, session, history: List[Dict]):
+        from app.models.db_models import db
+        session.conversation_history = json.dumps(history)
+        db.session.commit()
+
+    # ─── Public API ─────────────────────────────────────────────────────────────
+
+    def create_interview_session(self, application_id: str, candidate_name: str,
+                                 candidate_email: str, job_role: str,
+                                 resume_path: str = "") -> Dict:
+        """Create a new persistent interview session from a DB application."""
+        from app.models.db_models import db, AIInterviewSession
+
+        resume_text = self._load_resume_text(resume_path)
+        if not resume_text:
+            resume_text = f"Candidate applying for {job_role}"
+
+        session = AIInterviewSession(
+            application_id=application_id,
             candidate_name=candidate_name,
             candidate_email=candidate_email,
             job_role=job_role,
             resume_text=resume_text,
             status='pending',
-            started_at=None,
-            completed_at=None,
-            total_questions=5,  # Default 5 questions
-            current_question=0,
-            overall_score=None,
-            interview_link=interview_link,
-            created_at=datetime.now()
-        )
-        
-        # Store in memory (replace with database)
-        self.interviews[interview_id] = interview
-        self.conversation_histories[interview_id] = []
-        
-        print(f"🔍 DEBUG: Interview created and stored. Total interviews: {len(self.interviews)}")
-        
-        return interview
-    
-    def create_quick_interview(self, candidate_name: str, job_role: str, resume_text: str = "") -> AIInterview:
-        """Create a quick interview session for direct platform use."""
-        interview_id = str(uuid.uuid4())
-        interview_link = f"/ai-interviewer/{interview_id}"
-        
-        print(f"🔍 DEBUG: Creating quick interview with ID: {interview_id}")
-        print(f"🔍 DEBUG: Quick candidate: {candidate_name}, Role: {job_role}")
-        
-        interview = AIInterview(
-            id=interview_id,
-            candidate_id=f"quick_{interview_id}",
-            candidate_name=candidate_name,
-            candidate_email="platform@hirefast.com",
-            job_role=job_role,
-            resume_text=resume_text or f"Interview for {job_role} position",
-            status='pending',
-            started_at=None,
-            completed_at=None,
             total_questions=5,
             current_question=0,
-            overall_score=None,
-            interview_link=interview_link,
-            created_at=datetime.now()
+            conversation_history=json.dumps([]),
         )
-        
-        # Store in memory
-        self.interviews[interview_id] = interview
-        self.conversation_histories[interview_id] = []
-        
-        print(f"🔍 DEBUG: Quick interview created and stored. Total interviews: {len(self.interviews)}")
-        
-        return interview
-    
-    def start_interview(self, interview_id: str) -> Dict[str, Any]:
-        """Start an interview session and generate the first question."""
-        if interview_id not in self.interviews:
-            return {'error': 'Interview session not found. Please create a new interview.'}
-        
-        interview = self.interviews[interview_id]
-        if interview['status'] not in ['pending', 'in_progress']:
+        db.session.add(session)
+        db.session.commit()
+
+        print(f"Created interview session {session.id} for {candidate_name}")
+        return self._session_to_dict(session)
+
+    def start_interview(self, session_id: str) -> Dict:
+        """Start the interview and generate the first question."""
+        from app.models.db_models import db, AIInterviewQuestion
+
+        session = self._get_session(session_id)
+        if not session:
+            return {'error': 'Interview session not found'}
+        if session.status not in ('pending', 'in_progress'):
             return {'error': 'Interview already completed or cancelled'}
-        
-        # Update interview status
-        interview['status'] = 'in_progress'
-        interview['started_at'] = datetime.now()
-        interview['current_question'] = 1
-        
-        # Generate first question
-        conversation_history = self.conversation_histories[interview_id]
-        question_text = self.generate_question_groq(interview['resume_text'], conversation_history)
-        
-        # Create question record
-        question = InterviewQuestion(
-            id=str(uuid.uuid4()),
-            interview_id=interview_id,
+
+        history = self._get_history(session)
+        question_text = self._generate_question(session.resume_text, history)
+
+        session.status = 'in_progress'
+        session.started_at = datetime.utcnow()
+        session.current_question = 1
+
+        q = AIInterviewQuestion(
+            session_id=session_id,
             question_number=1,
             question_text=question_text,
-            question_type='technical',  # Default type
-            context=f"First question for {interview['job_role']} position",
-            created_at=datetime.now()
         )
-        
+        db.session.add(q)
+        db.session.commit()
+
         return {
-            'interview': interview,
-            'question': question,
-            'status': 'started'
+            'session': self._session_to_dict(session),
+            'question': {'id': q.id, 'question_number': 1, 'question_text': question_text},
+            'status': 'started',
         }
-    
-    def submit_answer(self, interview_id: str, question_id: str, 
-                     answer_text: str, answer_audio_path: Optional[str] = None) -> Dict[str, Any]:
-        """Submit an answer and get evaluation."""
-        if interview_id not in self.interviews:
-            return {'error': 'Interview not found'}
-        
-        interview = self.interviews[interview_id]
-        if interview['status'] != 'in_progress':
+
+    def submit_answer(self, session_id: str, question_id: str, answer_text: str) -> Dict:
+        """Evaluate an answer, save the result, and generate the next question (or finish)."""
+        from app.models.db_models import db, AIInterviewSession, AIInterviewQuestion
+
+        session = self._get_session(session_id)
+        if not session:
+            return {'error': 'Interview session not found'}
+        if session.status != 'in_progress':
             return {'error': 'Interview not in progress'}
-        
-        # Create answer record
-        answer = InterviewAnswer(
-            id=str(uuid.uuid4()),
-            interview_id=interview_id,
-            question_id=question_id,
-            question_number=interview['current_question'],
-            answer_text=answer_text,
-            answer_audio_path=answer_audio_path,
-            answer_type='voice' if answer_audio_path else 'text',
-            duration_seconds=None,  # Could be calculated from audio
-            created_at=datetime.now()
-        )
-        
-        # Get the question text (in a real app, this would come from database)
-        # For now, we'll use a placeholder
-        question_text = "Technical question"  # This should be retrieved from question_id
-        
+
+        # Get the actual question text (fixes the hardcoded bug)
+        question_obj = AIInterviewQuestion.query.get(question_id)
+        question_text = question_obj.question_text if question_obj else "Interview question"
+
         # Evaluate the answer
-        evaluation_data = self.evaluate_answer_groq(question_text, answer_text)
-        
-        # Create evaluation record
-        evaluation = InterviewEvaluation(
-            id=str(uuid.uuid4()),
-            interview_id=interview_id,
-            question_id=question_id,
-            answer_id=answer['id'],
-            score=evaluation_data['overall_score'],
-            feedback=evaluation_data['feedback'],
-            strengths=evaluation_data['strengths'],
-            weaknesses=evaluation_data['weaknesses'],
-            suggestions=evaluation_data['suggestions'],
-            evaluation_criteria={
-                'technical_accuracy': evaluation_data['technical_accuracy'],
-                'communication_clarity': evaluation_data['communication_clarity'],
-                'depth_of_understanding': evaluation_data['depth_of_understanding'],
-                'problem_solving': evaluation_data['problem_solving'],
-                'relevance': evaluation_data['relevance']
-            },
-            created_at=datetime.now()
-        )
-        
+        evaluation = self._evaluate_answer(question_text, answer_text)
+
         # Update conversation history
-        self.conversation_histories[interview_id].append({
+        history = self._get_history(session)
+        history.append({
             'question': question_text,
             'answer': answer_text,
-            'feedback': evaluation_data['feedback']
+            'feedback': evaluation.get('feedback', ''),
         })
-        
-        # Check if interview is complete
-        if interview['current_question'] >= interview['total_questions']:
-            interview['status'] = 'completed'
-            interview['completed_at'] = datetime.now()
-            # Calculate overall score (average of all evaluations)
-            interview['overall_score'] = evaluation_data['overall_score']  # Simplified for now
-            
+        self._save_history(session, history)
+
+        # Check if interview is done
+        if session.current_question >= session.total_questions:
+            # Compute overall score as average of all answer scores stored in history
+            all_scores = [h.get('score', evaluation['overall_score']) for h in history]
+            overall = round(sum(all_scores) / len(all_scores), 2) if all_scores else evaluation['overall_score']
+
+            session.status = 'completed'
+            session.completed_at = datetime.utcnow()
+            session.overall_score = overall
+
+            # Update the linked application score
+            if session.application_id:
+                from app.models.db_models import Application
+                app = Application.query.get(session.application_id)
+                if app:
+                    app.ai_interview_status = 'completed'
+                    app.ai_interview_score = overall
+
+            db.session.commit()
             return {
-                'answer': answer,
                 'evaluation': evaluation,
                 'interview_complete': True,
-                'overall_score': interview['overall_score']
+                'overall_score': overall,
             }
         else:
-            # Generate next question
-            interview['current_question'] += 1
-            conversation_history = self.conversation_histories[interview_id]
-            next_question_text = self.generate_question_groq(interview['resume_text'], conversation_history)
-            
-            next_question = InterviewQuestion(
-                id=str(uuid.uuid4()),
-                interview_id=interview_id,
-                question_number=interview['current_question'],
-                question_text=next_question_text,
-                question_type='technical',
-                context=f"Question {interview['current_question']} for {interview['job_role']} position",
-                created_at=datetime.now()
+            # Store score in history for averaging later
+            history[-1]['score'] = evaluation['overall_score']
+            self._save_history(session, history)
+
+            session.current_question += 1
+            next_q_text = self._generate_question(session.resume_text, history)
+
+            next_q = AIInterviewQuestion(
+                session_id=session_id,
+                question_number=session.current_question,
+                question_text=next_q_text,
             )
-            
+            db.session.add(next_q)
+            db.session.commit()
+
             return {
-                'answer': answer,
                 'evaluation': evaluation,
-                'next_question': next_question,
+                'next_question': {
+                    'id': next_q.id,
+                    'question_number': session.current_question,
+                    'question_text': next_q_text,
+                },
                 'interview_complete': False,
-                'progress': f"{interview['current_question']}/{interview['total_questions']}"
+                'progress': f"{session.current_question}/{session.total_questions}",
             }
-    
-    def get_interview_status(self, interview_id: str) -> Dict[str, Any]:
-        """Get the current status of an interview."""
-        print(f"🔍 DEBUG: get_interview_status called with ID: {interview_id}")
-        print(f"🔍 DEBUG: Available interviews: {list(self.interviews.keys())}")
-        
-        if interview_id not in self.interviews:
-            print(f"🔍 DEBUG: Interview ID {interview_id} not found in interviews")
+
+    def get_interview_status(self, session_id: str) -> Dict:
+        session = self._get_session(session_id)
+        if not session:
             return {'error': 'Interview not found'}
-        
-        interview = self.interviews[interview_id]
-        print(f"🔍 DEBUG: Found interview: {interview.get('candidate_name', 'Unknown')}")
-        print(f"🔍 DEBUG: Interview status: {interview.get('status', 'Unknown')}")
-        
+
+        # Get the latest question so the page can display it after reload
+        from app.models.db_models import AIInterviewQuestion
+        last_q = AIInterviewQuestion.query.filter_by(session_id=session_id).order_by(
+            AIInterviewQuestion.question_number.desc()
+        ).first()
+
         return {
-            'interview': interview,
-            'conversation_history': self.conversation_histories.get(interview_id, [])
+            'session': self._session_to_dict(session),
+            'conversation_history': self._get_history(session),
+            'last_question': {
+                'id': last_q.id,
+                'question_number': last_q.question_number,
+                'question_text': last_q.question_text,
+            } if last_q else None,
         }
-    
-    def get_all_interviews(self) -> List[AIInterview]:
-        """Get all interview sessions (for admin dashboard)."""
-        return list(self.interviews.values())
+
+    def get_session_by_application(self, application_id: str) -> Optional[Dict]:
+        """Get the interview session for a specific application (if exists)."""
+        from app.models.db_models import AIInterviewSession
+        session = AIInterviewSession.query.filter_by(application_id=application_id).order_by(
+            AIInterviewSession.created_at.desc()
+        ).first()
+        if session:
+            return self._session_to_dict(session)
+        return None
+
+    def get_all_interviews(self) -> List[Dict]:
+        from app.models.db_models import AIInterviewSession
+        return [self._session_to_dict(s) for s in AIInterviewSession.query.order_by(
+            AIInterviewSession.created_at.desc()
+        ).all()]
+
+    def _session_to_dict(self, session) -> Dict:
+        return {
+            'id': session.id,
+            'application_id': session.application_id,
+            'candidate_name': session.candidate_name,
+            'candidate_email': session.candidate_email,
+            'job_role': session.job_role,
+            'status': session.status,
+            'total_questions': session.total_questions,
+            'current_question': session.current_question,
+            'overall_score': session.overall_score,
+            'interview_link': f"/ai-interviewer/{session.id}",
+            'created_at': session.created_at.isoformat() if session.created_at else None,
+            'started_at': session.started_at.isoformat() if session.started_at else None,
+            'completed_at': session.completed_at.isoformat() if session.completed_at else None,
+        }

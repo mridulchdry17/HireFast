@@ -538,8 +538,8 @@
             // Create a simple notification
             const notification = document.createElement('div');
             notification.className = `fixed top-4 right-4 p-4 rounded-lg text-white z-50 ${type === 'error' ? 'bg-red-600' :
-                    type === 'success' ? 'bg-green-600' :
-                        'bg-blue-600'
+                type === 'success' ? 'bg-green-600' :
+                    'bg-blue-600'
                 }`;
             notification.textContent = message;
 
@@ -616,21 +616,43 @@
                     ` : ''}
                     
                     <!-- Actions Section -->
-                    <div class="flex space-x-2 pt-4 border-t border-gray-700">
-                        <button onclick="viewResume('${candidate.resume_file_id || ''}')" 
-                                class="btn-secondary flex-1" 
-                                ${!candidate.resume_file_id ? 'disabled title="Resume not available"' : ''}>
-                            <i class="fas fa-file-pdf"></i>
-                            Resume
-                        </button>
-                        <button onclick="scheduleInterview('${candidate.name || ''}', '${candidate.email || ''}')" 
-                                class="btn-primary flex-1">
-                            <i class="fas fa-calendar-check"></i>
-                            Schedule
+                    <div class="pt-4 border-t border-gray-700 space-y-2">
+                        <!-- AI Interview status badge (shown if session exists) -->
+                        ${candidate.ai_interview_status && candidate.ai_interview_status !== 'not_sent' ? `
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs text-gray-400">AI Interview</span>
+                                <span class="px-2 py-1 rounded-full text-xs font-semibold ${candidate.ai_interview_status === 'completed' ? 'bg-green-900 text-green-300' :
+                        candidate.ai_interview_status === 'in_progress' ? 'bg-blue-900 text-blue-300' :
+                            'bg-yellow-900 text-yellow-300'
+                    }">
+                                    ${candidate.ai_interview_status === 'completed' ? '✓ Completed' :
+                        candidate.ai_interview_status === 'in_progress' ? '● In Progress' : '⏳ Pending'}
+                                    ${candidate.ai_interview_score ? ` · ${Math.round(candidate.ai_interview_score * 10) / 10}/10` : ''}
+                                </span>
+                            </div>
+                        ` : ''}
+                        <div class="flex space-x-2">
+                            <button onclick="viewResume('${candidate.resume_path || ''}', '${candidate.id || ''}')" 
+                                    class="btn-secondary flex-1" 
+                                    ${!candidate.resume_path ? 'disabled title="Resume not available"' : ''}>
+                                <i class="fas fa-file-pdf"></i>
+                                Resume
+                            </button>
+                            <button onclick="scheduleInterview('${candidate.name || ''}', '${candidate.email || ''}')" 
+                                    class="btn-secondary flex-1">
+                                <i class="fas fa-calendar-check"></i>
+                                Schedule
+                            </button>
+                        </div>
+                        <button onclick="startAIInterview('${candidate.id || ''}', '${candidate.name || ''}', '${candidate.email || ''}', '${candidate.role || ''}', '${candidate.resume_path || ''}')" 
+                                class="w-full btn-primary" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%)">
+                            <i class="fas fa-robot"></i>
+                            ${candidate.ai_interview_status === 'completed' ? 'View AI Interview' :
+                    candidate.ai_interview_status === 'in_progress' ? 'Resume AI Interview' : 'Start AI Interview'}
                         </button>
                     </div>
                 </div>
-            `).join('');
+            `,).join('');
         }
 
         function updateStatsSummary() {
@@ -707,10 +729,19 @@
 
                 if (data.applicants) {
                     candidates = data.applicants.map(applicant => ({
-                        ...applicant,
+                        id: applicant.id,
+                        name: applicant.name,
+                        email: applicant.email,
+                        college: applicant.college || '',
+                        intro: applicant.intro || '',
+                        role: applicant.role || '',
+                        resume_path: applicant.resume_path || '',
+                        resume_file_id: applicant.resume_file_id || '',
+                        similarity_score: applicant.similarity_score ?? null,
+                        ai_interview_status: applicant.ai_interview_status || 'not_sent',
+                        ai_interview_score: applicant.ai_interview_score || null,
                         status: 'new',
-                        date: new Date().toISOString(),
-                        similarity_score: null
+                        date: applicant.created_at || new Date().toISOString(),
                     }));
                     filteredCandidates = [...candidates];
                     renderCandidates();
@@ -762,6 +793,56 @@
                     jdStatus.className = 'text-sm text-red-400';
                 }
                 return null;
+            }
+        }
+
+        // ─── AI Interview ─────────────────────────────────────────────────────────────
+        async function startAIInterview(applicationId, candidateName, candidateEmail, jobRole, resumePath) {
+            if (!applicationId) {
+                showMessage('Candidate ID missing — cannot start interview', 'error');
+                return;
+            }
+
+            showMessage(`Setting up AI Interview for ${candidateName}...`, 'info');
+
+            try {
+                // Check if a session already exists
+                const checkRes = await fetch(`/api/ai-interview/by-application/${applicationId}`);
+                const checkData = await checkRes.json();
+
+                if (checkData.session && checkData.session.status !== 'pending') {
+                    // Session already exists — open it
+                    window.open(checkData.session.interview_link, '_blank');
+                    return;
+                }
+
+                // Create a new session
+                const createRes = await fetch('/api/ai-interview/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        application_id: applicationId,
+                        candidate_name: candidateName,
+                        candidate_email: candidateEmail,
+                        job_role: jobRole,
+                        resume_path: resumePath,
+                    }),
+                });
+
+                const createData = await createRes.json();
+                if (!createData.success) {
+                    showMessage(createData.error || 'Failed to create interview session', 'error');
+                    return;
+                }
+
+                showMessage(`AI Interview created for ${candidateName}! Opening interview...`, 'success');
+                window.open(createData.interview_link, '_blank');
+
+                // Refresh candidates list to show updated status
+                setTimeout(() => loadCandidates(), 2000);
+
+            } catch (err) {
+                showMessage('Error starting AI interview: ' + err.message, 'error');
             }
         }
 

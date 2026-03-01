@@ -66,7 +66,9 @@ class JobService:
                 'email': app.candidate_email,
                 'role': app.job.role if app.job else 'Unknown',
                 'similarity_score': app.similarity_score,
-                'status': 'new', # Default for internal
+                'ai_interview_status': app.ai_interview_status or 'not_sent',
+                'ai_interview_score': app.ai_interview_score,
+                'status': 'new',
                 'resume_file_id': app.resume_file_id,
                 'resume_path': app.resume_path,
                 'created_at': app.created_at.isoformat()

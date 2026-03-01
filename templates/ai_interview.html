@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,13 +9,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
@@ -22,13 +23,13 @@
             min-height: 100vh;
             line-height: 1.6;
         }
-        
+
         .glass-effect {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        
+
         .interview-card {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(20px);
@@ -36,12 +37,12 @@
             border-radius: 1.5rem;
             transition: all 0.3s ease;
         }
-        
+
         .interview-card:hover {
             background: rgba(255, 255, 255, 0.1);
             border-color: rgba(255, 255, 255, 0.2);
         }
-        
+
         .btn-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -52,12 +53,12 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        
+
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
         }
-        
+
         .btn-secondary {
             background: rgba(255, 255, 255, 0.1);
             color: white;
@@ -68,12 +69,12 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        
+
         .btn-secondary:hover {
             background: rgba(255, 255, 255, 0.2);
             transform: translateY(-2px);
         }
-        
+
         .btn-danger {
             background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
             color: white;
@@ -84,33 +85,40 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        
+
         .btn-danger:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
         }
-        
+
         .recording-indicator {
             animation: pulse 1.5s infinite;
         }
-        
+
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
         }
-        
+
         .progress-bar {
             background: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
             overflow: hidden;
         }
-        
+
         .progress-fill {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             height: 100%;
             transition: width 0.3s ease;
         }
-        
+
         .question-card {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -118,7 +126,7 @@
             padding: 2rem;
             margin: 1rem 0;
         }
-        
+
         .answer-card {
             background: rgba(102, 126, 234, 0.1);
             border: 1px solid rgba(102, 126, 234, 0.2);
@@ -126,7 +134,7 @@
             padding: 1.5rem;
             margin: 1rem 0;
         }
-        
+
         .evaluation-card {
             background: rgba(34, 197, 94, 0.1);
             border: 1px solid rgba(34, 197, 94, 0.2);
@@ -134,7 +142,7 @@
             padding: 1.5rem;
             margin: 1rem 0;
         }
-        
+
         .score-badge {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -143,21 +151,39 @@
             font-weight: 600;
             font-size: 0.875rem;
         }
-        
-        .status-pending { color: #fbbf24; }
-        .status-in-progress { color: #3b82f6; }
-        .status-completed { color: #10b981; }
-        .status-cancelled { color: #ef4444; }
-        
+
+        .status-pending {
+            color: #fbbf24;
+        }
+
+        .status-in-progress {
+            color: #3b82f6;
+        }
+
+        .status-completed {
+            color: #10b981;
+        }
+
+        .status-cancelled {
+            color: #ef4444;
+        }
+
         .fade-in {
             animation: fadeIn 0.5s ease-out;
         }
-        
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        
+
         .loading-spinner {
             border: 3px solid rgba(255, 255, 255, 0.3);
             border-top: 3px solid #667eea;
@@ -166,13 +192,19 @@
             height: 30px;
             animation: spin 1s linear infinite;
         }
-        
+
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="min-h-screen py-8">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -186,7 +218,7 @@
                     Welcome to your automated interview session
                 </p>
             </div>
-            
+
             <!-- Interview Info Card -->
             <div class="interview-card p-6 mb-8 fade-in">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -195,11 +227,13 @@
                         <div class="space-y-3">
                             <div class="flex items-center gap-3">
                                 <i class="fas fa-user text-blue-400"></i>
-                                <span class="text-gray-300">Candidate: <strong class="text-white">{{ interview.candidate_name }}</strong></span>
+                                <span class="text-gray-300">Candidate: <strong class="text-white">{{
+                                        interview.candidate_name }}</strong></span>
                             </div>
                             <div class="flex items-center gap-3">
                                 <i class="fas fa-briefcase text-green-400"></i>
-                                <span class="text-gray-300">Position: <strong class="text-white">{{ interview.job_role }}</strong></span>
+                                <span class="text-gray-300">Position: <strong class="text-white">{{ interview.job_role
+                                        }}</strong></span>
                             </div>
                             <div class="flex items-center gap-3">
                                 <i class="fas fa-envelope text-purple-400"></i>
@@ -212,7 +246,7 @@
                         <div class="space-y-3">
                             <div class="flex items-center gap-3">
                                 <i class="fas fa-info-circle text-yellow-400"></i>
-                                <span class="text-gray-300">Status: 
+                                <span class="text-gray-300">Status:
                                     <span class="status-{{ interview.status }} font-semibold">
                                         {{ interview.status.replace('_', ' ').title() }}
                                     </span>
@@ -220,14 +254,15 @@
                             </div>
                             <div class="flex items-center gap-3">
                                 <i class="fas fa-chart-line text-blue-400"></i>
-                                <span class="text-gray-300">Progress: 
-                                    <strong class="text-white">{{ interview.current_question }}/{{ interview.total_questions }}</strong>
+                                <span class="text-gray-300">Progress:
+                                    <strong class="text-white">{{ interview.current_question }}/{{
+                                        interview.total_questions }}</strong>
                                 </span>
                             </div>
                             {% if interview.overall_score %}
                             <div class="flex items-center gap-3">
                                 <i class="fas fa-star text-yellow-400"></i>
-                                <span class="text-gray-300">Score: 
+                                <span class="text-gray-300">Score:
                                     <span class="score-badge">{{ "%.1f"|format(interview.overall_score) }}/10</span>
                                 </span>
                             </div>
@@ -235,141 +270,143 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Progress Bar -->
                 <div class="mt-6">
                     <div class="flex justify-between items-center mb-2">
                         <span class="text-sm text-gray-300">Interview Progress</span>
-                        <span class="text-sm text-gray-300">{{ interview.current_question }}/{{ interview.total_questions }} Questions</span>
+                        <span class="text-sm text-gray-300">{{ interview.current_question }}/{{
+                            interview.total_questions }} Questions</span>
                     </div>
                     <div class="progress-bar h-3">
-                        <div class="progress-fill" style="width: {{ (interview.current_question / interview.total_questions * 100) }}%"></div>
+                        <div class="progress-fill"
+                            style="width: {{ (interview.current_question / interview.total_questions * 100) }}%"></div>
                     </div>
                 </div>
             </div>
-            
+
             <!-- Interview Content -->
             <div id="interviewContent">
                 {% if interview.status == 'pending' %}
-                    <!-- Start Interview -->
-                    <div class="interview-card p-8 text-center fade-in">
-                        <div class="mb-6">
-                            <i class="fas fa-play-circle text-6xl text-blue-400 mb-4"></i>
-                            <h2 class="text-3xl font-bold mb-4 text-white">Ready to Start?</h2>
-                            <p class="text-xl text-gray-300 mb-6">
-                                This AI interview will ask you {{ interview.total_questions }} questions about your experience and skills.
-                                You can answer using voice or text.
-                            </p>
-                        </div>
-                        <button id="startInterviewBtn" class="btn-primary text-lg px-8 py-4">
-                            <i class="fas fa-play mr-2"></i>
-                            Start Interview
+                <!-- Start Interview -->
+                <div class="interview-card p-8 text-center fade-in">
+                    <div class="mb-6">
+                        <i class="fas fa-play-circle text-6xl text-blue-400 mb-4"></i>
+                        <h2 class="text-3xl font-bold mb-4 text-white">Ready to Start?</h2>
+                        <p class="text-xl text-gray-300 mb-6">
+                            This AI interview will ask you {{ interview.total_questions }} questions about your
+                            experience and skills.
+                            You can answer using voice or text.
+                        </p>
+                    </div>
+                    <button id="startInterviewBtn" class="btn-primary text-lg px-8 py-4">
+                        <i class="fas fa-play mr-2"></i>
+                        Start Interview
+                    </button>
+                </div>
+
+                {% elif interview.status == 'in_progress' %}
+                <!-- Current Question -->
+                <div id="currentQuestion" class="question-card fade-in">
+                    <div class="flex items-center gap-3 mb-4">
+                        <i class="fas fa-question-circle text-blue-400"></i>
+                        <h3 class="text-xl font-bold text-white">Question {{ interview.current_question }}</h3>
+                    </div>
+                    <div id="questionText" class="text-lg text-gray-300 mb-6">
+                        <div class="loading-spinner mx-auto"></div>
+                        <p class="text-center mt-2">Loading question...</p>
+                    </div>
+                    <div class="flex gap-4 mb-6">
+                        <button id="speakQuestionBtn" class="btn-secondary">
+                            <i class="fas fa-volume-up mr-2"></i>
+                            Speak Question
                         </button>
                     </div>
-                    
-                {% elif interview.status == 'in_progress' %}
-                    <!-- Current Question -->
-                    <div id="currentQuestion" class="question-card fade-in">
-                        <div class="flex items-center gap-3 mb-4">
-                            <i class="fas fa-question-circle text-blue-400"></i>
-                            <h3 class="text-xl font-bold text-white">Question {{ interview.current_question }}</h3>
-                        </div>
-                        <div id="questionText" class="text-lg text-gray-300 mb-6">
-                            <div class="loading-spinner mx-auto"></div>
-                            <p class="text-center mt-2">Loading question...</p>
-                        </div>
-                        <div class="flex gap-4 mb-6">
-                            <button id="speakQuestionBtn" class="btn-secondary">
-                                <i class="fas fa-volume-up mr-2"></i>
-                                Speak Question
-                            </button>
-                        </div>
+                </div>
+
+                <!-- Answer Section -->
+                <div id="answerSection" class="answer-card fade-in">
+                    <h4 class="text-lg font-bold mb-4 text-white">
+                        <i class="fas fa-microphone mr-2"></i>
+                        Your Answer
+                    </h4>
+
+                    <!-- Answer Input -->
+                    <div class="mb-4">
+                        <textarea id="answerText" placeholder="Type your answer here or use voice recording..."
+                            class="w-full p-4 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 resize-none"
+                            rows="4" style="color: #f8fafc !important;"></textarea>
                     </div>
-                    
-                    <!-- Answer Section -->
-                    <div id="answerSection" class="answer-card fade-in">
-                        <h4 class="text-lg font-bold mb-4 text-white">
+
+                    <!-- Voice Recording Controls -->
+                    <div class="flex flex-wrap gap-4 mb-4">
+                        <button id="recordBtn" class="btn-secondary">
                             <i class="fas fa-microphone mr-2"></i>
-                            Your Answer
-                        </h4>
-                        
-                        <!-- Answer Input -->
-                        <div class="mb-4">
-                            <textarea id="answerText" 
-                                    placeholder="Type your answer here or use voice recording..."
-                                    class="w-full p-4 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-400 resize-none"
-                                    rows="4" style="color: #f8fafc !important;"></textarea>
-                        </div>
-                        
-                        <!-- Voice Recording Controls -->
-                        <div class="flex flex-wrap gap-4 mb-4">
-                            <button id="recordBtn" class="btn-secondary">
-                                <i class="fas fa-microphone mr-2"></i>
-                                Record Voice
-                            </button>
-                            <button id="stopRecordBtn" class="btn-danger" style="display: none;">
-                                <i class="fas fa-stop mr-2"></i>
-                                Stop Recording
-                            </button>
-                            <button id="playRecordingBtn" class="btn-secondary" style="display: none;">
-                                <i class="fas fa-play mr-2"></i>
-                                Play Recording
-                            </button>
-                        </div>
-                        
-                        <!-- Recording Status -->
-                        <div id="recordingStatus" class="hidden mb-4">
-                            <div class="flex items-center gap-3 text-red-400">
-                                <div class="recording-indicator w-3 h-3 bg-red-500 rounded-full"></div>
-                                <span>Recording... Speak now!</span>
-                            </div>
-                        </div>
-                        
-                        <!-- Submit Answer -->
-                        <div class="flex gap-4">
-                            <button id="submitAnswerBtn" class="btn-primary">
-                                <i class="fas fa-paper-plane mr-2"></i>
-                                Submit Answer
-                            </button>
+                            Record Voice
+                        </button>
+                        <button id="stopRecordBtn" class="btn-danger" style="display: none;">
+                            <i class="fas fa-stop mr-2"></i>
+                            Stop Recording
+                        </button>
+                        <button id="playRecordingBtn" class="btn-secondary" style="display: none;">
+                            <i class="fas fa-play mr-2"></i>
+                            Play Recording
+                        </button>
+                    </div>
+
+                    <!-- Recording Status -->
+                    <div id="recordingStatus" class="hidden mb-4">
+                        <div class="flex items-center gap-3 text-red-400">
+                            <div class="recording-indicator w-3 h-3 bg-red-500 rounded-full"></div>
+                            <span>Recording... Speak now!</span>
                         </div>
                     </div>
-                    
+
+                    <!-- Submit Answer -->
+                    <div class="flex gap-4">
+                        <button id="submitAnswerBtn" class="btn-primary">
+                            <i class="fas fa-paper-plane mr-2"></i>
+                            Submit Answer
+                        </button>
+                    </div>
+                </div>
+
                 {% elif interview.status == 'completed' %}
-                    <!-- Interview Complete -->
-                    <div class="interview-card p-8 text-center fade-in">
+                <!-- Interview Complete -->
+                <div class="interview-card p-8 text-center fade-in">
+                    <div class="mb-6">
+                        <i class="fas fa-check-circle text-6xl text-green-400 mb-4"></i>
+                        <h2 class="text-3xl font-bold mb-4 text-white">Interview Complete!</h2>
+                        <p class="text-xl text-gray-300 mb-6">
+                            Thank you for completing the interview. Your responses have been recorded and evaluated.
+                        </p>
+                        {% if interview.overall_score %}
                         <div class="mb-6">
-                            <i class="fas fa-check-circle text-6xl text-green-400 mb-4"></i>
-                            <h2 class="text-3xl font-bold mb-4 text-white">Interview Complete!</h2>
-                            <p class="text-xl text-gray-300 mb-6">
-                                Thank you for completing the interview. Your responses have been recorded and evaluated.
-                            </p>
-                            {% if interview.overall_score %}
-                            <div class="mb-6">
-                                <div class="score-badge text-2xl px-6 py-3 inline-block">
-                                    Final Score: {{ "%.1f"|format(interview.overall_score) }}/10
-                                </div>
+                            <div class="score-badge text-2xl px-6 py-3 inline-block">
+                                Final Score: {{ "%.1f"|format(interview.overall_score) }}/10
                             </div>
-                            {% endif %}
                         </div>
-                        <div class="text-gray-300">
-                            <p>We'll review your responses and get back to you soon.</p>
-                        </div>
+                        {% endif %}
                     </div>
-                    
+                    <div class="text-gray-300">
+                        <p>We'll review your responses and get back to you soon.</p>
+                    </div>
+                </div>
+
                 {% else %}
-                    <!-- Error State -->
-                    <div class="interview-card p-8 text-center fade-in">
-                        <div class="mb-6">
-                            <i class="fas fa-exclamation-triangle text-6xl text-red-400 mb-4"></i>
-                            <h2 class="text-3xl font-bold mb-4 text-white">Interview Error</h2>
-                            <p class="text-xl text-gray-300">
-                                There was an issue with this interview session.
-                            </p>
-                        </div>
+                <!-- Error State -->
+                <div class="interview-card p-8 text-center fade-in">
+                    <div class="mb-6">
+                        <i class="fas fa-exclamation-triangle text-6xl text-red-400 mb-4"></i>
+                        <h2 class="text-3xl font-bold mb-4 text-white">Interview Error</h2>
+                        <p class="text-xl text-gray-300">
+                            There was an issue with this interview session.
+                        </p>
                     </div>
+                </div>
                 {% endif %}
             </div>
-            
+
             <!-- Conversation History (if any) -->
             {% if conversation_history %}
             <div class="mt-8">
@@ -399,7 +436,7 @@
             {% endif %}
         </div>
     </div>
-    
+
     <script>
         // Global variables
         const interviewId = '{{ interview.id }}';
@@ -409,7 +446,7 @@
         let mediaRecorder = null;
         let audioChunks = [];
         let currentAudioBlob = null;
-        
+
         // DOM elements
         const startInterviewBtn = document.getElementById('startInterviewBtn');
         const questionText = document.getElementById('questionText');
@@ -420,56 +457,51 @@
         const playRecordingBtn = document.getElementById('playRecordingBtn');
         const recordingStatus = document.getElementById('recordingStatus');
         const submitAnswerBtn = document.getElementById('submitAnswerBtn');
-        
-        
+
+
         // Event listeners
         if (startInterviewBtn) {
             startInterviewBtn.addEventListener('click', startInterview);
         }
-        
+
         if (speakQuestionBtn) {
             speakQuestionBtn.addEventListener('click', speakCurrentQuestion);
         }
-        
+
         if (recordBtn) {
             recordBtn.addEventListener('click', startRecording);
         }
-        
+
         if (stopRecordBtn) {
             stopRecordBtn.addEventListener('click', stopRecording);
         }
-        
+
         if (playRecordingBtn) {
             playRecordingBtn.addEventListener('click', playRecording);
         }
-        
+
         if (submitAnswerBtn) {
             submitAnswerBtn.addEventListener('click', submitAnswer);
         }
-        
+
         // Functions
         async function startInterview() {
             try {
                 showLoading(startInterviewBtn);
-                
+
                 const response = await fetch(`/api/ai-interview/${interviewId}/start`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+                    headers: { 'Content-Type': 'application/json' }
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.success) {
                     currentQuestion = data.question;
-                    questionText.innerHTML = `<p class="text-lg text-gray-300">${currentQuestion.question_text}</p>`;
                     hideLoading(startInterviewBtn);
-                    
-                    // Reload page to show in-progress state
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1000);
+                    // Reload to show in-progress state — questionText element
+                    // only exists in the in_progress branch of the template.
+                    setTimeout(() => { window.location.reload(); }, 800);
                 } else {
                     showError(data.error);
                     hideLoading(startInterviewBtn);
@@ -479,30 +511,27 @@
                 hideLoading(startInterviewBtn);
             }
         }
-        
+
         async function speakCurrentQuestion() {
             if (!currentQuestion) return;
-            
+
             try {
                 showLoading(speakQuestionBtn);
-                
+
                 const response = await fetch(`/api/ai-interview/${interviewId}/speak`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        text: currentQuestion.question_text,
-                        play_immediately: true
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: currentQuestion.question_text })
                 });
-                
+
                 const data = await response.json();
-                
-                if (data.success) {
+
+                if (data.success && data.audio_url) {
+                    // Play in the candidate's browser — works on any deployment
+                    new Audio(data.audio_url).play();
                     hideLoading(speakQuestionBtn);
                 } else {
-                    showError(data.error);
+                    showError(data.error || 'Failed to generate audio');
                     hideLoading(speakQuestionBtn);
                 }
             } catch (error) {
@@ -510,82 +539,82 @@
                 hideLoading(speakQuestionBtn);
             }
         }
-        
+
         async function startRecording() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 mediaRecorder = new MediaRecorder(stream);
                 audioChunks = [];
-                
+
                 mediaRecorder.ondataavailable = event => {
                     audioChunks.push(event.data);
                 };
-                
+
                 mediaRecorder.onstop = () => {
                     currentAudioBlob = new Blob(audioChunks, { type: 'audio/wav' });
                     playRecordingBtn.style.display = 'inline-flex';
                     stream.getTracks().forEach(track => track.stop());
                 };
-                
+
                 mediaRecorder.start();
                 isRecording = true;
-                
+
                 recordBtn.style.display = 'none';
                 stopRecordBtn.style.display = 'inline-flex';
                 recordingStatus.classList.remove('hidden');
-                
+
             } catch (error) {
                 showError('Failed to start recording: ' + error.message);
             }
         }
-        
+
         function stopRecording() {
             if (mediaRecorder && isRecording) {
                 mediaRecorder.stop();
                 isRecording = false;
-                
+
                 recordBtn.style.display = 'inline-flex';
                 stopRecordBtn.style.display = 'none';
                 recordingStatus.classList.add('hidden');
             }
         }
-        
+
         function playRecording() {
             if (currentAudioBlob) {
                 const audio = new Audio(URL.createObjectURL(currentAudioBlob));
                 audio.play();
             }
         }
-        
+
         async function submitAnswer() {
             const answer = answerText.value.trim();
-            
+
             if (!answer && !currentAudioBlob) {
                 showError('Please provide an answer before submitting.');
                 return;
             }
-            
+
             try {
                 showLoading(submitAnswerBtn);
-                
+
                 const formData = new FormData();
                 formData.append('answer_text', answer);
                 formData.append('question_id', currentQuestion ? currentQuestion.id : '');
-                
+
                 if (currentAudioBlob) {
                     formData.append('audio_file', currentAudioBlob, 'recording.wav');
                 }
-                
+
                 const response = await fetch(`/api/ai-interview/${interviewId}/answer`, {
                     method: 'POST',
                     body: formData
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.success) {
                     hideLoading(submitAnswerBtn);
-                    
+
                     if (data.interview_complete) {
                         showSuccess('Interview completed! Final score: ' + data.overall_score + '/10');
                         setTimeout(() => {
@@ -606,13 +635,13 @@
                 hideLoading(submitAnswerBtn);
             }
         }
-        
+
         // Utility functions
         function showLoading(button) {
             button.disabled = true;
             button.innerHTML = '<div class="loading-spinner"></div>';
         }
-        
+
         function hideLoading(button) {
             button.disabled = false;
             // Restore original button content
@@ -624,29 +653,53 @@
                 button.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>Submit Answer';
             }
         }
-        
+
         function showError(message) {
             alert('Error: ' + message);
         }
-        
+
         function showSuccess(message) {
             alert('Success: ' + message);
         }
-        
+
         // Load current question if interview is in progress
         if (interviewStatus === 'in_progress') {
             loadCurrentQuestion();
         }
-        
+
         async function loadCurrentQuestion() {
             try {
                 const response = await fetch(`/api/ai-interview/${interviewId}/status`);
                 const data = await response.json();
-                
-                if (data.success && data.interview.status === 'in_progress') {
-                    // For now, we'll use a placeholder question
-                    // In a real implementation, you'd get the current question from the API
-                    questionText.innerHTML = '<p class="text-lg text-gray-300">Loading current question...</p>';
+
+                if (data.success && data.session) {
+                    const session = data.session;
+                    // Get the question for current_question number from the session
+                    const qNum = session.current_question;
+                    // Fetch the latest question by looking at the last item in conversation history
+                    const history = data.conversation_history || [];
+                    const latestFromHistory = history.length > 0 ? history[history.length - 1] : null;
+
+                    if (questionText) {
+                        if (latestFromHistory && history.length < session.total_questions) {
+                            // There's history — next question will be generated on next submit
+                            questionText.innerHTML = `<p class="text-lg text-gray-300">Please answer and submit to continue to question ${qNum}.</p>`;
+                        } else {
+                            questionText.innerHTML = '<p class="text-lg text-gray-300">Loading current question...</p>';
+                        }
+                    }
+
+                    // Also fetch the latest DB question for this session
+                    // We re-use the start endpoint's question data if available
+                    const qText = document.getElementById('questionText');
+                    if (qText && session.status === 'in_progress') {
+                        // Try to get last saved question from the questions relationship
+                        // The /status endpoint now returns last_question if we add it
+                        if (data.last_question) {
+                            currentQuestion = data.last_question;
+                            qText.innerHTML = `<p class="text-lg text-gray-300">${currentQuestion.question_text}</p>`;
+                        }
+                    }
                 }
             } catch (error) {
                 console.error('Failed to load current question:', error);
@@ -654,4 +707,5 @@
         }
     </script>
 </body>
+
 </html>

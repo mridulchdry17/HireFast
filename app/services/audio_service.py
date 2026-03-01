@@ -104,24 +104,20 @@ class AudioService:
             raise Exception(f"Text-to-speech conversion failed: {str(e)}")
     
     def play_audio(self, audio_path: str) -> bool:
-        """
-        Play an audio file.
-        
-        Args:
-            audio_path: Path to the audio file
-            
-        Returns:
-            True if successful, False otherwise
-        """
+        """Play an audio file using the platform's native player."""
         try:
-            if os.name == 'nt':  # Windows
-                os.system(f"start {audio_path}")
-            else:  # macOS and Linux
-                os.system(f"mpg123 {audio_path}")
-            
+            import platform
+            system = platform.system()
+            if system == 'Windows':
+                os.system(f'start "" "{audio_path}"')
+            elif system == 'Darwin':  # macOS — afplay is built-in
+                os.system(f'afplay "{audio_path}" &')
+            else:  # Linux
+                # Try afplay, then mpg123, then paplay
+                os.system(f'mpg123 "{audio_path}" 2>/dev/null || paplay "{audio_path}" 2>/dev/null || true')
+
             print("🔊 Playing audio...")
             return True
-            
         except Exception as e:
             print(f"Failed to play audio: {str(e)}")
             return False
