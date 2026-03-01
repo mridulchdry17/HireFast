@@ -1,4 +1,5 @@
 flask
+pypdf
 python-dotenv
 langgraph
 langchain-groq

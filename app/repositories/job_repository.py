@@ -23,3 +23,7 @@ class JobRepository:
     @staticmethod
     def get_all_applications() -> List[Application]:
         return Application.query.order_by(Application.created_at.desc()).all()
+
+    @staticmethod
+    def get_latest_job() -> Optional[JobPosting]:
+        return JobPosting.query.order_by(JobPosting.created_at.desc()).first()

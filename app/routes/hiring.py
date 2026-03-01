@@ -121,87 +121,100 @@ def post_jd_api():
 
 @hiring_bp.route('/get-latest-jd')
 def get_latest_jd_api():
-    """Get the latest posted job description from session."""
-    user_id = session.get('user_id')
-    if not user_id:
-        return jsonify({'error': 'User not authenticated'}), 401
-    
+    """Get the latest posted job description — uses session first, falls back to DB."""
     latest_jd = session.get('last_posted_jd')
     latest_role = session.get('last_posted_role')
-    
+
+    # Fall back to DB if session was cleared (e.g. server restart)
+    if not latest_jd:
+        from app.repositories.job_repository import JobRepository
+        latest_job = JobRepository.get_latest_job()
+        if latest_job and latest_job.job_description:
+            latest_jd = latest_job.job_description
+            latest_role = latest_job.role
+            session['last_posted_jd'] = latest_jd
+            session['last_posted_role'] = latest_role
+
     if not latest_jd:
         return jsonify({
             'error': 'No job description found. Please post a job first.',
             'has_jd': False
         }), 404
-    
+
     return jsonify({
         'job_description': latest_jd,
         'role': latest_role,
         'has_jd': True
     })
 
+
+
 @hiring_bp.route('/fetch-applications')
 def fetch_applications_api():
-    """Fetch applications from both Google Sheet and Internal DB."""
+    """Fetch applications from Internal DB."""
     try:
-        # 1. Fetch from Internal DB (Clean Architecture)
         internal_applicants = JobService.get_all_applications()
-        
-        # 2. Fetch from Google Sheet (Legacy)
-        try:
-            google_applicants = google_service.fetch_applications()
-        except Exception as e:
-            print(f"Warning: Failed to fetch Google applicants: {e}")
-            google_applicants = []
-            
-        # 3. Merge them
-        all_applicants = internal_applicants + google_applicants
-        
-        return jsonify({'applicants': all_applicants})
+        return jsonify({'applicants': internal_applicants})
     except Exception as e:
-        print(f"Error fetching all applications: {e}")
+        print(f"Error fetching applications: {e}")
         return jsonify({'error': f'Failed to fetch applications: {str(e)}'}), 500
 
 @hiring_bp.route('/select-best-resumes', methods=['POST'])
 def select_best_resumes_api():
-    """Select best candidates using the provided job description."""
+    """Select best candidates from DB applications using the provided job description."""
     data = request.get_json()
     if not data or 'job_description' not in data:
         return jsonify({'error': 'Job description is required'}), 400
-    
+
     print(f"Job description length: {len(data['job_description'])} characters")
-    
+
     try:
-        # First get the applicants with resume data
-        applicants = google_service.fetch_applicants_with_resumes()
-        
+        # Fetch applicants from Internal DB (new architecture)
+        db_applicants = JobService.get_all_applications()
+
+        if not db_applicants:
+            return jsonify({'error': 'No applicants found. Candidates must apply via the job link first.'}), 400
+
+        print(f"Found {len(db_applicants)} applicants in DB")
+
+        # Map DB format → format expected by resume_service
+        applicants = [
+            {
+                'name': app['name'],
+                'email': app['email'],
+                'resume_path': app.get('resume_path', ''),
+                'similarity_score': app.get('similarity_score', 0.0),
+            }
+            for app in db_applicants
+            if app.get('resume_path')  # only include applicants who uploaded a resume
+        ]
+
         if not applicants:
-            return jsonify({'error': 'No applicants found'}), 400
-        
-        print(f"Found {len(applicants)} applicants")
-        
-        # Then select the best candidates
+            return jsonify({'error': 'No applicants with resumes found.'}), 400
+
+        # Select best candidates using local resume files
         top_candidates = resume_service.select_best_candidates(
-            applicants, 
+            applicants,
             data['job_description']
         )
-        
+
         if not top_candidates:
-            return jsonify({'error': 'No valid candidates found'}), 400
-            
-        # Pick the single best candidate
+            return jsonify({'error': 'No valid candidates found after resume parsing.'}), 400
+
         best_candidate = max(top_candidates, key=lambda x: x.get('similarity_score', 0))
-        
-        print(f"Selected best candidate: {best_candidate['applicant']['name']} with score: {best_candidate['similarity_score']}")
+
+        print(f"Selected best candidate: {best_candidate['applicant']['name']} "
+              f"with score: {best_candidate['similarity_score']}")
+
         return jsonify({
             'best_candidate': best_candidate,
-            'all_top_candidates': top_candidates  # Keep for debugging
+            'all_top_candidates': top_candidates
         })
-            
+
     except Exception as e:
         print(f"Error in select_best_resumes_api: {str(e)}")
         return jsonify({'error': f'Failed to select best candidates: {str(e)}'}), 500
+
 
 @hiring_bp.route('/test-sheet')
 def test_sheet():
