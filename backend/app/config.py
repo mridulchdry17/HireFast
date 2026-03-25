@@ -54,6 +54,10 @@ class Config:
     # AI/LLM settings
     GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
     COMPOSIO_API_KEY = os.environ.get("COMPOSIO_API_KEY")
+    # Composio dashboard: Auth Config for Google Calendar (required for connect-calendar / link flow)
+    COMPOSIO_GOOGLE_CALENDAR_AUTH_CONFIG_ID = os.environ.get(
+        "COMPOSIO_GOOGLE_CALENDAR_AUTH_CONFIG_ID", ""
+    ).strip()
     
     # Application form links
     ROLE_FORM_LINKS = {
