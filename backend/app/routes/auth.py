@@ -20,15 +20,18 @@ def _linkedin_redirect_uri() -> str:
     """
     Must match an Authorized redirect URL in the LinkedIn Developer Portal (exact string).
 
-    Uses Config.APP_BASE_URL (from backend/.env) → {APP_BASE_URL}/callback.
-    Optional LINKEDIN_REDIRECT_URI env overrides. If APP_BASE_URL is empty, uses this request host.
+    Do not use Config.APP_BASE_URL here: it defaults to 127.0.0.1 when APP_BASE_URL is unset,
+    which would always send users to localhost in prod. Only use APP_BASE_URL if set in the
+    environment; otherwise use this request's public URL (same host the user used for /login).
+
+    Optional: LINKEDIN_REDIRECT_URI env overrides everything.
     """
     explicit = (os.environ.get("LINKEDIN_REDIRECT_URI") or "").strip()
     if explicit:
         return explicit
-    base = (Config.APP_BASE_URL or "").strip().rstrip("/")
-    if base:
-        return f"{base}/callback"
+    env_base = (os.environ.get("APP_BASE_URL") or "").strip().rstrip("/")
+    if env_base:
+        return f"{env_base}/callback"
     return request.url_root.rstrip("/") + "/callback"
 
 
@@ -43,6 +46,8 @@ def login():
     session['user_id'] = secrets.token_urlsafe(16)
 
     redirect_uri = _linkedin_redirect_uri()
+    # Token exchange must use the exact same redirect_uri string as the authorize request.
+    session["linkedin_oauth_redirect_uri"] = redirect_uri
     auth_params = {
         'response_type': 'code',
         'client_id': Config.LINKEDIN_CLIENT_ID,
@@ -69,12 +74,13 @@ def callback():
     if not code or state != saved_state:
         return jsonify({'error': 'Invalid login attempt'}), 400
     
+    redirect_uri = session.pop("linkedin_oauth_redirect_uri", None) or _linkedin_redirect_uri()
     token_data = {
         'grant_type': 'authorization_code',
         'code': code,
         'client_id': Config.LINKEDIN_CLIENT_ID,
         'client_secret': Config.LINKEDIN_CLIENT_SECRET,
-        'redirect_uri': _linkedin_redirect_uri(),
+        'redirect_uri': redirect_uri,
     }
     
     try:
