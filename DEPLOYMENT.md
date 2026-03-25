@@ -99,7 +99,7 @@ Then the browser calls Flask directly (must allow origin in `CORS_ORIGINS`). Use
 
 Routes still serve Jinja templates (`/dashboard`, `/candidates`, …) from **`backend/`** for backward compatibility. The new product UI lives under **`frontend/`**.
 
-**If you previously ran Flask from the repo root:** copy your `.env` to `backend/.env` and use `hirefast.db` / `uploads/` under `backend/` (or set `DATABASE_URL`).
+**Environment:** Flask reads **`backend/.env` only** — not a `.env` at the repo root.
 
 ---
 

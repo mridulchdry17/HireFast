@@ -4,13 +4,11 @@ Configuration management for the HireFast application.
 import os
 from dotenv import load_dotenv
 
-# backend/ directory (parent of app/); repo root is one level above backend/
+# backend/ directory (parent of app/)
 _BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-_REPO_ROOT = os.path.abspath(os.path.join(_BASE_DIR, '..'))
-# Load .env from repo root (e.g. HireFast/.env) and/or backend/.env — latter wins on duplicate keys
-for _env_path in (os.path.join(_REPO_ROOT, '.env'), os.path.join(_BASE_DIR, '.env')):
-    if os.path.isfile(_env_path):
-        load_dotenv(_env_path, override=True)
+_env_file = os.path.join(_BASE_DIR, '.env')
+if os.path.isfile(_env_file):
+    load_dotenv(_env_file, override=True)
 
 class Config:
     """Base configuration class."""

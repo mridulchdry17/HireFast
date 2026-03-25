@@ -201,10 +201,10 @@ For support and questions:
 
 If you're migrating from the old monolithic structure:
 
-1. Your existing `.env` file will work
-2. Move credential files to the `credentials/` directory
-3. Update any hardcoded paths in your configuration
-4. Test all functionality to ensure everything works
+1. Put your `.env` in **`backend/.env`** (Flask only loads that file).
+2. Move credential files to **`backend/credentials/`**.
+3. Update any hardcoded paths in your configuration.
+4. Test all functionality to ensure everything works.
 
 The new structure provides better maintainability, testability, and scalability while preserving all existing functionality.
 
