@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, redirect, session
+from flask import Blueprint, request, jsonify, redirect, session, current_app
 from app.services.composio_service import ComposioService
 from app.services.ai_interview_service import AIInterviewService
 
@@ -16,7 +16,8 @@ def _get_user_id():
 def connect_calendar():
     """Initiate Composio Google Calendar connection flow."""
     user_id = _get_user_id()
-    auth_url = composio_service.get_auth_url(user_id)
+    redirect_url = current_app.config.get('COMPOSIO_CALENDAR_REDIRECT_URL', 'http://127.0.0.1:5000/scheduling')
+    auth_url = composio_service.get_auth_url(user_id, redirect_url=redirect_url)
     if auth_url:
         return redirect(auth_url)
     return jsonify({'error': 'Failed to generate connection URL'}), 500

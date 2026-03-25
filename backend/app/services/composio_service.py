@@ -21,7 +21,7 @@ class ComposioService:
             print(f"Composio init error: {e}")
             self._composio = None
 
-    def get_auth_url(self, user_id: str, redirect_url: str = "http://127.0.0.1:5000/scheduling") -> Optional[str]:
+    def get_auth_url(self, user_id: str, redirect_url: Optional[str] = None) -> Optional[str]:
         """OAuth link for the user to connect Google Calendar (Composio Link)."""
         if not self._composio:
             print("Composio: client not initialized (missing COMPOSIO_API_KEY?).")
@@ -33,6 +33,8 @@ class ComposioService:
             )
             return None
         try:
+            if not redirect_url:
+                redirect_url = "http://127.0.0.1:5000/scheduling"
             req = self._composio.connected_accounts.link(
                 user_id=user_id,
                 auth_config_id=self._auth_config_id,

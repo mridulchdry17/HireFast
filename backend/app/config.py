@@ -20,6 +20,8 @@ class Config:
     # Flask settings
     SECRET_KEY = os.environ.get('SECRET_KEY') or os.urandom(24)
     DEBUG = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    # Public base URL for OAuth/callback redirects (VM IP/domain in prod, localhost in dev)
+    APP_BASE_URL = os.environ.get('APP_BASE_URL', 'http://127.0.0.1:5000').rstrip('/')
     
     # Database settings
     BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
@@ -34,7 +36,9 @@ class Config:
     # LinkedIn OAuth 2.0 settings
     LINKEDIN_CLIENT_ID = os.environ.get("LINKEDIN_CLIENT_ID")
     LINKEDIN_CLIENT_SECRET = os.environ.get("LINKEDIN_CLIENT_SECRET")
-    LINKEDIN_REDIRECT_URI = "http://127.0.0.1:5000/callback"
+    LINKEDIN_REDIRECT_URI = os.environ.get(
+        "LINKEDIN_REDIRECT_URI", f"{APP_BASE_URL}/callback"
+    ).strip()
     LINKEDIN_AUTH_URL = "https://www.linkedin.com/oauth/v2/authorization"
     LINKEDIN_TOKEN_URL = "https://www.linkedin.com/oauth/v2/accessToken"
     
@@ -57,6 +61,10 @@ class Config:
     # Composio dashboard: Auth Config for Google Calendar (required for connect-calendar / link flow)
     COMPOSIO_GOOGLE_CALENDAR_AUTH_CONFIG_ID = os.environ.get(
         "COMPOSIO_GOOGLE_CALENDAR_AUTH_CONFIG_ID", ""
+    ).strip()
+    # Optional full override; defaults to APP_BASE_URL + /scheduling.
+    COMPOSIO_CALENDAR_REDIRECT_URL = os.environ.get(
+        "COMPOSIO_CALENDAR_REDIRECT_URL", f"{APP_BASE_URL}/scheduling"
     ).strip()
     
     # Application form links
