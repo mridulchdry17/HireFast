@@ -17,12 +17,18 @@
             box-sizing: border-box;
         }
 
+        html {
+            overflow-x: hidden;
+            max-width: 100%;
+        }
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
             color: #f8fafc;
             min-height: 100vh;
             line-height: 1.6;
+            overflow-x: hidden;
         }
 
         .gradient-bg {
@@ -368,10 +374,25 @@
             font-weight: 700;
         }
 
+        /* Mobile / tablet: avoid horizontal scroll and cramped nav */
+        @media (max-width: 1023px) {
+            .floating-elements {
+                display: none;
+            }
+
+            .app-mockup {
+                transform: none;
+            }
+
+            .app-mockup:hover {
+                transform: none;
+            }
+        }
+
         @media (max-width: 768px) {
             .hero-section {
-                padding: 2rem 0;
-                min-height: 80vh;
+                padding: 5rem 0 2rem;
+                min-height: auto;
             }
 
             .stats-number {
@@ -381,6 +402,24 @@
             .feature-card {
                 padding: 1.5rem;
             }
+
+            .nav-sticky .btn-primary,
+            .nav-sticky .btn-secondary {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.8125rem;
+            }
+
+            .nav-sticky .btn-primary i,
+            .nav-sticky .btn-secondary i {
+                margin-right: 0.25rem;
+            }
+
+            .hero-cta .btn-primary,
+            .hero-cta .btn-secondary {
+                width: 100%;
+                max-width: 22rem;
+                justify-content: center;
+            }
         }
     </style>
 </head>
@@ -389,31 +428,32 @@
     <!-- Navigation -->
     <nav class="nav-sticky" id="navbar">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center">
+            <div class="flex flex-wrap items-center justify-between gap-3 min-h-16 py-2 md:py-0 md:h-16 md:flex-nowrap">
+                <div class="flex min-w-0 flex-1 items-center justify-between gap-2 md:flex-none md:justify-start">
                     <div class="flex-shrink-0">
-                        <h1 class="text-2xl font-bold gradient-text">HireFast</h1>
+                        <h1 class="text-xl sm:text-2xl font-bold gradient-text">HireFast</h1>
                     </div>
+                    <button type="button" id="mobileNavToggle" class="inline-flex items-center justify-center rounded-lg border border-white/20 p-2 text-gray-200 hover:bg-white/10 md:hidden" aria-expanded="false" aria-controls="mobileNavPanel" aria-label="Open menu">
+                        <i class="fas fa-bars text-lg" id="mobileNavIconOpen"></i>
+                        <i class="fas fa-times text-lg hidden" id="mobileNavIconClose"></i>
+                    </button>
                 </div>
-                <div class="hidden md:block">
-                    <div class="ml-10 flex items-baseline space-x-8">
-                        <a href="#features"
-                            class="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors">Features</a>
-                        <a href="#how-it-works"
-                            class="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors">How
-                            It Works</a>
-                        <a href="#testimonials"
-                            class="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors">Testimonials</a>
-                        <a href="#contact"
-                            class="text-gray-300 hover:text-white px-3 py-2 text-sm font-medium transition-colors">Contact</a>
-                    </div>
+                <div class="hidden w-full flex-col gap-1 border-t border-white/10 pt-3 md:ml-10 md:flex md:w-auto md:flex-row md:items-baseline md:gap-0 md:space-x-6 md:border-0 md:pt-0" id="mobileNavPanel">
+                    <a href="#features"
+                        class="rounded-lg px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white">Features</a>
+                    <a href="#how-it-works"
+                        class="rounded-lg px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white">How It Works</a>
+                    <a href="#testimonials"
+                        class="rounded-lg px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white">Testimonials</a>
+                    <a href="#contact"
+                        class="rounded-lg px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white">Contact</a>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <button id="loginBtn" class="btn-secondary">
+                <div class="flex w-full shrink-0 flex-wrap items-center justify-end gap-2 sm:w-auto md:w-auto">
+                    <button type="button" id="loginBtn" class="btn-secondary whitespace-nowrap">
                         <i class="fas fa-sign-in-alt"></i>
                         Login
                     </button>
-                    <button id="getStartedBtn" class="btn-primary">
+                    <button type="button" id="getStartedBtn" class="btn-primary whitespace-nowrap">
                         <i class="fas fa-rocket"></i>
                         Get Started
                     </button>
@@ -450,16 +490,16 @@
                 <div class="mb-6 fade-in">
                     <span class="text-lg md:text-xl text-gray-400 font-medium">AI · Hiring · Growth</span>
                 </div>
-                <h1 class="text-5xl md:text-7xl font-bold mb-6 fade-in text-white">
+                <h1 class="text-3xl sm:text-5xl md:text-7xl font-bold mb-6 fade-in text-white leading-tight px-2 break-words">
                     Your Ultimate One-Stop<br>
                     Platform to <span class="gradient-text-emphasis">Crack</span> Hiring
                 </h1>
-                <p class="text-xl md:text-2xl text-gray-300 mb-8 max-w-4xl mx-auto fade-in leading-relaxed">
+                <p class="text-base sm:text-xl md:text-2xl text-gray-300 mb-8 max-w-4xl mx-auto fade-in leading-relaxed px-2">
                     Discover <span class="font-medium text-gray-200">top candidates</span>, send <span
                         class="font-medium text-gray-200">personalized messages</span>,
                     and land your <span class="font-semibold text-blue-400">dream hires</span> with AI-powered tools.
                 </p>
-                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12 fade-in">
+                <div class="hero-cta flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-stretch sm:items-center mb-12 fade-in px-1">
                     <button id="startHiringBtn" class="btn-primary pulse-animation">
                         <i class="fas fa-rocket"></i>
                         Start Hiring Now
@@ -494,10 +534,10 @@
     </section>
 
     <!-- Features Section -->
-    <section id="features" class="py-20">
+    <section id="features" class="py-12 md:py-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16">
-                <h2 class="text-4xl md:text-5xl font-bold mb-8 text-white">
+                <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-8 text-white px-2 leading-tight">
                     Everything you need to <span class="gradient-text">hire fast</span>
                 </h2>
                 <div class="max-w-4xl mx-auto mb-12">
@@ -808,8 +848,60 @@
                         block: 'start'
                     });
                 }
+                const panel = document.getElementById('mobileNavPanel');
+                const toggle = document.getElementById('mobileNavToggle');
+                const iconOpen = document.getElementById('mobileNavIconOpen');
+                const iconClose = document.getElementById('mobileNavIconClose');
+                if (window.matchMedia('(max-width: 767px)').matches && panel && !panel.classList.contains('hidden')) {
+                    panel.classList.add('hidden');
+                    panel.classList.remove('flex');
+                    if (iconOpen) iconOpen.classList.remove('hidden');
+                    if (iconClose) iconClose.classList.add('hidden');
+                    if (toggle) toggle.setAttribute('aria-expanded', 'false');
+                }
             });
         });
+
+        // Mobile nav hamburger
+        (function () {
+            const toggle = document.getElementById('mobileNavToggle');
+            const panel = document.getElementById('mobileNavPanel');
+            const iconOpen = document.getElementById('mobileNavIconOpen');
+            const iconClose = document.getElementById('mobileNavIconClose');
+            if (!toggle || !panel) return;
+            function closeMenu() {
+                if (window.matchMedia('(min-width: 768px)').matches) return;
+                panel.classList.add('hidden');
+                panel.classList.remove('flex');
+                if (iconOpen) iconOpen.classList.remove('hidden');
+                if (iconClose) iconClose.classList.add('hidden');
+                toggle.setAttribute('aria-expanded', 'false');
+            }
+            toggle.addEventListener('click', function () {
+                if (window.matchMedia('(min-width: 768px)').matches) return;
+                const open = panel.classList.contains('hidden');
+                if (open) {
+                    panel.classList.remove('hidden');
+                    panel.classList.add('flex');
+                    if (iconOpen) iconOpen.classList.add('hidden');
+                    if (iconClose) iconClose.classList.remove('hidden');
+                    toggle.setAttribute('aria-expanded', 'true');
+                } else {
+                    closeMenu();
+                }
+            });
+            window.addEventListener('resize', function () {
+                if (window.matchMedia('(min-width: 768px)').matches) {
+                    panel.classList.remove('hidden');
+                    panel.classList.add('flex');
+                    if (iconOpen) iconOpen.classList.remove('hidden');
+                    if (iconClose) iconClose.classList.add('hidden');
+                    toggle.setAttribute('aria-expanded', 'false');
+                } else {
+                    closeMenu();
+                }
+            });
+        })();
 
         // Check authentication status on page load
         let isAuthenticated = false;

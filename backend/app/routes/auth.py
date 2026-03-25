@@ -18,16 +18,15 @@ linkedin_service = LinkedInService()
 
 def _linkedin_redirect_uri() -> str:
     """
-    Must match the LinkedIn app redirect URL and be identical on /login and /callback.
+    Must match an Authorized redirect URL in the LinkedIn Developer Portal (exact string).
 
-    Normal setup: set APP_BASE_URL only → uses {APP_BASE_URL}/callback.
-    Optional LINKEDIN_REDIRECT_URI env if the callback URL must differ (unusual).
-    If APP_BASE_URL is unset, uses this request's origin + /callback.
+    Uses Config.APP_BASE_URL (from backend/.env) → {APP_BASE_URL}/callback.
+    Optional LINKEDIN_REDIRECT_URI env overrides. If APP_BASE_URL is empty, uses this request host.
     """
     explicit = (os.environ.get("LINKEDIN_REDIRECT_URI") or "").strip()
     if explicit:
         return explicit
-    base = (os.environ.get("APP_BASE_URL") or "").strip().rstrip("/")
+    base = (Config.APP_BASE_URL or "").strip().rstrip("/")
     if base:
         return f"{base}/callback"
     return request.url_root.rstrip("/") + "/callback"
