@@ -19,5 +19,8 @@ groq
 sounddevice
 soundfile
 gtts
-composio-langchain
-composio-core
+# Match local dev — pin so `pip install` on VM does not drift (see composio_service.py)
+composio==0.11.1
+composio-client==1.27.0
+composio-langchain==0.11.1
+composio-core==0.7.21
