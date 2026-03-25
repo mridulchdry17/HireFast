@@ -4,46 +4,21 @@
 
 A modern, structured Flask application that automates the hiring process using AI for job description generation, candidate selection, and interview scheduling.
 
+**Split frontend + backend:** The Next.js UI lives in **`frontend/`** (e.g. deploy to Vercel). The Flask API lives in **`backend/`** (e.g. Azure VM). See **[DEPLOYMENT.md](./DEPLOYMENT.md)** for env vars, Gunicorn, and the `/api/proxy` pattern.
+
 ## 🏗️ Project Structure
 
 ```
 HireFast/
-├── app/                          # Main application package
-│   ├── __init__.py              # Flask app factory
-│   ├── config.py                # Configuration management
-│   ├── models/                  # Data models
-│   │   ├── __init__.py
-│   │   └── hiring.py           # HR hiring state models
-│   ├── services/                # Business logic
-│   │   ├── __init__.py
-│   │   ├── linkedin_service.py  # LinkedIn API operations
-│   │   ├── google_service.py    # Google Sheets/Calendar operations
-│   │   ├── resume_service.py    # Resume processing
-│   │   └── ai_service.py        # AI/LLM operations
-│   ├── routes/                  # API routes
-│   │   ├── __init__.py
-│   │   ├── auth.py             # Authentication routes
-│   │   ├── hiring.py           # Hiring workflow routes
-│   │   └── calendar.py         # Calendar integration routes
-│   └── utils/                   # Utility functions
-│       ├── __init__.py
-│       └── helpers.py          # Helper functions
-├── templates/                   # HTML templates
-│   ├── base.html
-│   └── index_new.html
-├── static/                      # Static assets
-│   ├── css/
-│   │   └── main.css
-│   ├── js/
-│   │   └── main.js
-│   └── images/
-├── credentials/                 # Credential files
-│   ├── google_calendar_credentials.json
-│   └── credentials.json
-├── main.py                      # Application entry point
-├── requirements.txt
-├── env.example
-└── README_NEW.md
+├── backend/                     # Flask API (Gunicorn on VM)
+│   ├── app/                     # Application package
+│   ├── templates/               # Jinja HTML (legacy / admin)
+│   ├── static/                  # Static assets
+│   ├── credentials/             # Google creds (not committed)
+│   ├── main.py
+│   └── requirements.txt
+├── frontend/                    # Next.js (Vercel)
+└── DEPLOYMENT.md
 ```
 
 ## 🚀 Features
@@ -71,18 +46,19 @@ HireFast/
 
 3. **Install dependencies**
    ```bash
+   cd backend
    pip install -r requirements.txt
    ```
 
 4. **Set up environment variables**
    ```bash
-   cp env.example .env
+   cp .env.example .env
    # Edit .env with your actual credentials
    ```
 
 5. **Set up Google credentials**
-   - Place your Google service account credentials in `credentials/credentials.json`
-   - Place your Google Calendar OAuth credentials in `credentials/google_calendar_credentials.json`
+   - Place your Google service account credentials in `backend/credentials/credentials.json`
+   - Place your Google Calendar OAuth credentials in `backend/credentials/google_calendar_credentials.json`
 
 ## ⚙️ Configuration
 
@@ -125,6 +101,7 @@ GROQ_API_KEY=your-groq-api-key
 ## 🏃‍♂️ Running the Application
 
 ```bash
+cd backend
 python main.py
 ```
 
@@ -164,10 +141,10 @@ The application follows a modular, service-oriented architecture:
 
 ### Adding New Features
 
-1. **New Service**: Add to `app/services/`
-2. **New Route**: Add to `app/routes/` and register in `app/__init__.py`
-3. **New Model**: Add to `app/models/`
-4. **New Utility**: Add to `app/utils/`
+1. **New Service**: Add to `backend/app/services/`
+2. **New Route**: Add to `backend/app/routes/` and register in `backend/app/__init__.py`
+3. **New Model**: Add to `backend/app/models/`
+4. **New Utility**: Add to `backend/app/utils/`
 
 ### Code Style
 
@@ -189,13 +166,13 @@ The application follows a modular, service-oriented architecture:
 ### Docker Deployment
 
 ```dockerfile
-FROM python:3.9-slim
+FROM python:3.11-slim
 
 WORKDIR /app
-COPY requirements.txt .
+COPY backend/requirements.txt .
 RUN pip install -r requirements.txt
 
-COPY . .
+COPY backend/ .
 EXPOSE 5000
 
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "main:app"]

@@ -2,6 +2,7 @@
 Flask application factory for HireFast.
 """
 from flask import Flask, render_template, jsonify, request
+from flask_cors import CORS
 from app.config import config
 from app.routes import auth_bp, hiring_bp, calendar_bp, ai_interview_bp, candidate_portal_bp
 from app.models.db_models import db
@@ -22,6 +23,15 @@ def create_app(config_name='default'):
                 static_folder=os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static'))
     app.config.from_object(config[config_name])
     
+    # Split deployment: allow Vercel / local Next.js to call the API (set CORS_ORIGINS in production)
+    _origins = app.config.get('CORS_ORIGINS') or ''
+    if _origins.strip() == '*':
+        CORS(app, resources={r'/*': {'origins': '*'}})
+    else:
+        origin_list = [o.strip() for o in _origins.split(',') if o.strip()]
+        if origin_list:
+            CORS(app, resources={r'/*': {'origins': origin_list}}, supports_credentials=True)
+    
     # Initialize DB
     db.init_app(app)
     
@@ -30,6 +40,11 @@ def create_app(config_name='default'):
     
     with app.app_context():
         db.create_all()
+    
+    @app.route('/health')
+    def health():
+        """Load balancer / deployment check for split FE/BE."""
+        return jsonify({'status': 'ok', 'service': 'hirefast-api'})
     
     # Register blueprints
     app.register_blueprint(auth_bp)
