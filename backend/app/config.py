@@ -62,10 +62,6 @@ class Config:
     COMPOSIO_GOOGLE_CALENDAR_AUTH_CONFIG_ID = os.environ.get(
         "COMPOSIO_GOOGLE_CALENDAR_AUTH_CONFIG_ID", ""
     ).strip()
-    # Optional full override; defaults to APP_BASE_URL + /scheduling.
-    COMPOSIO_CALENDAR_REDIRECT_URL = os.environ.get(
-        "COMPOSIO_CALENDAR_REDIRECT_URL", f"{APP_BASE_URL}/scheduling"
-    ).strip()
     
     # Application form links
     ROLE_FORM_LINKS = {

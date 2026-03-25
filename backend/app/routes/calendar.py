@@ -12,11 +12,23 @@ def _get_user_id():
     """Get user ID from session, falling back to query param for testing."""
     return session.get('user_id') or request.args.get('user_id', 'default_user')
 
+
+def _calendar_callback_url() -> str:
+    """Composio return URL after Google OAuth: {APP_BASE_URL}/scheduling."""
+    base = (current_app.config.get('APP_BASE_URL') or '').strip().rstrip('/')
+    return f"{base}/scheduling"
+
+
+def _public_base_url() -> str:
+    """Public origin for links in emails/calendar (same as APP_BASE_URL)."""
+    return (current_app.config.get('APP_BASE_URL') or '').strip().rstrip('/')
+
+
 @calendar_bp.route('/connect-calendar')
 def connect_calendar():
     """Initiate Composio Google Calendar connection flow."""
     user_id = _get_user_id()
-    redirect_url = current_app.config.get('COMPOSIO_CALENDAR_REDIRECT_URL', 'http://127.0.0.1:5000/scheduling')
+    redirect_url = _calendar_callback_url()
     auth_url = composio_service.get_auth_url(user_id, redirect_url=redirect_url)
     if auth_url:
         return redirect(auth_url)
@@ -75,7 +87,7 @@ def schedule_interview_api():
         
         # Get absolute URL for the interview link
         relative_link = ai_session['interview_link']
-        base_url = request.url_root.rstrip('/')
+        base_url = _public_base_url()
         interview_link = f"{base_url}{relative_link}"
         
         description = f"AI Screening Interview.\n\nPlease complete this interview within 48 hours at this link: {interview_link}\n\n{notes}"

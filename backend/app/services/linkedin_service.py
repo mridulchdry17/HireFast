@@ -68,7 +68,8 @@ class LinkedInService:
         
         # Determine the application link: Internal Portal first, then Google Form fallback
         if job_id:
-            form_link = f"http://127.0.0.1:5000/apply/{job_id}"
+            base = (Config.APP_BASE_URL or "http://127.0.0.1:5000").rstrip("/")
+            form_link = f"{base}/apply/{job_id}"
         else:
             form_link = get_form_link_for_role(role)
             

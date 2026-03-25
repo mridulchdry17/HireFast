@@ -34,7 +34,8 @@ class ComposioService:
             return None
         try:
             if not redirect_url:
-                redirect_url = "http://127.0.0.1:5000/scheduling"
+                base = (Config.APP_BASE_URL or "http://127.0.0.1:5000").rstrip("/")
+                redirect_url = f"{base}/scheduling"
             req = self._composio.connected_accounts.link(
                 user_id=user_id,
                 auth_config_id=self._auth_config_id,
