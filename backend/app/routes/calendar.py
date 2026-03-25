@@ -1,4 +1,6 @@
-from flask import Blueprint, request, jsonify, redirect, session, current_app
+import os
+
+from flask import Blueprint, request, jsonify, redirect, session
 from app.services.composio_service import ComposioService
 from app.services.ai_interview_service import AIInterviewService
 
@@ -14,14 +16,25 @@ def _get_user_id():
 
 
 def _calendar_callback_url() -> str:
-    """Composio return URL after Google OAuth: {APP_BASE_URL}/scheduling."""
-    base = (current_app.config.get('APP_BASE_URL') or '').strip().rstrip('/')
-    return f"{base}/scheduling"
+    """
+    Composio return URL after Google OAuth: {origin}/scheduling.
+
+    Use APP_BASE_URL from the environment when set (prod VM IP/domain).
+    Do not use Config/current_app default — it falls back to 127.0.0.1 when env is missing.
+    If unset, use this request's public origin (same host the user used to open /connect-calendar).
+    """
+    env_base = (os.environ.get("APP_BASE_URL") or "").strip().rstrip("/")
+    if env_base:
+        return f"{env_base}/scheduling"
+    return request.url_root.rstrip("/") + "/scheduling"
 
 
 def _public_base_url() -> str:
-    """Public origin for links in emails/calendar (same as APP_BASE_URL)."""
-    return (current_app.config.get('APP_BASE_URL') or '').strip().rstrip('/')
+    """Origin for AI interview links in calendar invites."""
+    env_base = (os.environ.get("APP_BASE_URL") or "").strip().rstrip("/")
+    if env_base:
+        return env_base
+    return request.url_root.rstrip("/")
 
 
 @calendar_bp.route('/connect-calendar')

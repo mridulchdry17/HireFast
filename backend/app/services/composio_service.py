@@ -1,3 +1,4 @@
+import os
 from typing import Optional, Dict, Any
 
 from composio import Composio
@@ -34,7 +35,8 @@ class ComposioService:
             return None
         try:
             if not redirect_url:
-                base = (Config.APP_BASE_URL or "http://127.0.0.1:5000").rstrip("/")
+                # Only use env APP_BASE_URL; never Config default (localhost) when env unset.
+                base = (os.environ.get("APP_BASE_URL") or "").strip().rstrip("/") or "http://127.0.0.1:5000"
                 redirect_url = f"{base}/scheduling"
             req = self._composio.connected_accounts.link(
                 user_id=user_id,
