@@ -1,8 +1,11 @@
 """
 Authentication routes for LinkedIn OAuth.
 """
+import os
 import secrets
 import requests
+from urllib.parse import urlencode
+
 from flask import Blueprint, request, jsonify, redirect, url_for, session
 from app.config import Config
 from app.services.linkedin_service import LinkedInService
@@ -11,6 +14,24 @@ auth_bp = Blueprint('auth', __name__)
 
 # Initialize LinkedIn service
 linkedin_service = LinkedInService()
+
+
+def _linkedin_redirect_uri() -> str:
+    """
+    Must match the LinkedIn app redirect URL and be identical on /login and /callback.
+
+    Normal setup: set APP_BASE_URL only → uses {APP_BASE_URL}/callback.
+    Optional LINKEDIN_REDIRECT_URI env if the callback URL must differ (unusual).
+    If APP_BASE_URL is unset, uses this request's origin + /callback.
+    """
+    explicit = (os.environ.get("LINKEDIN_REDIRECT_URI") or "").strip()
+    if explicit:
+        return explicit
+    base = (os.environ.get("APP_BASE_URL") or "").strip().rstrip("/")
+    if base:
+        return f"{base}/callback"
+    return request.url_root.rstrip("/") + "/callback"
+
 
 @auth_bp.route('/login')
 def login():
@@ -21,16 +42,17 @@ def login():
     state = secrets.token_urlsafe(16)
     session['state'] = state
     session['user_id'] = secrets.token_urlsafe(16)
-    
+
+    redirect_uri = _linkedin_redirect_uri()
     auth_params = {
         'response_type': 'code',
         'client_id': Config.LINKEDIN_CLIENT_ID,
-        'redirect_uri': Config.LINKEDIN_REDIRECT_URI,
+        'redirect_uri': redirect_uri,
         'state': state,
-        'scope': 'openid profile w_member_social'  # Use OpenID Connect scopes
+        'scope': 'openid profile w_member_social',
     }
-    
-    auth_url = f"{Config.LINKEDIN_AUTH_URL}?{'&'.join(f'{k}={v}' for k, v in auth_params.items())}"
+
+    auth_url = f"{Config.LINKEDIN_AUTH_URL}?{urlencode(auth_params)}"
     return redirect(auth_url)
 
 @auth_bp.route('/callback')
@@ -53,7 +75,7 @@ def callback():
         'code': code,
         'client_id': Config.LINKEDIN_CLIENT_ID,
         'client_secret': Config.LINKEDIN_CLIENT_SECRET,
-        'redirect_uri': Config.LINKEDIN_REDIRECT_URI
+        'redirect_uri': _linkedin_redirect_uri(),
     }
     
     try:

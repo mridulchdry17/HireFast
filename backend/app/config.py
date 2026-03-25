@@ -33,12 +33,9 @@ class Config:
     UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB limit
     
-    # LinkedIn OAuth 2.0 settings
+    # LinkedIn OAuth 2.0 settings (redirect URI is {APP_BASE_URL}/callback; see auth routes)
     LINKEDIN_CLIENT_ID = os.environ.get("LINKEDIN_CLIENT_ID")
     LINKEDIN_CLIENT_SECRET = os.environ.get("LINKEDIN_CLIENT_SECRET")
-    LINKEDIN_REDIRECT_URI = os.environ.get(
-        "LINKEDIN_REDIRECT_URI", f"{APP_BASE_URL}/callback"
-    ).strip()
     LINKEDIN_AUTH_URL = "https://www.linkedin.com/oauth/v2/authorization"
     LINKEDIN_TOKEN_URL = "https://www.linkedin.com/oauth/v2/accessToken"
     
