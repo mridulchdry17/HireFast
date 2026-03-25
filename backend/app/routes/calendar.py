@@ -6,6 +6,20 @@ from app.services.ai_interview_service import AIInterviewService
 
 calendar_bp = Blueprint('calendar', __name__)
 
+
+def _public_origin() -> str:
+    """Same as LinkedIn redirect: APP_BASE_URL env, else this request's host (not Config default)."""
+    env_base = (os.environ.get("APP_BASE_URL") or "").strip().rstrip("/")
+    if env_base:
+        return env_base
+    return request.url_root.rstrip("/")
+
+
+def _absolute(path: str) -> str:
+    if not path.startswith("/"):
+        path = "/" + path
+    return f"{_public_origin()}{path}"
+
 # Initialize services
 composio_service = ComposioService()
 ai_interview_service = AIInterviewService()
@@ -16,25 +30,8 @@ def _get_user_id():
 
 
 def _calendar_callback_url() -> str:
-    """
-    Composio return URL after Google OAuth: {origin}/scheduling.
-
-    Use APP_BASE_URL from the environment when set (prod VM IP/domain).
-    Do not use Config/current_app default — it falls back to 127.0.0.1 when env is missing.
-    If unset, use this request's public origin (same host the user used to open /connect-calendar).
-    """
-    env_base = (os.environ.get("APP_BASE_URL") or "").strip().rstrip("/")
-    if env_base:
-        return f"{env_base}/scheduling"
-    return request.url_root.rstrip("/") + "/scheduling"
-
-
-def _public_base_url() -> str:
-    """Origin for AI interview links in calendar invites."""
-    env_base = (os.environ.get("APP_BASE_URL") or "").strip().rstrip("/")
-    if env_base:
-        return env_base
-    return request.url_root.rstrip("/")
+    """Composio return URL after Google OAuth."""
+    return _absolute("/scheduling")
 
 
 @calendar_bp.route('/connect-calendar')
@@ -98,10 +95,7 @@ def schedule_interview_api():
             resume_path=data.get('resume_path', '')
         )
         
-        # Get absolute URL for the interview link
-        relative_link = ai_session['interview_link']
-        base_url = _public_base_url()
-        interview_link = f"{base_url}{relative_link}"
+        interview_link = _absolute(ai_session["interview_link"])
         
         description = f"AI Screening Interview.\n\nPlease complete this interview within 48 hours at this link: {interview_link}\n\n{notes}"
         create_meeting_room = False

@@ -17,7 +17,15 @@ class ComposioService:
             print("Warning: COMPOSIO_API_KEY not found in environment.")
             return
         try:
-            self._composio = Composio(api_key=self.api_key)
+            kwargs = {"api_key": self.api_key}
+            tv = Config.COMPOSIO_TOOLKIT_VERSION_GOOGLECALENDAR
+            if tv:
+                kwargs["toolkit_versions"] = {"googlecalendar": tv}
+            try:
+                self._composio = Composio(**kwargs)
+            except TypeError:
+                # Older Composio() without toolkit_versions
+                self._composio = Composio(api_key=self.api_key)
         except Exception as e:
             print(f"Composio init error: {e}")
             self._composio = None
@@ -114,11 +122,26 @@ class ComposioService:
 
             print(f"[Composio] Scheduling: user={user_id} candidate={candidate_email}")
 
-            result = self._composio.tools.execute(
-                Action.GOOGLECALENDAR_CREATE_EVENT.slug,
-                arguments=params,
-                user_id=user_id,
-            )
+            slug = Action.GOOGLECALENDAR_CREATE_EVENT.slug
+            exec_kw: Dict[str, Any] = {"arguments": params, "user_id": user_id}
+            tv = Config.COMPOSIO_TOOLKIT_VERSION_GOOGLECALENDAR
+            if tv:
+                exec_kw["version"] = tv
+            elif Config.COMPOSIO_DANGEROUSLY_SKIP_TOOLKIT_VERSION_CHECK:
+                exec_kw["dangerously_skip_version_check"] = True
+
+            tools = getattr(self._composio, "tools", None)
+            if not tools or not hasattr(tools, "execute"):
+                return {
+                    "status": "error",
+                    "message": "Composio SDK has no tools.execute; upgrade composio (see requirements.txt).",
+                }
+
+            try:
+                result = tools.execute(slug, **exec_kw)
+            except TypeError:
+                # SDK without versioning kwargs
+                result = tools.execute(slug, arguments=params, user_id=user_id)
 
             print(f"[Composio] Result: {result}")
 

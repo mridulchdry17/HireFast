@@ -59,6 +59,20 @@ class Config:
     COMPOSIO_GOOGLE_CALENDAR_AUTH_CONFIG_ID = os.environ.get(
         "COMPOSIO_GOOGLE_CALENDAR_AUTH_CONFIG_ID", ""
     ).strip()
+    # Composio manual tools.execute() requires a toolkit version (SDK v0.9+). Dashboard "latest" shows e.g. 20260324_00.
+    # Override with env COMPOSIO_TOOLKIT_VERSION_GOOGLECALENDAR if Composio releases a new default.
+    COMPOSIO_TOOLKIT_VERSION_GOOGLECALENDAR = (
+        os.environ.get("COMPOSIO_TOOLKIT_VERSION_GOOGLECALENDAR") or "20260324_00"
+    ).strip()
+    _skip_tv = os.environ.get("COMPOSIO_DANGEROUSLY_SKIP_TOOLKIT_VERSION_CHECK")
+    if _skip_tv is None:
+        COMPOSIO_DANGEROUSLY_SKIP_TOOLKIT_VERSION_CHECK = False
+    else:
+        COMPOSIO_DANGEROUSLY_SKIP_TOOLKIT_VERSION_CHECK = _skip_tv.strip().lower() in (
+            "1",
+            "true",
+            "yes",
+        )
     
     # Application form links
     ROLE_FORM_LINKS = {
