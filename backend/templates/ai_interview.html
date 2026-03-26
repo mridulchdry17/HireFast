@@ -382,7 +382,7 @@
                     <div id="recordingStatus" class="hidden mb-4">
                         <div class="flex items-center gap-3 text-red-400">
                             <div class="recording-indicator w-3 h-3 bg-red-500 rounded-full"></div>
-                            <span>Recording... Speak now!</span>
+                            <span>Listening… speak your answer</span>
                         </div>
                     </div>
 
@@ -462,312 +462,316 @@
     </div>
 
     <script>
-        // Global variables
-        const interviewId = '{{ interview.id }}';
+        // ── globals ───────────────────────────────────────────────────────────────
+        const interviewId     = '{{ interview.id }}';
         const interviewStatus = '{{ interview.status }}';
-        const isExpired = {{ 'true' if is_expired else 'false' }};
-        let currentQuestion = null;
-        let isRecording = false;
-        let mediaRecorder = null;
-        let audioChunks = [];
+        const isExpired       = {{ 'true' if is_expired else 'false' }};
+        let currentQuestion   = null;
+
+        // voice recording (blob fallback)
+        let isRecording      = false;
+        let mediaRecorder    = null;
+        let audioChunks      = [];
         let currentAudioBlob = null;
+        let currentAudioMime = 'audio/webm';
 
-        // DOM elements
+        // Web Speech API (preferred — transcribes in real-time to textarea)
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
+        let isListening = false;
+
+        // ── DOM refs ─────────────────────────────────────────────────────────────
         const startInterviewBtn = document.getElementById('startInterviewBtn');
-        const questionText = document.getElementById('questionText');
-        const speakQuestionBtn = document.getElementById('speakQuestionBtn');
-        const answerText = document.getElementById('answerText');
-        const recordBtn = document.getElementById('recordBtn');
-        const stopRecordBtn = document.getElementById('stopRecordBtn');
-        const playRecordingBtn = document.getElementById('playRecordingBtn');
-        const recordingStatus = document.getElementById('recordingStatus');
-        const submitAnswerBtn = document.getElementById('submitAnswerBtn');
+        const questionText      = document.getElementById('questionText');
+        const speakQuestionBtn  = document.getElementById('speakQuestionBtn');
+        const answerText        = document.getElementById('answerText');
+        const recordBtn         = document.getElementById('recordBtn');
+        const stopRecordBtn     = document.getElementById('stopRecordBtn');
+        const playRecordingBtn  = document.getElementById('playRecordingBtn');
+        const recordingStatus   = document.getElementById('recordingStatus');
+        const submitAnswerBtn   = document.getElementById('submitAnswerBtn');
 
+        // ── init ─────────────────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', initVoiceUi);
+        if (startInterviewBtn) startInterviewBtn.addEventListener('click', startInterview);
+        if (speakQuestionBtn)  speakQuestionBtn.addEventListener('click', speakCurrentQuestion);
+        if (recordBtn)         recordBtn.addEventListener('click', startRecording);
+        if (stopRecordBtn)     stopRecordBtn.addEventListener('click', stopRecording);
+        if (playRecordingBtn)  playRecordingBtn.addEventListener('click', playRecording);
+        if (submitAnswerBtn)   submitAnswerBtn.addEventListener('click', submitAnswer);
+        if (interviewStatus === 'in_progress') loadCurrentQuestion();
 
-        // Event listeners
-        if (startInterviewBtn) {
-            startInterviewBtn.addEventListener('click', startInterview);
-        }
+        function initVoiceUi() {
+            if (!recordBtn) return;
+            const hasMic = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+            const hasSTT = !!SpeechRecognition;
 
-        if (speakQuestionBtn) {
-            speakQuestionBtn.addEventListener('click', speakCurrentQuestion);
-        }
-
-        if (recordBtn) {
-            recordBtn.addEventListener('click', startRecording);
-        }
-
-        document.addEventListener('DOMContentLoaded', initMicrophoneUi);
-
-        if (stopRecordBtn) {
-            stopRecordBtn.addEventListener('click', stopRecording);
-        }
-
-        if (playRecordingBtn) {
-            playRecordingBtn.addEventListener('click', playRecording);
-        }
-
-        if (submitAnswerBtn) {
-            submitAnswerBtn.addEventListener('click', submitAnswer);
-        }
-
-        // Functions
-        async function startInterview() {
-            if (isExpired) {
-                showError('This interview link has expired.');
-                return;
+            if (!hasMic && !hasSTT) {
+                recordBtn.disabled = true;
+                recordBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                const warn = document.getElementById('micHttpWarning');
+                if (warn) warn.classList.remove('hidden');
             }
+
+            // Label the button based on capability
+            if (hasSTT) {
+                recordBtn.innerHTML = '<i class="fas fa-microphone mr-2"></i>Record Voice (auto-transcribe)';
+            }
+        }
+
+        // ── start interview ───────────────────────────────────────────────────────
+        async function startInterview() {
+            if (isExpired) { showError('This interview link has expired.'); return; }
             try {
-                showLoading(startInterviewBtn);
-
-                const response = await fetch(`/api/ai-interview/${interviewId}/start`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
+                showLoading(startInterviewBtn, 'Starting…');
+                const res  = await fetch(`/api/ai-interview/${interviewId}/start`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }
                 });
-
-                const data = await response.json();
-
+                const data = await res.json();
                 if (data.success) {
-                    currentQuestion = data.question;
-                    hideLoading(startInterviewBtn);
-                    // Reload to show in-progress state — questionText element
-                    // only exists in the in_progress branch of the template.
-                    setTimeout(() => { window.location.reload(); }, 800);
+                    setTimeout(() => window.location.reload(), 600);
                 } else {
-                    showError(data.error);
+                    showError(data.error || 'Failed to start');
                     hideLoading(startInterviewBtn);
                 }
-            } catch (error) {
-                showError('Failed to start interview: ' + error.message);
+            } catch (e) {
+                showError('Failed to start interview: ' + e.message);
                 hideLoading(startInterviewBtn);
             }
         }
 
+        // ── speak question (TTS) ──────────────────────────────────────────────────
         async function speakCurrentQuestion() {
-            if (!currentQuestion) return;
-
+            if (!currentQuestion) { showError('Question not loaded yet, please wait a moment.'); return; }
             try {
-                showLoading(speakQuestionBtn);
-
-                const response = await fetch(`/api/ai-interview/${interviewId}/speak`, {
+                showLoading(speakQuestionBtn, '…');
+                const res  = await fetch(`/api/ai-interview/${interviewId}/speak`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ text: currentQuestion.question_text })
                 });
-
-                const data = await response.json();
-
+                const data = await res.json();
                 if (data.success && data.audio_url) {
-                    // Play in the candidate's browser — works on any deployment
                     new Audio(data.audio_url).play();
-                    hideLoading(speakQuestionBtn);
                 } else {
                     showError(data.error || 'Failed to generate audio');
-                    hideLoading(speakQuestionBtn);
                 }
-            } catch (error) {
-                showError('Failed to speak question: ' + error.message);
+            } catch (e) {
+                showError('Failed to speak question: ' + e.message);
+            } finally {
                 hideLoading(speakQuestionBtn);
             }
         }
 
-        function canUseMicrophone() {
-            if (typeof navigator === 'undefined') return false;
-            var md = navigator.mediaDevices;
-            return !!(md && typeof md.getUserMedia === 'function');
-        }
-
-        function microphoneHelpMessage() {
-            if (window.isSecureContext === false) {
-                return 'Microphone needs HTTPS (or localhost). This page is not a secure context — type your answer instead, or open the interview link over HTTPS.';
-            }
-            if (!canUseMicrophone()) {
-                return 'This browser does not expose the microphone API here. Try another browser, update it, or type your answer.';
-            }
-            return '';
-        }
-
-        function initMicrophoneUi() {
-            if (!recordBtn) return;
-            if (!canUseMicrophone()) {
-                recordBtn.disabled = true;
-                recordBtn.setAttribute('aria-disabled', 'true');
-                recordBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                var warn = document.getElementById('micHttpWarning');
-                if (warn) warn.classList.remove('hidden');
-            }
-        }
-
+        // ── voice recording ───────────────────────────────────────────────────────
         async function startRecording() {
-            if (!canUseMicrophone()) {
-                showError(microphoneHelpMessage() || 'Voice recording is not available.');
+            // Prefer Web Speech API — transcribes directly into the textarea
+            if (SpeechRecognition) {
+                startSpeechRecognition();
+                return;
+            }
+            // Fallback: MediaRecorder blob (submitted to server for Whisper transcription)
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                showError('Microphone not available. Please type your answer.');
                 return;
             }
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-                audioChunks = [];
+                // Detect actual MIME type supported by this browser
+                const mimeType = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm'
+                               : MediaRecorder.isTypeSupported('audio/ogg')  ? 'audio/ogg'
+                               : '';
+                currentAudioMime = mimeType || 'audio/webm';
+                mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
+                audioChunks   = [];
 
-                mediaRecorder.ondataavailable = event => {
-                    audioChunks.push(event.data);
-                };
-
+                mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
                 mediaRecorder.onstop = () => {
-                    currentAudioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    currentAudioBlob = new Blob(audioChunks, { type: currentAudioMime });
                     playRecordingBtn.style.display = 'inline-flex';
-                    stream.getTracks().forEach(track => track.stop());
+                    stream.getTracks().forEach(t => t.stop());
+                    // Show hint: "recording captured, submit to transcribe"
+                    if (!answerText.value.trim()) {
+                        answerText.placeholder = 'Voice recorded ✓ — click Submit to transcribe, or type here.';
+                    }
                 };
-
-                mediaRecorder.start();
+                mediaRecorder.start(200); // collect data every 200 ms
                 isRecording = true;
-
                 recordBtn.style.display = 'none';
                 stopRecordBtn.style.display = 'inline-flex';
                 recordingStatus.classList.remove('hidden');
-
-            } catch (error) {
-                var msg = (error && error.message) ? error.message : String(error);
-                showError('Failed to start recording: ' + msg);
+            } catch (e) {
+                showError('Microphone error: ' + e.message);
             }
         }
 
+        function startSpeechRecognition() {
+            recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+            recognition.continuous = true;
+            recognition.interimResults = true;
+
+            let finalTranscript = answerText.value;
+
+            recognition.onstart = () => {
+                isListening = true;
+                recordBtn.style.display = 'none';
+                stopRecordBtn.style.display = 'inline-flex';
+                recordingStatus.classList.remove('hidden');
+                recordingStatus.querySelector('span').textContent = 'Listening… speak your answer';
+            };
+
+            recognition.onresult = e => {
+                let interim = '';
+                for (let i = e.resultIndex; i < e.results.length; i++) {
+                    if (e.results[i].isFinal) {
+                        finalTranscript += e.results[i][0].transcript + ' ';
+                    } else {
+                        interim += e.results[i][0].transcript;
+                    }
+                }
+                answerText.value = finalTranscript + interim;
+            };
+
+            recognition.onerror = e => {
+                showError('Speech recognition error: ' + e.error + '. Try typing instead.');
+                stopSpeechRecognition();
+            };
+
+            recognition.onend = () => {
+                if (isListening) recognition.start(); // auto-restart until user stops
+            };
+
+            recognition.start();
+        }
+
         function stopRecording() {
+            if (SpeechRecognition && recognition) {
+                stopSpeechRecognition();
+                return;
+            }
             if (mediaRecorder && isRecording) {
                 mediaRecorder.stop();
                 isRecording = false;
-
                 recordBtn.style.display = 'inline-flex';
                 stopRecordBtn.style.display = 'none';
                 recordingStatus.classList.add('hidden');
             }
         }
 
-        function playRecording() {
-            if (currentAudioBlob) {
-                const audio = new Audio(URL.createObjectURL(currentAudioBlob));
-                audio.play();
-            }
+        function stopSpeechRecognition() {
+            isListening = false;
+            if (recognition) { recognition.stop(); recognition = null; }
+            recordBtn.style.display = 'inline-flex';
+            stopRecordBtn.style.display = 'none';
+            recordingStatus.classList.add('hidden');
+            // Clean up trailing space
+            answerText.value = answerText.value.trim();
         }
 
+        function playRecording() {
+            if (currentAudioBlob) new Audio(URL.createObjectURL(currentAudioBlob)).play();
+        }
+
+        // ── submit answer ─────────────────────────────────────────────────────────
         async function submitAnswer() {
             const answer = answerText.value.trim();
 
             if (!answer && !currentAudioBlob) {
-                showError('Please provide an answer before submitting.');
+                showError('Please type your answer or use voice recording first.');
                 return;
             }
 
             try {
-                showLoading(submitAnswerBtn);
+                showLoading(submitAnswerBtn, 'Submitting…');
 
-                const formData = new FormData();
-                formData.append('answer_text', answer);
-                formData.append('question_id', currentQuestion ? currentQuestion.id : '');
-
-                if (currentAudioBlob) {
-                    formData.append('audio_file', currentAudioBlob, 'recording.wav');
+                let response;
+                if (answer) {
+                    // Text answer (typed or transcribed by SpeechRecognition)
+                    response = await fetch(`/api/ai-interview/${interviewId}/answer`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            answer_text: answer,
+                            question_id: currentQuestion ? currentQuestion.id : ''
+                        })
+                    });
+                } else {
+                    // Blob fallback — server-side Whisper transcription
+                    const ext      = currentAudioMime.includes('ogg') ? 'ogg' : 'webm';
+                    const formData = new FormData();
+                    formData.append('answer_text', '');
+                    formData.append('question_id', currentQuestion ? currentQuestion.id : '');
+                    formData.append('audio_file', currentAudioBlob, `recording.${ext}`);
+                    response = await fetch(`/api/ai-interview/${interviewId}/answer`, {
+                        method: 'POST', body: formData
+                    });
                 }
-
-                const response = await fetch(`/api/ai-interview/${interviewId}/answer`, {
-                    method: 'POST',
-                    body: formData
-                });
 
                 const data = await response.json();
 
                 if (data.success) {
-                    hideLoading(submitAnswerBtn);
-
+                    currentAudioBlob = null;
+                    answerText.value = '';
                     if (data.interview_complete) {
-                        showSuccess('Interview completed! Final score: ' + data.overall_score + '/10');
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 2000);
+                        showSuccess('Interview complete! Score: ' + data.overall_score + '/10');
                     } else {
-                        showSuccess('Answer submitted! Loading next question...');
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 2000);
+                        showSuccess('Answer submitted! Loading next question…');
                     }
+                    setTimeout(() => window.location.reload(), 1800);
                 } else {
-                    showError(data.error);
+                    showError(data.error || 'Submission failed');
                     hideLoading(submitAnswerBtn);
                 }
-            } catch (error) {
-                showError('Failed to submit answer: ' + error.message);
+            } catch (e) {
+                showError('Failed to submit: ' + e.message);
                 hideLoading(submitAnswerBtn);
             }
         }
 
-        // Utility functions
-        function showLoading(button) {
-            button.disabled = true;
-            button.innerHTML = '<div class="loading-spinner"></div>';
-        }
-
-        function hideLoading(button) {
-            button.disabled = false;
-            // Restore original button content
-            if (button.id === 'startInterviewBtn') {
-                button.innerHTML = '<i class="fas fa-play mr-2"></i>Start Interview';
-            } else if (button.id === 'speakQuestionBtn') {
-                button.innerHTML = '<i class="fas fa-volume-up mr-2"></i>Speak Question';
-            } else if (button.id === 'submitAnswerBtn') {
-                button.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>Submit Answer';
-            }
-        }
-
-        function showError(message) {
-            alert('Error: ' + message);
-        }
-
-        function showSuccess(message) {
-            alert('Success: ' + message);
-        }
-
-        // Load current question if interview is in progress
-        if (interviewStatus === 'in_progress') {
-            loadCurrentQuestion();
-        }
-
+        // ── load question ─────────────────────────────────────────────────────────
         async function loadCurrentQuestion() {
             try {
-                const response = await fetch(`/api/ai-interview/${interviewId}/status`);
-                const data = await response.json();
+                const res  = await fetch(`/api/ai-interview/${interviewId}/status`);
+                const data = await res.json();
+                if (!data.success) return;
 
-                if (data.success && data.session) {
-                    const session = data.session;
-                    // Get the question for current_question number from the session
-                    const qNum = session.current_question;
-                    // Fetch the latest question by looking at the last item in conversation history
-                    const history = data.conversation_history || [];
-                    const latestFromHistory = history.length > 0 ? history[history.length - 1] : null;
-
+                if (data.last_question) {
+                    currentQuestion = data.last_question;
                     if (questionText) {
-                        if (latestFromHistory && history.length < session.total_questions) {
-                            // There's history — next question will be generated on next submit
-                            questionText.innerHTML = `<p class="text-lg text-gray-300">Please answer and submit to continue to question ${qNum}.</p>`;
-                        } else {
-                            questionText.innerHTML = '<p class="text-lg text-gray-300">Loading current question...</p>';
-                        }
+                        questionText.innerHTML =
+                            `<p class="text-lg text-gray-300">${currentQuestion.question_text}</p>`;
                     }
-
-                    // Also fetch the latest DB question for this session
-                    // We re-use the start endpoint's question data if available
-                    const qText = document.getElementById('questionText');
-                    if (qText && session.status === 'in_progress') {
-                        // Try to get last saved question from the questions relationship
-                        // The /status endpoint now returns last_question if we add it
-                        if (data.last_question) {
-                            currentQuestion = data.last_question;
-                            qText.innerHTML = `<p class="text-lg text-gray-300">${currentQuestion.question_text}</p>`;
-                        }
-                    }
+                } else if (questionText) {
+                    const q = data.session.current_question;
+                    questionText.innerHTML =
+                        `<p class="text-lg text-gray-300">Preparing question ${q}…</p>`;
                 }
-            } catch (error) {
-                console.error('Failed to load current question:', error);
+            } catch (e) {
+                console.error('Failed to load question:', e);
             }
         }
+
+        // ── utilities ─────────────────────────────────────────────────────────────
+        function showLoading(btn, label) {
+            btn.disabled = true;
+            btn.innerHTML = label
+                ? `<div class="loading-spinner" style="display:inline-block;width:18px;height:18px;margin-right:8px"></div>${label}`
+                : '<div class="loading-spinner"></div>';
+        }
+
+        function hideLoading(btn) {
+            btn.disabled = false;
+            const labels = {
+                startInterviewBtn: '<i class="fas fa-play mr-2"></i>Start Interview',
+                speakQuestionBtn:  '<i class="fas fa-volume-up mr-2"></i>Speak Question',
+                submitAnswerBtn:   '<i class="fas fa-paper-plane mr-2"></i>Submit Answer',
+            };
+            btn.innerHTML = labels[btn.id] || btn.id;
+        }
+
+        function showError(msg)   { alert('Error: ' + msg); }
+        function showSuccess(msg) { alert('✓ ' + msg); }
     </script>
 </body>
 
