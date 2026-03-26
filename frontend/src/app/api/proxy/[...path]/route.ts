@@ -33,10 +33,19 @@ function forwardHeaders(req: NextRequest): Headers {
 }
 
 async function proxy(req: NextRequest, pathSegments: string[]) {
+  let base: string;
+  try {
+    base = backendBase();
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "BACKEND_URL missing";
+    return NextResponse.json(
+      { error: "BACKEND_URL not set", detail: msg },
+      { status: 500 },
+    );
+  }
+
   const path = pathSegments.join("/");
-  const target = new URL(
-    `${backendBase()}/${path}${req.nextUrl.search}`,
-  );
+  const target = new URL(`${base}/${path}${req.nextUrl.search}`);
 
   const init: RequestInit = {
     method: req.method,

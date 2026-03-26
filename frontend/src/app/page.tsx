@@ -1,25 +1,42 @@
 import Link from "next/link";
 
+const mainApp = process.env.NEXT_PUBLIC_MAIN_APP_URL?.replace(/\/$/, "");
+
 export default function Home() {
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 px-4 py-10 text-center text-slate-100 sm:px-6">
-      <h1 className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-3xl font-bold text-transparent sm:text-4xl md:text-5xl">
-        HireFast
-      </h1>
-      <p className="mt-3 max-w-md text-sm text-slate-400 sm:text-base">
-        AI-powered HR automation. Frontend on Vercel, API on your VM — connected via the
-        Next.js proxy.
-      </p>
-      <div className="mt-8 flex w-full max-w-md flex-col items-stretch gap-3 sm:mt-10 sm:max-w-none sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-4">
-        <Link
-          href="/dashboard"
-          className="rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-6 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-indigo-500/25 sm:inline-block"
-        >
-          Open dashboard
-        </Link>
-        <p className="text-center text-xs text-slate-500 sm:text-sm">
-          Deploy: see <code className="text-slate-400">DEPLOYMENT.md</code> in the repo root.
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 px-4 py-12 text-center text-slate-100 sm:px-6">
+      <div className="mx-auto max-w-lg rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-10 shadow-xl shadow-black/20 sm:px-10">
+        <h1 className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-3xl font-bold text-transparent sm:text-4xl">
+          HireFast
+        </h1>
+        <p className="mt-4 text-sm leading-relaxed text-slate-400 sm:text-base">
+          Live hiring workflows (jobs, LinkedIn, calendar, interviews) run on your Flask server. This site hosts a
+          small dashboard that talks to that API through a secure proxy.
         </p>
+        <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:justify-center">
+          <Link
+            href="/dashboard"
+            className="rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-6 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-indigo-500/20"
+          >
+            View live stats
+          </Link>
+          {mainApp ? (
+            <a
+              href={mainApp}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-xl border border-white/15 bg-slate-900/50 px-6 py-3 text-center text-sm font-medium text-slate-200 hover:bg-white/5"
+            >
+              Open full app (Flask)
+            </a>
+          ) : null}
+        </div>
+        {!mainApp ? (
+          <p className="mt-6 text-xs text-slate-500">
+            Optional: set <code className="rounded bg-white/5 px-1.5 py-0.5 text-slate-400">NEXT_PUBLIC_MAIN_APP_URL</code>{" "}
+            on Vercel to show a button to your main server URL.
+          </p>
+        ) : null}
       </div>
     </div>
   );

@@ -5,11 +5,26 @@ import { useEffect, useState } from "react";
 import { apiUrl } from "@/lib/api";
 
 type Health = { status?: string; service?: string };
-type ApplicantsPayload = { applicants?: unknown[]; error?: string };
+type SummaryPayload = {
+  job_count?: number;
+  application_count?: number;
+  ai_interview_sessions?: number;
+  error?: string;
+};
+type ApiErr = { error?: string; detail?: string };
+
+function readApiError(body: unknown): string | null {
+  if (!body || typeof body !== "object") return null;
+  const o = body as ApiErr;
+  if (o.error && o.detail) return `${o.error}: ${o.detail}`;
+  if (o.detail) return o.detail;
+  if (o.error) return o.error;
+  return null;
+}
 
 export default function DashboardPage() {
   const [health, setHealth] = useState<Health | null>(null);
-  const [applicants, setApplicants] = useState<unknown[] | null>(null);
+  const [summary, setSummary] = useState<SummaryPayload | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -18,20 +33,31 @@ export default function DashboardPage() {
     (async () => {
       try {
         const h = await fetch(apiUrl("/health"));
-        const hj = (await h.json()) as Health;
-        if (!cancelled) setHealth(hj);
+        const raw = await h.json().catch(() => null);
+        if (!h.ok) {
+          if (!cancelled) setErr(readApiError(raw) ?? `API error (${h.status})`);
+        } else if (!cancelled) {
+          setHealth(raw as Health);
+        }
       } catch {
         if (!cancelled) setErr("Could not reach API (check BACKEND_URL / proxy).");
       }
       try {
-        const a = await fetch(apiUrl("/fetch-applications"));
-        const aj = (await a.json()) as ApplicantsPayload;
+        const a = await fetch(apiUrl("/dashboard-summary"));
+        const raw = await a.json().catch(() => null);
         if (!cancelled) {
-          if (aj.error) setErr(aj.error);
-          else setApplicants(aj.applicants ?? []);
+          if (!a.ok) {
+            setErr((prev) => prev ?? readApiError(raw) ?? `Summary error (${a.status})`);
+          } else {
+            const s = raw as SummaryPayload;
+            if (s?.error) {
+              const msg = s.error;
+              setErr((prev) => prev ?? msg);
+            } else setSummary(s);
+          }
         }
       } catch {
-        if (!cancelled) setErr((prev) => prev ?? "Failed to load applicants.");
+        if (!cancelled) setErr((prev) => prev ?? "Failed to load dashboard summary.");
       }
     })();
     return () => {
@@ -84,12 +110,12 @@ export default function DashboardPage() {
       </nav>
       <div className="border-t border-white/10 p-3 sm:p-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-violet-600 text-xs font-semibold sm:h-10 sm:w-10 sm:text-sm">
-            JD
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-violet-600/90 text-xs font-semibold sm:h-10 sm:w-10 sm:text-sm">
+            HF
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium">John Doe</p>
-            <p className="truncate text-xs text-slate-400">HR Manager</p>
+            <p className="text-sm font-medium">HireFast</p>
+            <p className="text-xs text-slate-400">Admin</p>
           </div>
         </div>
       </div>
@@ -108,7 +134,7 @@ export default function DashboardPage() {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-[min(18rem,88vw)] flex-col border-r border-white/10 bg-slate-950/95 backdrop-blur transition-transform duration-200 md:static md:z-0 md:w-64 md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-[min(18rem,92vw)] shrink-0 flex-col overflow-x-hidden border-r border-white/10 bg-slate-950/95 backdrop-blur transition-transform duration-200 md:static md:z-0 md:w-72 md:min-w-[18rem] md:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
@@ -139,8 +165,8 @@ export default function DashboardPage() {
           <div
             className="pointer-events-none absolute inset-0 opacity-[0.12]"
             style={{
-              backgroundImage: `linear-gradient(rgba(148,163,184,0.15) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(148,163,184,0.15) 1px, transparent 1px)`,
+              backgroundImage: `linear-gradient(rgba(148,163,184,0.08) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(148,163,184,0.08) 1px, transparent 1px)`,
               backgroundSize: "24px 24px",
             }}
           />
@@ -151,16 +177,10 @@ export default function DashboardPage() {
                 <p className="mt-1 text-sm text-slate-400 sm:text-base">
                   Welcome back! Here&apos;s what&apos;s happening with your hiring process.
                 </p>
-              </div>
-              <div className="flex flex-wrap gap-2 text-xs sm:gap-3 sm:text-sm">
-                <span className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 sm:px-3">
-                  <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-400" />
-                  LinkedIn Connected
-                </span>
-                <span className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 sm:px-3">
-                  <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-400" />
-                  Google Calendar Connected
-                </span>
+                <p className="mt-2 max-w-2xl text-xs leading-relaxed text-slate-500">
+                  Stats below are read from your Flask database via the API. Posting jobs, LinkedIn, and calendar flows
+                  stay on your main server until those screens are built here.
+                </p>
               </div>
             </div>
 
@@ -183,15 +203,30 @@ export default function DashboardPage() {
 
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               {[
-                { label: "Active Job Posts", value: "—", trend: "+3 this week", accent: "from-blue-500 to-indigo-600" },
                 {
-                  label: "Total Applications",
-                  value: applicants ? String(applicants.length) : "—",
-                  trend: "+18 today",
+                  label: "Job postings (DB)",
+                  value: summary ? String(summary.job_count ?? 0) : "—",
+                  trend: "JobPosting rows",
+                  accent: "from-blue-500 to-indigo-600",
+                },
+                {
+                  label: "Applications (DB)",
+                  value: summary ? String(summary.application_count ?? 0) : "—",
+                  trend: "Application rows",
                   accent: "from-emerald-500 to-teal-600",
                 },
-                { label: "Interviews Scheduled", value: "8", trend: "3 this week", accent: "from-pink-500 to-violet-600" },
-                { label: "Hires This Month", value: "5", trend: "+2 from last month", accent: "from-amber-500 to-orange-600" },
+                {
+                  label: "AI interview sessions",
+                  value: summary ? String(summary.ai_interview_sessions ?? 0) : "—",
+                  trend: "AIInterviewSession rows",
+                  accent: "from-pink-500 to-violet-600",
+                },
+                {
+                  label: "Hires this month",
+                  value: "—",
+                  trend: "Not stored in DB yet",
+                  accent: "from-amber-500 to-orange-600",
+                },
               ].map((c) => (
                 <div
                   key={c.label}
@@ -202,60 +237,42 @@ export default function DashboardPage() {
                     <div className={`h-9 w-9 shrink-0 rounded-xl bg-gradient-to-br ${c.accent} opacity-90 sm:h-10 sm:w-10`} />
                   </div>
                   <p className="mt-3 text-2xl font-bold sm:mt-4 sm:text-3xl">{c.value}</p>
-                  <p className="mt-1 text-xs text-emerald-400/90 sm:text-sm">{c.trend}</p>
+                  <p className="mt-1 text-xs text-slate-500 sm:text-sm">{c.trend}</p>
                 </div>
               ))}
             </div>
 
             <div className="mt-8 grid gap-6 lg:grid-cols-2">
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
-                <h3 className="mb-4 text-base font-semibold sm:text-lg">Quick Actions</h3>
-                <div className="flex flex-col gap-3">
-                  <button
-                    type="button"
-                    className="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3 text-left text-sm font-semibold text-white"
-                  >
-                    + Create New Job Post
-                  </button>
-                  <button
-                    type="button"
-                    className="rounded-xl border border-white/10 bg-slate-900/80 px-4 py-3 text-left text-sm text-slate-200"
-                  >
-                    View All Candidates
-                  </button>
-                  <button
-                    type="button"
-                    className="rounded-xl border border-white/10 bg-slate-900/80 px-4 py-3 text-left text-sm text-slate-200"
-                  >
-                    Schedule Interview
-                  </button>
+                <h3 className="mb-2 text-base font-semibold sm:text-lg">Where to work</h3>
+                <p className="mb-4 text-sm text-slate-400">
+                  Job posts, candidates, LinkedIn, and calendar are not wired in this Next.js shell yet. Use your Flask
+                  app on the VM for the full workflow.
+                </p>
+                <div className="flex flex-col gap-2">
+                  {process.env.NEXT_PUBLIC_MAIN_APP_URL ? (
+                    <a
+                      href={process.env.NEXT_PUBLIC_MAIN_APP_URL.replace(/\/$/, "")}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3 text-center text-sm font-semibold text-white"
+                    >
+                      Open full HireFast (Flask)
+                    </a>
+                  ) : (
+                    <p className="rounded-xl border border-dashed border-white/15 bg-slate-900/40 px-4 py-3 text-left text-sm text-slate-400">
+                      Set <code className="text-slate-300">NEXT_PUBLIC_MAIN_APP_URL</code> on Vercel (your VM URL,
+                      e.g. <code className="text-slate-300">http://40.x.x.x:5000</code>) to show a button here.
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-6">
-                <h3 className="mb-4 text-base font-semibold sm:text-lg">Recent Activity</h3>
-                <ul className="space-y-4 text-sm">
-                  <li className="flex gap-3">
-                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-emerald-400" />
-                    <div className="min-w-0">
-                      <p>New application for Software Engineer</p>
-                      <p className="text-xs text-slate-500">2 minutes ago</p>
-                    </div>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-blue-400" />
-                    <div className="min-w-0">
-                      <p>Interview scheduled with Sarah Johnson</p>
-                      <p className="text-xs text-slate-500">1 hour ago</p>
-                    </div>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-violet-400" />
-                    <div className="min-w-0">
-                      <p>Job post published to LinkedIn</p>
-                      <p className="text-xs text-slate-500">3 hours ago</p>
-                    </div>
-                  </li>
-                </ul>
+                <h3 className="mb-2 text-base font-semibold sm:text-lg">Activity</h3>
+                <p className="text-sm leading-relaxed text-slate-400">
+                  There is no live activity feed in this preview. Your Flask templates and database hold the real
+                  history; we only surface aggregate counts above.
+                </p>
               </div>
             </div>
           </div>

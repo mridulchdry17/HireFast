@@ -9,6 +9,7 @@ from app.services.job_service import JobService
 from app.services.google_service import GoogleService
 from app.services.resume_service import ResumeService
 from app.models.hiring import HRHiringState
+from app.models.db_models import JobPosting, Application, AIInterviewSession
 
 hiring_bp = Blueprint('hiring', __name__)
 
@@ -147,6 +148,22 @@ def get_latest_jd_api():
         'has_jd': True
     })
 
+
+
+@hiring_bp.route('/dashboard-summary')
+def dashboard_summary_api():
+    """Counts for the Vercel dashboard — real DB stats (no session required)."""
+    try:
+        return jsonify(
+            {
+                "job_count": JobPosting.query.count(),
+                "application_count": Application.query.count(),
+                "ai_interview_sessions": AIInterviewSession.query.count(),
+            }
+        )
+    except Exception as e:
+        print(f"Error dashboard summary: {e}")
+        return jsonify({"error": f"Failed to load summary: {str(e)}"}), 500
 
 
 @hiring_bp.route('/fetch-applications')

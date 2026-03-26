@@ -349,6 +349,12 @@
                         Your Answer
                     </h4>
 
+                    <div id="micHttpWarning" class="hidden mb-4 rounded-lg border border-amber-500 border-opacity-50 bg-amber-900 bg-opacity-20 px-4 py-3 text-sm text-amber-100">
+                        <strong>Voice recording is not available on this page.</strong> Browsers only allow the microphone on
+                        <strong>HTTPS</strong> or <strong>localhost</strong> — not plain <code class="text-amber-50">http://</code> with a public IP.
+                        Please <strong>type your answer</strong> below, or ask the company to enable HTTPS for this site (e.g. Nginx + Let&apos;s Encrypt).
+                    </div>
+
                     <!-- Answer Input -->
                     <div class="mb-4">
                         <textarea id="answerText" placeholder="Type your answer here or use voice recording..."
@@ -491,6 +497,8 @@
             recordBtn.addEventListener('click', startRecording);
         }
 
+        document.addEventListener('DOMContentLoaded', initMicrophoneUi);
+
         if (stopRecordBtn) {
             stopRecordBtn.addEventListener('click', stopRecording);
         }
@@ -563,7 +571,38 @@
             }
         }
 
+        function canUseMicrophone() {
+            if (typeof navigator === 'undefined') return false;
+            var md = navigator.mediaDevices;
+            return !!(md && typeof md.getUserMedia === 'function');
+        }
+
+        function microphoneHelpMessage() {
+            if (window.isSecureContext === false) {
+                return 'Microphone needs HTTPS (or localhost). This page is not a secure context — type your answer instead, or open the interview link over HTTPS.';
+            }
+            if (!canUseMicrophone()) {
+                return 'This browser does not expose the microphone API here. Try another browser, update it, or type your answer.';
+            }
+            return '';
+        }
+
+        function initMicrophoneUi() {
+            if (!recordBtn) return;
+            if (!canUseMicrophone()) {
+                recordBtn.disabled = true;
+                recordBtn.setAttribute('aria-disabled', 'true');
+                recordBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                var warn = document.getElementById('micHttpWarning');
+                if (warn) warn.classList.remove('hidden');
+            }
+        }
+
         async function startRecording() {
+            if (!canUseMicrophone()) {
+                showError(microphoneHelpMessage() || 'Voice recording is not available.');
+                return;
+            }
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 mediaRecorder = new MediaRecorder(stream);
@@ -587,7 +626,8 @@
                 recordingStatus.classList.remove('hidden');
 
             } catch (error) {
-                showError('Failed to start recording: ' + error.message);
+                var msg = (error && error.message) ? error.message : String(error);
+                showError('Failed to start recording: ' + msg);
             }
         }
 
