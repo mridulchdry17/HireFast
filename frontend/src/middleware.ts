@@ -20,11 +20,14 @@ import { NextRequest, NextResponse } from "next/server";
 
 const BACKEND = (process.env.BACKEND_URL ?? "").trim().replace(/\/$/, "");
 
+// Next.js-owned API routes — everything else under /api/* belongs to Flask.
+const NEXTJS_API_ROUTES = ["/api/proxy/", "/api/client-config"];
+
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Keep Next.js API routes — /api/proxy, /api/client-config, etc.
-  if (pathname.startsWith("/api/")) {
+  // Only protect Next.js's own API routes; Flask also uses /api/* (e.g. /api/ai-interview/*)
+  if (NEXTJS_API_ROUTES.some((r) => pathname.startsWith(r))) {
     return NextResponse.next();
   }
 
