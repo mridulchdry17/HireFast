@@ -44,7 +44,16 @@ export default function DashboardPage() {
       }
       try {
         const a = await fetch(apiUrl("/dashboard-summary"));
-        const raw = await a.json().catch(() => null);
+        const text = await a.text();
+        let raw: unknown = null;
+        try {
+          raw = text ? JSON.parse(text) : null;
+        } catch {
+          if (!cancelled) {
+            setErr((prev) => prev ?? "Dashboard summary response was not valid JSON (often fixed by redeploying after a proxy update).");
+          }
+          return;
+        }
         if (!cancelled) {
           if (!a.ok) {
             setErr((prev) => prev ?? readApiError(raw) ?? `Summary error (${a.status})`);
@@ -53,7 +62,9 @@ export default function DashboardPage() {
             if (s?.error) {
               const msg = s.error;
               setErr((prev) => prev ?? msg);
-            } else setSummary(s);
+            } else if (raw && typeof raw === "object") {
+              setSummary(s);
+            }
           }
         }
       } catch {

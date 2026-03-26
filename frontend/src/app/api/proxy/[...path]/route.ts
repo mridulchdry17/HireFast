@@ -71,11 +71,20 @@ async function proxy(req: NextRequest, pathSegments: string[]) {
     );
   }
 
+  // Node/undici fetch decompresses gzip/deflate bodies but may still expose upstream
+  // Content-Encoding / Content-Length. Forwarding those breaks the browser (double-decode
+  // or wrong length) and JSON.parse fails — e.g. dashboard stats stay "—".
   const outHeaders = new Headers();
   res.headers.forEach((value, key) => {
-    if (key.toLowerCase() !== "transfer-encoding") {
-      outHeaders.set(key, value);
+    const k = key.toLowerCase();
+    if (
+      k === "transfer-encoding" ||
+      k === "content-encoding" ||
+      k === "content-length"
+    ) {
+      return;
     }
+    outHeaders.set(key, value);
   });
 
   const body = res.body;
