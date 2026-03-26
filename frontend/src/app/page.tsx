@@ -1,8 +1,12 @@
 import Link from "next/link";
+import { resolveMainAppUrl } from "@/lib/mainAppUrl";
 
-const mainApp = process.env.NEXT_PUBLIC_MAIN_APP_URL?.replace(/\/$/, "");
+/** Read BACKEND_URL / NEXT_PUBLIC_* on each request so Vercel env is always current. */
+export const dynamic = "force-dynamic";
 
 export default function Home() {
+  const mainApp = resolveMainAppUrl();
+
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 px-4 py-12 text-center text-slate-100 sm:px-6">
       <div className="mx-auto max-w-lg rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-10 shadow-xl shadow-black/20 sm:px-10">
@@ -33,8 +37,10 @@ export default function Home() {
         </div>
         {!mainApp ? (
           <p className="mt-6 text-xs text-slate-500">
-            Optional: set <code className="rounded bg-white/5 px-1.5 py-0.5 text-slate-400">NEXT_PUBLIC_MAIN_APP_URL</code>{" "}
-            on Vercel to show a button to your main server URL.
+            Set <code className="rounded bg-white/5 px-1.5 py-0.5 text-slate-400">BACKEND_URL</code> on Vercel (your
+            Flask VM URL, same one the proxy uses). Optional:{" "}
+            <code className="rounded bg-white/5 px-1.5 py-0.5 text-slate-400">NEXT_PUBLIC_MAIN_APP_URL</code> if the UI
+            lives on a different URL than the API.
           </p>
         ) : null}
       </div>

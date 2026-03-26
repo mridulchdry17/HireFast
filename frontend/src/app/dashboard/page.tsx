@@ -27,10 +27,19 @@ export default function DashboardPage() {
   const [summary, setSummary] = useState<SummaryPayload | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mainAppUrl, setMainAppUrl] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      try {
+        const cfg = await fetch("/api/client-config").then((r) => r.json());
+        if (!cancelled && cfg?.mainAppUrl && typeof cfg.mainAppUrl === "string") {
+          setMainAppUrl(cfg.mainAppUrl);
+        }
+      } catch {
+        /* ignore */
+      }
       try {
         const h = await fetch(apiUrl("/health"));
         const raw = await h.json().catch(() => null);
@@ -261,9 +270,9 @@ export default function DashboardPage() {
                   app on the VM for the full workflow.
                 </p>
                 <div className="flex flex-col gap-2">
-                  {process.env.NEXT_PUBLIC_MAIN_APP_URL ? (
+                  {mainAppUrl ? (
                     <a
-                      href={process.env.NEXT_PUBLIC_MAIN_APP_URL.replace(/\/$/, "")}
+                      href={mainAppUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-3 text-center text-sm font-semibold text-white"
@@ -272,8 +281,9 @@ export default function DashboardPage() {
                     </a>
                   ) : (
                     <p className="rounded-xl border border-dashed border-white/15 bg-slate-900/40 px-4 py-3 text-left text-sm text-slate-400">
-                      Set <code className="text-slate-300">NEXT_PUBLIC_MAIN_APP_URL</code> on Vercel (your VM URL,
-                      e.g. <code className="text-slate-300">http://40.x.x.x:5000</code>) to show a button here.
+                      Add <code className="text-slate-300">BACKEND_URL</code> on Vercel (same as the proxy). Optional:{" "}
+                      <code className="text-slate-300">NEXT_PUBLIC_MAIN_APP_URL</code> if the UI URL differs from the
+                      API.
                     </p>
                   )}
                 </div>
