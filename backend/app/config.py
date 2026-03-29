@@ -23,10 +23,18 @@ class Config:
     # Public base URL for OAuth/callback redirects (VM IP/domain in prod, localhost in dev)
     APP_BASE_URL = os.environ.get('APP_BASE_URL', 'http://127.0.0.1:5000').rstrip('/')
     
-    # Database settings
+    # Database settings — Postgres only (e.g. Neon). Set DATABASE_URL in .env.
     BASE_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        f"sqlite:///{os.path.join(BASE_DIR, 'hirefast.db')}"
+    _db_url = (os.environ.get("DATABASE_URL") or "").strip()
+    if not _db_url:
+        raise RuntimeError(
+            "DATABASE_URL is required. Use your Postgres connection string "
+            "(Neon: Dashboard → project → Connection details → URI). "
+            "Append ?sslmode=require if the provider expects SSL."
+        )
+    if _db_url.startswith("postgres://"):
+        _db_url = "postgresql://" + _db_url[len("postgres://") :]
+    SQLALCHEMY_DATABASE_URI = _db_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Storage settings

@@ -10,25 +10,6 @@ import os
 import threading
 
 
-def _ensure_ai_interview_last_activity_column():
-    """SQLite: add last_activity_at if DB was created before this column existed."""
-    try:
-        from sqlalchemy import inspect, text
-
-        insp = inspect(db.engine)
-        cols = [c["name"] for c in insp.get_columns("ai_interview_session")]
-        if "last_activity_at" in cols:
-            return
-        with db.engine.begin() as conn:
-            conn.execute(
-                text(
-                    "ALTER TABLE ai_interview_session ADD COLUMN last_activity_at DATETIME"
-                )
-            )
-    except Exception as e:
-        print(f"Note: ai_interview_session.last_activity_at migration: {e}")
-
-
 def _start_idle_interview_audio_cleanup(app):
     """Every ~10 minutes, delete static/audio/{session_id}_* for idle pending/in_progress sessions."""
 
@@ -81,7 +62,6 @@ def create_app(config_name='default'):
     
     with app.app_context():
         db.create_all()
-        _ensure_ai_interview_last_activity_column()
 
     _start_idle_interview_audio_cleanup(app)
     

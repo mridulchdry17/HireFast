@@ -20,7 +20,7 @@ The browser talks to **your Vercel domain** only. Next.js **`/api/proxy/*`** for
    pip install -r requirements.txt
    ```
 
-2. Copy `.env.example` to `.env` and set `SECRET_KEY`, `CORS_ORIGINS` (include `https://<your-project>.vercel.app` if you ever call the API directly from the browser), and optional `DATABASE_URL`.
+2. Copy `.env.example` to `.env` and set **`DATABASE_URL`** (Postgres URI from [Neon](https://neon.tech) or any host — required), `SECRET_KEY`, and `CORS_ORIGINS` (include `https://<your-project>.vercel.app` if you ever call the API directly from the browser). On first boot, `db.create_all()` creates tables in that database.
 
 3. Run with Gunicorn (production):
 

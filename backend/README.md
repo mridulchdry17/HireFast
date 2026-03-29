@@ -17,4 +17,4 @@ export FLASK_CONFIG=production
 gunicorn -w 2 -b 0.0.0.0:5000 "main:app"
 ```
 
-Place Google credential files under `credentials/` (see `GOOGLE_CALENDAR_SETUP.md` in the repo root). SQLite DB and uploads live here: `hirefast.db`, `uploads/`.
+Place Google credential files under `credentials/` (see `GOOGLE_CALENDAR_SETUP.md` in the repo root). The app uses **Postgres** only: set `DATABASE_URL` in `.env` (e.g. [Neon](https://neon.tech) free tier). Uploads still live under `uploads/`.

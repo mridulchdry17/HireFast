@@ -20,3 +20,7 @@ google_calendar_credentials.json
 GOOGLE_CALENDAR_SECRET.json
 
 google_calendar_token.pickle
+
+# Legacy local SQLite (app no longer uses it)
+backend/hirefast.db
+hirefast.db

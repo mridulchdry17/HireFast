@@ -1,5 +1,5 @@
 """
-AI Interview Service — uses SQLite DB for persistence (no more in-memory loss on restart).
+AI Interview Service — DB-backed interview sessions (Postgres via SQLAlchemy).
 Fixes:
   - Sessions stored in DB via AIInterviewSession / AIInterviewQuestion models
   - Resume loaded from local uploads/ folder (not Google Drive)
