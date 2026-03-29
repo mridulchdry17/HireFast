@@ -1,6 +1,7 @@
 """
 AI Interview routes — updated to use the new DB-backed AIInterviewService.
 """
+import base64
 import os
 import uuid
 from flask import Blueprint, request, jsonify, render_template, redirect
@@ -108,6 +109,10 @@ def submit_answer(session_id):
                         answer_text = audio_service.speech_to_text(audio_path)
                     except Exception as e:
                         return jsonify({'error': f'Speech-to-text failed: {str(e)}'}), 500
+                    finally:
+                        # Upload temp is only needed for Whisper; do not keep voice blobs on disk
+                        if audio_path and os.path.exists(audio_path):
+                            audio_service.cleanup_audio_file(audio_path)
         else:
             data = request.get_json() or {}
             answer_text = data.get('answer_text', '')
@@ -161,18 +166,16 @@ def get_all_interviews():
 
 @ai_interview_bp.route('/api/ai-interview/<session_id>/speak', methods=['POST'])
 def speak_text(session_id):
-    """Generate TTS audio and return a URL for the browser to play."""
+    """Generate TTS in memory and return base64 for the browser (no static/audio file)."""
     try:
         data = request.get_json()
         text = data.get('text', '')
         if not text:
             return jsonify({'error': 'Text is required'}), 400
-        # Generate the file but DO NOT play on server (no speakers on cloud)
-        audio_path = audio_service.text_to_speech(text)
-        # Return a browser-accessible URL
-        filename = os.path.basename(audio_path)
-        audio_url = f'/static/audio/{filename}'
-        return jsonify({'success': True, 'audio_url': audio_url})
+        ai_interview_service.touch_session_activity(session_id)
+        mp3_bytes = audio_service.text_to_speech_mp3_bytes(text)
+        audio_b64 = base64.b64encode(mp3_bytes).decode("ascii")
+        return jsonify({"success": True, "audio_base64": audio_b64, "mime": "audio/mpeg"})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

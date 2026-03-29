@@ -551,8 +551,17 @@
                     body: JSON.stringify({ text: currentQuestion.question_text })
                 });
                 const data = await res.json();
-                if (data.success && data.audio_url) {
-                    new Audio(data.audio_url).play();
+                if (data.success && data.audio_base64) {
+                    const mime = data.mime || 'audio/mpeg';
+                    const binary = atob(data.audio_base64);
+                    const bytes = new Uint8Array(binary.length);
+                    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+                    const blob = new Blob([bytes], { type: mime });
+                    const url = URL.createObjectURL(blob);
+                    const audio = new Audio(url);
+                    audio.play();
+                    audio.addEventListener('ended', () => URL.revokeObjectURL(url));
+                    audio.addEventListener('error', () => URL.revokeObjectURL(url));
                 } else {
                     showError(data.error || 'Failed to generate audio');
                 }

@@ -9,7 +9,7 @@ import os
 import io
 import json
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
 from groq import Groq
 from app.config import Config
@@ -142,6 +142,35 @@ Respond in this EXACT JSON format (no markdown, no extra text):
         session.conversation_history = json.dumps(history)
         db.session.commit()
 
+    def touch_session_activity(self, session_id: str) -> None:
+        """Update last_activity_at for idle-timeout cleanup of static/audio."""
+        from app.models.db_models import db
+
+        session = self._get_session(session_id)
+        if not session:
+            return
+        session.last_activity_at = datetime.utcnow()
+        db.session.commit()
+
+    def cleanup_idle_session_audio_files(self, idle_minutes: int = 30) -> int:
+        """
+        Remove ``static/audio/{session_id}_*`` for pending/in_progress sessions with no
+        API/page activity for ``idle_minutes``. Interview rows are unchanged.
+        """
+        from app.models.db_models import AIInterviewSession
+        from app.services.audio_service import AudioService
+
+        cutoff = datetime.utcnow() - timedelta(minutes=idle_minutes)
+        total_removed = 0
+        for row in AIInterviewSession.query.filter(
+            AIInterviewSession.status.in_(("pending", "in_progress"))
+        ).all():
+            ref = row.last_activity_at or row.created_at
+            if ref and ref >= cutoff:
+                continue
+            total_removed += AudioService().cleanup_session_audio_artifacts(row.id)
+        return total_removed
+
     # ─── Public API ─────────────────────────────────────────────────────────────
 
     def create_interview_session(self, application_id: str, candidate_name: str,
@@ -154,8 +183,8 @@ Respond in this EXACT JSON format (no markdown, no extra text):
         if not resume_text:
             resume_text = f"Candidate applying for {job_role}"
 
-        from datetime import datetime, timedelta
-        expires_at = datetime.utcnow() + timedelta(hours=48)
+        now = datetime.utcnow()
+        expires_at = now + timedelta(hours=48)
         session = AIInterviewSession(
             application_id=application_id,
             candidate_name=candidate_name,
@@ -166,7 +195,8 @@ Respond in this EXACT JSON format (no markdown, no extra text):
             total_questions=5,
             current_question=0,
             conversation_history=json.dumps([]),
-            expires_at=expires_at
+            expires_at=expires_at,
+            last_activity_at=now,
         )
         db.session.add(session)
         db.session.commit()
@@ -187,8 +217,10 @@ Respond in this EXACT JSON format (no markdown, no extra text):
         history = self._get_history(session)
         question_text = self._generate_question(session.resume_text, history)
 
+        now = datetime.utcnow()
         session.status = 'in_progress'
-        session.started_at = datetime.utcnow()
+        session.started_at = now
+        session.last_activity_at = now
         session.current_question = 1
 
         q = AIInterviewQuestion(
@@ -214,6 +246,8 @@ Respond in this EXACT JSON format (no markdown, no extra text):
             return {'error': 'Interview session not found'}
         if session.status != 'in_progress':
             return {'error': 'Interview not in progress'}
+
+        session.last_activity_at = datetime.utcnow()
 
         # Get the actual question text (fixes the hardcoded bug)
         question_obj = AIInterviewQuestion.query.get(question_id)
@@ -250,6 +284,12 @@ Respond in this EXACT JSON format (no markdown, no extra text):
                     app.ai_interview_score = overall
 
             db.session.commit()
+            # Remove TTS mp3 + any leftover session-prefixed audio from static/audio
+            try:
+                from app.services.audio_service import AudioService
+                AudioService().cleanup_session_audio_artifacts(session_id)
+            except Exception as exc:
+                print(f"Post-interview audio cleanup: {exc}")
             return {
                 'evaluation': evaluation,
                 'interview_complete': True,
@@ -283,9 +323,14 @@ Respond in this EXACT JSON format (no markdown, no extra text):
             }
 
     def get_interview_status(self, session_id: str) -> Dict:
+        from app.models.db_models import db
+
         session = self._get_session(session_id)
         if not session:
             return {'error': 'Interview not found'}
+
+        session.last_activity_at = datetime.utcnow()
+        db.session.commit()
 
         # Get the latest question so the page can display it after reload
         from app.models.db_models import AIInterviewQuestion
@@ -306,6 +351,8 @@ Respond in this EXACT JSON format (no markdown, no extra text):
 
     def extend_expiration(self, session_id: str, hours: int = 48) -> Dict:
         """Extend the expiration time of an interview session."""
+        from app.models.db_models import db
+
         session = self._get_session(session_id)
         if not session:
             return {'error': 'Interview not found'}
@@ -314,6 +361,7 @@ Respond in this EXACT JSON format (no markdown, no extra text):
             session.expires_at = datetime.utcnow()
         
         session.expires_at += timedelta(hours=hours)
+        session.last_activity_at = datetime.utcnow()
         db.session.commit()
         return {'success': True, 'new_expiry': session.expires_at.isoformat()}
 

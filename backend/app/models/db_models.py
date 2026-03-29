@@ -47,6 +47,8 @@ class AIInterviewSession(db.Model):
     started_at = db.Column(db.DateTime)
     completed_at = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    # Updated on page load / API calls — used to delete stale TTS files after idle timeout
+    last_activity_at = db.Column(db.DateTime, nullable=True)
 
     questions = db.relationship('AIInterviewQuestion', backref='session', lazy=True,
                                 cascade='all, delete-orphan')

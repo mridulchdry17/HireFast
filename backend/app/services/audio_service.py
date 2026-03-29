@@ -1,6 +1,8 @@
 """
 Audio Service for speech-to-text and text-to-speech functionality.
 """
+import glob
+import io
 import os
 import tempfile
 import uuid
@@ -102,6 +104,20 @@ class AudioService:
             
         except Exception as e:
             raise Exception(f"Text-to-speech conversion failed: {str(e)}")
+
+    def text_to_speech_mp3_bytes(self, text: str, lang: str = "en") -> bytes:
+        """
+        Same as text_to_speech but returns MP3 bytes only — no file on disk.
+        Used for browser playback via base64 JSON (avoids static/audio retention).
+        """
+        try:
+            tts = gTTS(text=text, lang=lang)
+            buf = io.BytesIO()
+            tts.write_to_fp(buf)
+            buf.seek(0)
+            return buf.read()
+        except Exception as e:
+            raise Exception(f"Text-to-speech conversion failed: {str(e)}")
     
     def play_audio(self, audio_path: str) -> bool:
         """Play an audio file using the platform's native player."""
@@ -160,6 +176,28 @@ class AudioService:
         except Exception as e:
             print(f"Failed to delete audio file: {str(e)}")
             return False
+
+    def cleanup_session_audio_artifacts(self, session_id: str) -> int:
+        """
+        Delete all files in ``static/audio`` for one interview session.
+
+        Filenames must use the ``{session_id}_`` prefix (upload STT temp files and
+        ``{session_id}_tts_*.mp3`` from Speak Question). Call when the interview completes.
+        """
+        if not session_id or not str(session_id).strip():
+            return 0
+        pattern = os.path.join(self.audio_storage_path, f"{session_id}_*")
+        removed = 0
+        for path in glob.glob(pattern):
+            try:
+                if os.path.isfile(path):
+                    os.remove(path)
+                    removed += 1
+            except OSError as e:
+                print(f"cleanup_session_audio_artifacts: {path}: {e}")
+        if removed:
+            print(f"🗑️ Removed {removed} session audio file(s) for {session_id[:8]}…")
+        return removed
     
     def get_audio_duration(self, audio_path: str) -> Optional[float]:
         """

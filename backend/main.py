@@ -13,6 +13,7 @@ app = create_app(_config)
 
 if __name__ == '__main__':
     host = os.environ.get('FLASK_HOST', '127.0.0.1')
+    # Default 5000; on macOS, AirPlay Receiver often binds :5000 — use FLASK_PORT=5001 if "Address already in use".
     port = int(os.environ.get('FLASK_PORT', '5000'))
     debug = os.environ.get('FLASK_DEBUG', 'true').lower() == 'true'
     app.run(host=host, port=port, debug=debug)

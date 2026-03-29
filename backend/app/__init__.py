@@ -7,6 +7,47 @@ from app.config import config
 from app.routes import auth_bp, hiring_bp, calendar_bp, ai_interview_bp, candidate_portal_bp
 from app.models.db_models import db
 import os
+import threading
+
+
+def _ensure_ai_interview_last_activity_column():
+    """SQLite: add last_activity_at if DB was created before this column existed."""
+    try:
+        from sqlalchemy import inspect, text
+
+        insp = inspect(db.engine)
+        cols = [c["name"] for c in insp.get_columns("ai_interview_session")]
+        if "last_activity_at" in cols:
+            return
+        with db.engine.begin() as conn:
+            conn.execute(
+                text(
+                    "ALTER TABLE ai_interview_session ADD COLUMN last_activity_at DATETIME"
+                )
+            )
+    except Exception as e:
+        print(f"Note: ai_interview_session.last_activity_at migration: {e}")
+
+
+def _start_idle_interview_audio_cleanup(app):
+    """Every ~10 minutes, delete static/audio/{session_id}_* for idle pending/in_progress sessions."""
+
+    def worker():
+        import time
+        from app.services.ai_interview_service import AIInterviewService
+
+        while True:
+            time.sleep(600)
+            with app.app_context():
+                try:
+                    n = AIInterviewService().cleanup_idle_session_audio_files(idle_minutes=30)
+                    if n:
+                        print(f"[audio cleanup] removed {n} idle session file(s)")
+                except Exception as exc:
+                    print(f"[audio cleanup] error: {exc}")
+
+    threading.Thread(target=worker, daemon=True).start()
+
 
 def create_app(config_name='default'):
     """
@@ -40,6 +81,9 @@ def create_app(config_name='default'):
     
     with app.app_context():
         db.create_all()
+        _ensure_ai_interview_last_activity_column()
+
+    _start_idle_interview_audio_cleanup(app)
     
     @app.route('/health')
     def health():
