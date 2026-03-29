@@ -9,6 +9,7 @@ from urllib.parse import urlencode
 from flask import Blueprint, request, jsonify, redirect, url_for, session
 from app.config import Config
 from app.services.linkedin_service import LinkedInService
+from app.models.db_models import db, RecruiterUser
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -35,6 +36,46 @@ def _linkedin_redirect_uri() -> str:
     return request.url_root.rstrip("/") + "/callback"
 
 
+def _upsert_recruiter_from_linkedin_profile(prof: dict) -> RecruiterUser:
+    """Create or update recruiter row keyed by LinkedIn OIDC ``sub`` (stable id)."""
+    sub = prof.get("sub") or prof.get("id")
+    if not sub:
+        raise ValueError("LinkedIn profile missing subject (sub)")
+    sub = str(sub).strip()
+    email = (prof.get("email") or "").strip() or None
+    given = (prof.get("given_name") or "").strip() or None
+    family = (prof.get("family_name") or "").strip() or None
+    name = (prof.get("name") or "").strip()
+    if not name and (given or family):
+        name = " ".join(x for x in (given, family) if x) or None
+    picture = prof.get("picture") or prof.get("picture_url")
+
+    user = RecruiterUser.query.filter_by(linkedin_sub=sub).first()
+    if user:
+        if email:
+            user.email = email
+        if name:
+            user.full_name = name
+        if given:
+            user.given_name = given
+        if family:
+            user.family_name = family
+        if picture:
+            user.picture_url = picture
+    else:
+        user = RecruiterUser(
+            linkedin_sub=sub,
+            email=email,
+            full_name=name,
+            given_name=given,
+            family_name=family,
+            picture_url=picture,
+        )
+        db.session.add(user)
+    db.session.commit()
+    return user
+
+
 @auth_bp.route('/login')
 def login():
     """Initiate LinkedIn OAuth flow."""
@@ -43,7 +84,6 @@ def login():
     
     state = secrets.token_urlsafe(16)
     session['state'] = state
-    session['user_id'] = secrets.token_urlsafe(16)
 
     redirect_uri = _linkedin_redirect_uri()
     # Token exchange must use the exact same redirect_uri string as the authorize request.
@@ -53,7 +93,8 @@ def login():
         'client_id': Config.LINKEDIN_CLIENT_ID,
         'redirect_uri': redirect_uri,
         'state': state,
-        'scope': 'openid profile w_member_social',
+        # email: primary email via OIDC userinfo (enable in LinkedIn app + product)
+        'scope': 'openid profile email w_member_social',
     }
 
     auth_url = f"{Config.LINKEDIN_AUTH_URL}?{urlencode(auth_params)}"
@@ -91,12 +132,23 @@ def callback():
             return jsonify({'error': 'Failed to get token', 'details': response.text}), 500
         
         token_response = response.json()
-        
-        # Store tokens in LinkedIn service
+        access_token = token_response['access_token']
+
+        prof = linkedin_service.get_profile_with_token(access_token)
+        if 'error' in prof:
+            return jsonify({'error': 'Could not load LinkedIn profile', 'details': prof['error']}), 500
+
+        try:
+            user = _upsert_recruiter_from_linkedin_profile(prof)
+        except ValueError as e:
+            return jsonify({'error': str(e)}), 500
+
+        # Stable internal id for session, Composio, and LinkedIn token map
+        session['user_id'] = user.id
         linkedin_service.store_user_token(
-            session['user_id'],
-            token_response['access_token'],
-            token_response.get('id_token')
+            user.id,
+            access_token,
+            token_response.get('id_token'),
         )
         
         return redirect(url_for('landing_page'))
@@ -119,21 +171,85 @@ def check_auth():
     user_id = session.get('user_id')
     is_authenticated = user_id is not None and user_id in linkedin_service.user_tokens
     
+    user_payload = None
+    if user_id:
+        row = RecruiterUser.query.get(user_id)
+        if row:
+            user_payload = {
+                'id': row.id,
+                'full_name': row.full_name,
+                'email': row.email,
+                'job_title': row.job_title,
+                'company': row.company,
+                'picture_url': row.picture_url,
+            }
+
     if is_authenticated:
-        # Test token validity by getting user profile
         profile_data = linkedin_service.get_user_profile(user_id)
         
         if 'error' in profile_data:
             return jsonify({
                 'authenticated': is_authenticated,
                 'token_valid': False,
-                'error': profile_data['error']
+                'error': profile_data['error'],
+                'user': user_payload,
             })
         else:
             return jsonify({
                 'authenticated': is_authenticated,
                 'token_valid': True,
-                'profile_status': 'Profile accessible'
+                'profile_status': 'Profile accessible',
+                'user': user_payload,
             })
     
-    return jsonify({'authenticated': is_authenticated})
+    return jsonify({'authenticated': is_authenticated, 'user': user_payload})
+
+
+@auth_bp.route('/api/me', methods=['GET'])
+def api_me():
+    """Current recruiter profile (from DB)."""
+    uid = session.get('user_id')
+    if not uid:
+        return jsonify({'error': 'Unauthorized'}), 401
+    user = RecruiterUser.query.get(uid)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    return jsonify({
+        'id': user.id,
+        'email': user.email,
+        'full_name': user.full_name,
+        'given_name': user.given_name,
+        'family_name': user.family_name,
+        'picture_url': user.picture_url,
+        'job_title': user.job_title,
+        'company': user.company,
+        'linkedin_connected': uid in linkedin_service.user_tokens,
+    })
+
+
+@auth_bp.route('/api/me/profile', methods=['PUT'])
+def api_me_profile():
+    """Update editable profile fields (name/email can override LinkedIn until next login refresh)."""
+    uid = session.get('user_id')
+    if not uid:
+        return jsonify({'error': 'Unauthorized'}), 401
+    user = RecruiterUser.query.get(uid)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    data = request.get_json() or {}
+    if 'full_name' in data:
+        v = data.get('full_name')
+        user.full_name = (v or '').strip() or None
+    if 'email' in data:
+        v = data.get('email')
+        user.email = (v or '').strip() or None
+    if 'job_title' in data:
+        v = data.get('job_title')
+        user.job_title = (v or '').strip() or None
+    if 'company' in data:
+        v = data.get('company')
+        user.company = (v or '').strip() or None
+
+    db.session.commit()
+    return jsonify({'success': True})

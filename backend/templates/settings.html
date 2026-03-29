@@ -221,13 +221,13 @@
 
             <div class="mt-auto pt-6">
                 <div class="flex items-center mb-4">
-                    <div
-                        class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-3">
-                        <span class="text-white font-bold text-sm">JD</span>
+                    <div id="sidebarAvatar"
+                        class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-3 overflow-hidden">
+                        <span id="sidebarAvatarText" class="text-white font-bold text-sm">—</span>
                     </div>
                     <div>
-                        <p class="font-semibold text-sm">John Doe</p>
-                        <p class="text-xs text-gray-400">HR Manager</p>
+                        <p id="sidebarName" class="font-semibold text-sm">…</p>
+                        <p id="sidebarTitle" class="text-xs text-gray-400">…</p>
                     </div>
                 </div>
                 <button onclick="logout()" class="nav-item w-full text-left">
@@ -258,27 +258,28 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-sm font-medium mb-2">Full Name</label>
-                                <input type="text" class="form-input" value="John Doe"
-                                    placeholder="Enter your full name">
+                                <input type="text" id="profileFullName" class="form-input"
+                                    placeholder="From LinkedIn after login">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium mb-2">Email Address</label>
-                                <input type="email" class="form-input" value="john.doe@company.com"
-                                    placeholder="Enter your email">
+                                <input type="email" id="profileEmail" class="form-input"
+                                    placeholder="From LinkedIn (email scope)">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium mb-2">Job Title</label>
-                                <input type="text" class="form-input" value="HR Manager"
+                                <input type="text" id="profileJobTitle" class="form-input"
                                     placeholder="Enter your job title">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium mb-2">Company</label>
-                                <input type="text" class="form-input" value="TechCorp Inc."
+                                <input type="text" id="profileCompany" class="form-input"
                                     placeholder="Enter your company name">
                             </div>
                         </div>
+                        <p id="profileSaveMsg" class="text-sm mt-4 text-gray-400 hidden"></p>
                         <div class="mt-6">
-                            <button class="btn-primary">
+                            <button type="button" class="btn-primary" id="profileSaveBtn">
                                 <i class="fas fa-save"></i>
                                 Save Changes
                             </button>
@@ -301,14 +302,14 @@
                                     </div>
                                 </div>
                                 <div class="flex items-center space-x-4">
-                                    <div class="connection-status">
-                                        <i class="fas fa-circle status-connected"></i>
-                                        <span class="text-sm">Connected</span>
+                                    <div class="connection-status" id="liConnWrap">
+                                        <i class="fas fa-circle status-connected" id="liConnDot"></i>
+                                        <span class="text-sm" id="liConnLabel">…</span>
                                     </div>
-                                    <button class="btn-secondary">
-                                        <i class="fas fa-cog"></i>
-                                        Configure
-                                    </button>
+                                    <a href="/login" class="btn-secondary inline-flex items-center" id="liConnBtn">
+                                        <i class="fas fa-plug"></i>
+                                        <span class="ml-2">Connect</span>
+                                    </a>
                                 </div>
                             </div>
 
@@ -508,6 +509,94 @@
                 window.location.href = '/logout';
             }
         }
+
+        function initials(name) {
+            if (!name || !String(name).trim()) return '?';
+            const p = String(name).trim().split(/\s+/);
+            if (p.length === 1) return p[0].slice(0, 2).toUpperCase();
+            return (p[0][0] + p[p.length - 1][0]).toUpperCase();
+        }
+
+        async function loadMe() {
+            const res = await fetch('/api/me', { credentials: 'same-origin' });
+            if (res.status === 401) {
+                window.location.href = '/login';
+                return;
+            }
+            if (!res.ok) return;
+            const me = await res.json();
+            document.getElementById('profileFullName').value = me.full_name || '';
+            document.getElementById('profileEmail').value = me.email || '';
+            document.getElementById('profileJobTitle').value = me.job_title || '';
+            document.getElementById('profileCompany').value = me.company || '';
+
+            document.getElementById('sidebarName').textContent = me.full_name || me.email || 'Recruiter';
+            document.getElementById('sidebarTitle').textContent = me.job_title || me.email || '—';
+
+            const wrap = document.getElementById('sidebarAvatar');
+            const avText = document.getElementById('sidebarAvatarText');
+            if (me.picture_url) {
+                avText.style.display = 'none';
+                let img = document.getElementById('sidebarAvatarImg');
+                if (!img) {
+                    img = document.createElement('img');
+                    img.id = 'sidebarAvatarImg';
+                    img.className = 'w-full h-full object-cover rounded-full';
+                    img.alt = '';
+                    wrap.appendChild(img);
+                }
+                img.src = me.picture_url;
+                img.style.display = 'block';
+            } else {
+                const img = document.getElementById('sidebarAvatarImg');
+                if (img) img.style.display = 'none';
+                avText.style.display = 'inline';
+                avText.textContent = initials(me.full_name || me.email);
+            }
+
+            const dot = document.getElementById('liConnDot');
+            const lbl = document.getElementById('liConnLabel');
+            const btnSpan = document.querySelector('#liConnBtn span');
+            if (me.linkedin_connected) {
+                dot.classList.add('status-connected');
+                dot.classList.remove('status-disconnected');
+                lbl.textContent = 'Connected';
+                if (btnSpan) btnSpan.textContent = 'Reconnect';
+            } else {
+                dot.classList.remove('status-connected');
+                dot.classList.add('status-disconnected');
+                lbl.textContent = 'Session expired — sign in again';
+                if (btnSpan) btnSpan.textContent = 'Connect';
+            }
+        }
+
+        document.getElementById('profileSaveBtn').addEventListener('click', async () => {
+            const msg = document.getElementById('profileSaveMsg');
+            msg.classList.remove('hidden', 'text-green-400', 'text-red-400');
+            const body = {
+                full_name: document.getElementById('profileFullName').value,
+                email: document.getElementById('profileEmail').value,
+                job_title: document.getElementById('profileJobTitle').value,
+                company: document.getElementById('profileCompany').value,
+            };
+            const res = await fetch('/api/me/profile', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify(body),
+            });
+            msg.classList.remove('hidden');
+            if (res.ok) {
+                msg.textContent = 'Saved.';
+                msg.classList.add('text-green-400');
+                loadMe();
+            } else {
+                msg.textContent = 'Could not save.';
+                msg.classList.add('text-red-400');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', loadMe);
 
         // Add mobile menu toggle functionality
         function toggleSidebar() {

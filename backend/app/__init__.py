@@ -1,11 +1,11 @@
 """
 Flask application factory for HireFast.
 """
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, session, redirect, url_for
 from flask_cors import CORS
 from app.config import config
 from app.routes import auth_bp, hiring_bp, calendar_bp, ai_interview_bp, candidate_portal_bp
-from app.models.db_models import db
+from app.models.db_models import db, RecruiterUser
 import os
 import threading
 
@@ -104,6 +104,10 @@ def create_app(config_name='default'):
     
     @app.route('/settings')
     def settings():
+        uid = session.get('user_id')
+        if not uid or not RecruiterUser.query.get(uid):
+            session.clear()
+            return redirect(url_for('login'))
         return render_template('settings.html')
     
     @app.route('/contact')

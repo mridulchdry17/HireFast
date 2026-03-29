@@ -23,32 +23,33 @@ class LinkedInService:
         """Remove user tokens."""
         if user_id in self.user_tokens:
             del self.user_tokens[user_id]
+
+    def get_profile_with_token(self, access_token: str) -> Dict:
+        """Fetch OpenID userinfo with a fresh access token (used before session user id exists)."""
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json",
+            "X-Restli-Protocol-Version": "2.0.0",
+        }
+        try:
+            response = requests.get(
+                "https://api.linkedin.com/v2/userinfo", headers=headers
+            )
+            if response.status_code != 200:
+                response = requests.get(
+                    "https://api.linkedin.com/v2/me", headers=headers
+                )
+            if response.status_code == 200:
+                return response.json()
+            return {"error": f"Failed to get profile: {response.text}"}
+        except Exception as e:
+            return {"error": f"Profile request failed: {str(e)}"}
     
     def get_user_profile(self, user_id: str) -> Dict:
         """Get user profile information."""
         if user_id not in self.user_tokens:
             return {'error': 'User not authenticated'}
-        
-        access_token = self.user_tokens[user_id]['access_token']
-        headers = {
-            'Authorization': f'Bearer {access_token}',
-            'Content-Type': 'application/json',
-            'X-Restli-Protocol-Version': '2.0.0'
-        }
-        
-        try:
-            # Try OpenID Connect userinfo endpoint first
-            response = requests.get('https://api.linkedin.com/v2/userinfo', headers=headers)
-            if response.status_code != 200:
-                # Fallback to profile API
-                response = requests.get('https://api.linkedin.com/v2/me', headers=headers)
-            
-            if response.status_code == 200:
-                return response.json()
-            else:
-                return {'error': f'Failed to get profile: {response.text}'}
-        except Exception as e:
-            return {'error': f'Profile request failed: {str(e)}'}
+        return self.get_profile_with_token(self.user_tokens[user_id]['access_token'])
     
     def post_job_description(self, user_id: str, role: str, job_description: str, job_id: str = None) -> Dict:
         """

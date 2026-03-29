@@ -4,6 +4,24 @@ import uuid
 
 db = SQLAlchemy()
 
+class RecruiterUser(db.Model):
+    """Logged-in recruiter (LinkedIn OIDC). Stable id in session; linkedin_sub is unique."""
+
+    __tablename__ = "recruiter_user"
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    linkedin_sub = db.Column(db.String(255), unique=True, nullable=False, index=True)
+    email = db.Column(db.String(255))
+    full_name = db.Column(db.String(255))
+    given_name = db.Column(db.String(100))
+    family_name = db.Column(db.String(100))
+    picture_url = db.Column(db.Text)
+    job_title = db.Column(db.String(200))
+    company = db.Column(db.String(200))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
 class JobPosting(db.Model):
     """Model for Job Postings."""
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
