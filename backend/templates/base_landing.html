@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}HireFast — AI-powered hiring{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app-shell.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" crossorigin="anonymous" />
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="lp-body">
+  <!-- Ambient glow (same language as dashboard shell) -->
+  <div class="blob blob-l" aria-hidden="true"></div>
+  <div class="blob blob-r" aria-hidden="true"></div>
+  <div class="blob blob-c" aria-hidden="true"></div>
+
+  <div class="lp-shell">
+    <div class="lp-grid" aria-hidden="true"></div>
+    {% block nav %}{% endblock %}
+    {% block body_inner %}{% endblock %}
+  </div>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

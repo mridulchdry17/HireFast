@@ -1,0 +1,471 @@
+/**
+ * HireFast marketing landing — same hero UX (grid, 6 tiles, CTAs, metrics)
+ * Visual language matches app-shell / dashboard: #070b14 canvas, indigo–blue primary,
+ * gradient tiles like .stat-icon + .g-*, glass panels like .stat-card.
+ */
+
+.lp-body {
+  margin: 0;
+  min-height: 100dvh;
+  background: #070b14;
+  color: #f1f5f9;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+}
+
+.lp-shell {
+  position: relative;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+/* Subtle blueprint grid — matches .grid-bg in app-shell */
+.lp-grid {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.14;
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* ─── Nav ─── */
+.lp-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(7, 11, 20, 0.85);
+  backdrop-filter: blur(24px);
+}
+
+.lp-nav__inner {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 0.75rem clamp(1rem, 4vw, 2.5rem);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 3.5rem;
+}
+
+.lp-logo {
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #93c5fd 0%, #a5b4fc 50%, #c4b5fd 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.lp-nav__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+/* ─── Hero section ─── */
+.lp-hero {
+  position: relative;
+  z-index: 1;
+  padding: clamp(2rem, 5vw, 3.5rem) clamp(1rem, 4vw, 2rem) clamp(2.5rem, 4vw, 4rem);
+  max-width: 90rem;
+  margin: 0 auto;
+  min-height: min(88vh, 920px);
+}
+
+/* Decorative tiles — classic scatter; center column stays clear for type */
+.lp-decor {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+@media (max-width: 900px) {
+  .lp-decor {
+    opacity: 0.45;
+  }
+}
+
+.lp-tile {
+  position: absolute;
+  width: 76px;
+  height: 76px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  color: #fff;
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: lp-float 6s ease-in-out infinite;
+}
+
+.lp-tile i {
+  opacity: 0.95;
+}
+
+/* Same positions as before; fills match dashboard .g-* / nav-active energy */
+.lp-tile:nth-child(1) {
+  background: linear-gradient(135deg, #6366f1, #3b82f6, #06b6d4);
+  left: 5%;
+  top: 10%;
+  animation-delay: 0s;
+}
+.lp-tile:nth-child(2) {
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  left: 8%;
+  top: 40%;
+  animation-delay: 0.8s;
+}
+.lp-tile:nth-child(3) {
+  background: linear-gradient(135deg, #d946ef, #8b5cf6);
+  left: 6%;
+  top: 66%;
+  animation-delay: 1.6s;
+}
+.lp-tile:nth-child(4) {
+  background: linear-gradient(135deg, #10b981, #14b8a6);
+  right: 7%;
+  top: 12%;
+  animation-delay: 2.4s;
+}
+.lp-tile:nth-child(5) {
+  background: linear-gradient(135deg, #2563eb, #4f46e5);
+  right: 5%;
+  top: 42%;
+  animation-delay: 3.2s;
+}
+.lp-tile:nth-child(6) {
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.95) 0%, rgba(109, 40, 217, 0.95) 100%);
+  right: 8%;
+  top: 68%;
+  animation-delay: 4s;
+}
+
+@keyframes lp-float {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -10px; }
+}
+
+/* Envelope: slight tilt + float */
+.lp-tile:nth-child(6) {
+  transform: rotate(-8deg);
+  animation-name: lp-float-tilt;
+}
+
+@keyframes lp-float-tilt {
+  0%, 100% { translate: 0 0; rotate: -8deg; }
+  50% { translate: 0 -10px; rotate: -6deg; }
+}
+
+.lp-main {
+  position: relative;
+  z-index: 2;
+  max-width: min(92vw, 48rem);
+  margin: 0 auto;
+  text-align: center;
+}
+
+.lp-eyebrow {
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin: 0 0 1.25rem;
+}
+
+.lp-headline {
+  margin: 0 0 1.25rem;
+  font-size: clamp(2rem, 6vw, 3.65rem);
+  font-weight: 700;
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+  color: #ffffff;
+}
+
+.lp-crack {
+  font-style: italic;
+  font-weight: 700;
+  background: linear-gradient(135deg, #93c5fd 0%, #a5b4fc 45%, #c4b5fd 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.lp-lede {
+  margin: 0 auto 2.25rem;
+  max-width: 38rem;
+  font-size: clamp(1.05rem, 2.5vw, 1.35rem);
+  line-height: 1.65;
+  color: #94a3b8;
+}
+
+.lp-lede strong {
+  color: #cbd5e1;
+  font-weight: 500;
+}
+
+.lp-lede .lp-highlight {
+  color: #a5b4fc;
+  font-weight: 600;
+}
+
+.lp-lede .lp-dream {
+  color: #93c5fd;
+  font-weight: 600;
+}
+
+/* Three CTAs — equal grid, aligned to copy column */
+.lp-actions {
+  width: 100%;
+  max-width: 44rem;
+  margin: 0 auto;
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 720px) {
+  .lp-actions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+}
+
+.lp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.8rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: 0.75rem;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  min-height: 2.85rem;
+  box-sizing: border-box;
+  transition: filter 0.15s ease, transform 0.15s ease, background 0.15s ease;
+  width: 100%;
+}
+
+@media (min-width: 720px) {
+  .lp-btn {
+    font-size: 0.875rem;
+    padding: 0.85rem 1.1rem;
+  }
+}
+
+.lp-btn--primary {
+  color: #fff;
+  background: linear-gradient(135deg, #6366f1 0%, #7c3aed 55%, #9333ea 100%);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    0 12px 36px rgba(99, 102, 241, 0.45);
+  animation: lp-glow 2.8s ease-in-out infinite;
+}
+
+.lp-btn--primary:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+@keyframes lp-glow {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), 0 12px 36px rgba(99, 102, 241, 0.42); }
+  50% { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14), 0 16px 44px rgba(124, 58, 237, 0.55); }
+}
+
+.lp-btn--ghost {
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.lp-btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+/* ─── Metrics strip ─── */
+.lp-metrics-wrap {
+  position: relative;
+  z-index: 3;
+  max-width: 44rem;
+  margin: clamp(2rem, 4vw, 2.75rem) auto 0;
+  padding: 0;
+}
+
+.lp-metrics {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  padding: 1.5rem 1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 100%);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+}
+
+@media (min-width: 640px) {
+  .lp-metrics {
+    grid-template-columns: repeat(3, 1fr);
+    padding: 1.75rem 1.5rem;
+  }
+}
+
+.lp-metric {
+  text-align: center;
+  padding: 0.75rem 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .lp-metric:not(:last-child) {
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+  }
+}
+
+.lp-metric__val {
+  font-family: "JetBrains Mono", "Fira Mono", ui-monospace, monospace;
+  font-size: clamp(1.85rem, 3.8vw, 2.5rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  color: #fff;
+}
+
+.lp-metric:nth-child(1) .lp-metric__val {
+  background: linear-gradient(135deg, #93c5fd 0%, #a5b4fc 50%, #818cf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+.lp-metric:nth-child(2) .lp-metric__val {
+  background: linear-gradient(135deg, #34d399 0%, #22d3ee 55%, #38bdf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+.lp-metric:nth-child(3) .lp-metric__val {
+  background: linear-gradient(135deg, #c4b5fd 0%, #a78bfa 45%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
+.lp-metric__lbl {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+}
+
+/* ─── Features band ─── */
+.lp-band {
+  position: relative;
+  z-index: 2;
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: clamp(2.5rem, 5vw, 4rem) clamp(1rem, 4vw, 2rem);
+}
+
+.lp-band__title {
+  text-align: center;
+  font-size: clamp(1.45rem, 3.5vw, 2.1rem);
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 0.75rem;
+  letter-spacing: -0.02em;
+}
+
+.lp-band__title span {
+  background: linear-gradient(135deg, #93c5fd 0%, #a5b4fc 50%, #c4b5fd 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.lp-band__lede {
+  text-align: center;
+  color: #94a3b8;
+  max-width: 38rem;
+  margin: 0 auto 2rem;
+  font-size: 0.9375rem;
+  line-height: 1.65;
+}
+
+.lp-cards {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 900px) {
+  .lp-cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.lp-cards .panel h3 {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 0.5rem;
+}
+
+.lp-cards .panel .lp-card-desc {
+  margin-bottom: 1rem;
+  line-height: 1.55;
+}
+
+.lp-cards .panel a {
+  font-weight: 600;
+  font-size: 0.8125rem;
+  text-decoration: none;
+  transition: filter 0.15s ease;
+}
+
+.lp-cards .panel a:hover {
+  filter: brightness(1.1);
+}
+
+.lp-link-ai {
+  color: #a5b4fc;
+}
+.lp-link-candidates {
+  color: #34d399;
+}
+.lp-link-schedule {
+  color: #a78bfa;
+}
+
+.lp-footer {
+  position: relative;
+  z-index: 2;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 1.75rem 1rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #64748b;
+}

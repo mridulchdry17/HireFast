@@ -1,49 +1,32 @@
 import Link from "next/link";
-import { resolveMainAppUrl } from "@/lib/mainAppUrl";
 
-/** Read BACKEND_URL / NEXT_PUBLIC_* on each request so Vercel env is always current. */
+/**
+ * Shown only when BACKEND_URL is unset (e.g. local Next dev without Flask).
+ * In production, middleware rewrites / to Flask — this file is not used.
+ */
 export const dynamic = "force-dynamic";
 
 export default function Home() {
-  const mainApp = resolveMainAppUrl();
-
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 px-4 py-12 text-center text-slate-100 sm:px-6">
-      <div className="mx-auto max-w-lg rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-10 shadow-xl shadow-black/20 sm:px-10">
-        <h1 className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-3xl font-bold text-transparent sm:text-4xl">
-          HireFast
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-[#070b14] px-4 py-12 text-center text-slate-200">
+      <div className="mx-auto max-w-md rounded-2xl border border-white/[0.08] bg-white/[0.04] px-6 py-10 shadow-xl">
+        <h1 className="bg-gradient-to-r from-sky-300 to-violet-300 bg-clip-text text-2xl font-bold text-transparent">
+          HireFast (Next.js dev)
         </h1>
-        <p className="mt-4 text-sm leading-relaxed text-slate-400 sm:text-base">
-          With <code className="rounded bg-white/5 px-1 text-slate-400">BACKEND_URL</code> set, the same domain proxies
-          to your Flask app — dashboard, jobs, candidates, and settings are all served from the server (Jinja), not
-          duplicated here.
+        <p className="mt-4 text-sm leading-relaxed text-slate-400">
+          Set <code className="rounded bg-white/10 px-1.5 py-0.5 text-slate-300">BACKEND_URL</code> in{" "}
+          <code className="rounded bg-white/10 px-1.5 py-0.5 text-slate-300">frontend/.env.local</code> to proxy to
+          Flask — the real home page is <span className="text-slate-300">backend/templates/index.html</span>.
         </p>
-        <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:justify-center">
-          <Link
-            href="/dashboard"
-            className="rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-6 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-indigo-500/20"
-          >
-            View live stats
-          </Link>
-          {mainApp ? (
-            <a
-              href={mainApp}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-xl border border-white/15 bg-slate-900/50 px-6 py-3 text-center text-sm font-medium text-slate-200 hover:bg-white/5"
-            >
-              Open full app (Flask)
-            </a>
-          ) : null}
-        </div>
-        {!mainApp ? (
-          <p className="mt-6 text-xs text-slate-500">
-            Set <code className="rounded bg-white/5 px-1.5 py-0.5 text-slate-400">BACKEND_URL</code> on Vercel (your
-            Flask VM URL, same one the proxy uses). Optional:{" "}
-            <code className="rounded bg-white/5 px-1.5 py-0.5 text-slate-400">NEXT_PUBLIC_MAIN_APP_URL</code> if the UI
-            lives on a different URL than the API.
-          </p>
-        ) : null}
+        <p className="mt-4 text-xs text-slate-500">
+          Or run the Flask app and open its URL directly for the full UI.
+        </p>
+        <Link
+          href="/dashboard"
+          className="mt-6 inline-block rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-2.5 text-sm font-semibold text-white"
+        >
+          Try /dashboard (proxied when configured)
+        </Link>
       </div>
     </div>
   );

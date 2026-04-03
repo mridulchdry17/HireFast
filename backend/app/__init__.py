@@ -44,6 +44,10 @@ def create_app(config_name='default'):
                 template_folder=os.path.join(os.path.dirname(os.path.dirname(__file__)), 'templates'),
                 static_folder=os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static'))
     app.config.from_object(config[config_name])
+
+    # Local dev: pick up edits to templates/*.html without restarting the process
+    if app.debug or os.environ.get("FLASK_DEBUG", "").lower() in ("1", "true", "yes"):
+        app.config["TEMPLATES_AUTO_RELOAD"] = True
     
     # Split deployment: allow Vercel / local Next.js to call the API (set CORS_ORIGINS in production)
     _origins = app.config.get('CORS_ORIGINS') or ''

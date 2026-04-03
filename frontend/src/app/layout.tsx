@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "HireFast",
-  description: "AI-powered HR automation — dashboard",
+  title: "HireFast — AI-powered hiring",
+  description: "Discover top candidates, run AI interviews, and hire faster.",
 };
 
 export const viewport = {
@@ -31,7 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} min-h-dvh overflow-x-hidden font-sans antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} min-h-dvh overflow-x-hidden bg-[#070b14] font-sans antialiased text-slate-100`}
       >
         {children}
       </body>

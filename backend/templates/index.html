@@ -1,972 +1,147 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HireFast - AI-Powered HR Automation</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html {
-            overflow-x: hidden;
-            max-width: 100%;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
-            color: #f8fafc;
-            min-height: 100vh;
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        .gradient-text {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .glass-effect {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .card-hover {
-            transition: all 0.3s ease;
-        }
-
-        .card-hover:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 0.75rem 2rem;
-            border-radius: 0.75rem;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            padding: 0.75rem 2rem;
-            border-radius: 0.75rem;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            cursor: pointer;
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
-
-        .hero-section {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero-bg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.3) 0%, transparent 50%);
-        }
-
-        .feature-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 1.5rem;
-            padding: 2rem;
-            transition: all 0.3s ease;
-            box-shadow:
-                0 1px 3px rgba(0, 0, 0, 0.3),
-                0 4px 12px rgba(0, 0, 0, 0.2),
-                0 8px 24px rgba(0, 0, 0, 0.1);
-        }
-
-        .feature-card:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateY(-8px);
-            box-shadow:
-                0 4px 12px rgba(0, 0, 0, 0.3),
-                0 12px 32px rgba(0, 0, 0, 0.2),
-                0 24px 48px rgba(0, 0, 0, 0.1);
-            border-color: rgba(255, 255, 255, 0.2);
-        }
-
-        .nav-sticky {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(24px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-            box-shadow:
-                0 1px 3px rgba(0, 0, 0, 0.3),
-                0 4px 12px rgba(0, 0, 0, 0.2),
-                0 8px 24px rgba(0, 0, 0, 0.1);
-        }
-
-        .nav-hidden {
-            transform: translateY(-100%);
-        }
-
-        .fade-in {
-            animation: fadeIn 0.8s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .slide-up {
-            animation: slideUp 0.6s ease-out;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(50px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .pulse-animation {
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.05);
-            }
-        }
-
-        .stats-number {
-            font-size: 3rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .testimonial-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 1.5rem;
-            padding: 2rem;
-            position: relative;
-        }
-
-        .testimonial-card::before {
-            content: '"';
-            position: absolute;
-            top: -1rem;
-            left: 2rem;
-            font-size: 4rem;
-            color: rgba(102, 126, 234, 0.3);
-            font-family: serif;
-        }
-
-        .floating-elements {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            pointer-events: none;
-            overflow: hidden;
-        }
-
-        .sticky-note {
-            position: absolute;
-            width: 80px;
-            height: 80px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            animation: float 6s ease-in-out infinite;
-        }
-
-        .sticky-note:nth-child(1) {
-            background: #fef3c7;
-            color: #92400e;
-            top: 15%;
-            left: 8%;
-            animation-delay: 0s;
-        }
-
-        .sticky-note:nth-child(2) {
-            background: #d1fae5;
-            color: #065f46;
-            top: 25%;
-            right: 12%;
-            animation-delay: 1s;
-        }
-
-        .sticky-note:nth-child(3) {
-            background: #fce7f3;
-            color: #be185d;
-            bottom: 25%;
-            left: 15%;
-            animation-delay: 2s;
-        }
-
-        .sticky-note:nth-child(4) {
-            background: #e0e7ff;
-            color: #3730a3;
-            top: 60%;
-            right: 8%;
-            animation-delay: 3s;
-        }
-
-        .sticky-note:nth-child(5) {
-            background: #f3e8ff;
-            color: #6b21a8;
-            bottom: 15%;
-            right: 20%;
-            animation-delay: 4s;
-        }
-
-        .sticky-note:nth-child(6) {
-            background: #fef2f2;
-            color: #dc2626;
-            top: 45%;
-            left: 5%;
-            animation-delay: 5s;
-        }
-
-        @keyframes float {
-
-            0%,
-            100% {
-                transform: translateY(0px) rotate(0deg);
-            }
-
-            50% {
-                transform: translateY(-15px) rotate(2deg);
-            }
-        }
-
-        .app-mockup {
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            transform: perspective(1000px) rotateY(-5deg) rotateX(5deg);
-            transition: all 0.3s ease;
-        }
-
-        .app-mockup:hover {
-            transform: perspective(1000px) rotateY(0deg) rotateX(0deg) scale(1.05);
-        }
-
-        .mockup-screen {
-            background: #f8fafc;
-            border-radius: 15px;
-            padding: 15px;
-            min-height: 200px;
-            border: 2px solid #e2e8f0;
-        }
-
-        .mockup-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .mockup-icon {
-            width: 24px;
-            height: 24px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 12px;
-        }
-
-        .mockup-content {
-            color: #1f2937;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        .gradient-text-emphasis {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-style: italic;
-            font-weight: 700;
-        }
-
-        /* Mobile / tablet: avoid horizontal scroll and cramped nav */
-        @media (max-width: 1023px) {
-            .floating-elements {
-                display: none;
-            }
-
-            .app-mockup {
-                transform: none;
-            }
-
-            .app-mockup:hover {
-                transform: none;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .hero-section {
-                padding: 5rem 0 2rem;
-                min-height: auto;
-            }
-
-            .stats-number {
-                font-size: 2rem;
-            }
-
-            .feature-card {
-                padding: 1.5rem;
-            }
-
-            .nav-sticky .btn-primary,
-            .nav-sticky .btn-secondary {
-                padding: 0.5rem 0.75rem;
-                font-size: 0.8125rem;
-            }
-
-            .nav-sticky .btn-primary i,
-            .nav-sticky .btn-secondary i {
-                margin-right: 0.25rem;
-            }
-
-            .hero-cta .btn-primary,
-            .hero-cta .btn-secondary {
-                width: 100%;
-                max-width: 22rem;
-                justify-content: center;
-            }
-        }
-    </style>
-</head>
-
-<body>
-    <!-- Navigation -->
-    <nav class="nav-sticky" id="navbar">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-wrap items-center justify-between gap-3 min-h-16 py-2 md:py-0 md:h-16 md:flex-nowrap">
-                <div class="flex min-w-0 flex-1 items-center justify-between gap-2 md:flex-none md:justify-start">
-                    <div class="flex-shrink-0">
-                        <h1 class="text-xl sm:text-2xl font-bold gradient-text">HireFast</h1>
-                    </div>
-                    <button type="button" id="mobileNavToggle" class="inline-flex items-center justify-center rounded-lg border border-white/20 p-2 text-gray-200 hover:bg-white/10 md:hidden" aria-expanded="false" aria-controls="mobileNavPanel" aria-label="Open menu">
-                        <i class="fas fa-bars text-lg" id="mobileNavIconOpen"></i>
-                        <i class="fas fa-times text-lg hidden" id="mobileNavIconClose"></i>
-                    </button>
-                </div>
-                <div class="hidden w-full flex-col gap-1 border-t border-white/10 pt-3 md:ml-10 md:flex md:w-auto md:flex-row md:items-baseline md:gap-0 md:space-x-6 md:border-0 md:pt-0" id="mobileNavPanel">
-                    <a href="#features"
-                        class="rounded-lg px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white">Features</a>
-                    <a href="#how-it-works"
-                        class="rounded-lg px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white">How It Works</a>
-                    <a href="#testimonials"
-                        class="rounded-lg px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white">Testimonials</a>
-                    <a href="#contact"
-                        class="rounded-lg px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white">Contact</a>
-                </div>
-                <div class="flex w-full shrink-0 flex-wrap items-center justify-end gap-2 sm:w-auto md:w-auto">
-                    <button type="button" id="loginBtn" class="btn-secondary whitespace-nowrap">
-                        <i class="fas fa-sign-in-alt"></i>
-                        Login
-                    </button>
-                    <button type="button" id="getStartedBtn" class="btn-primary whitespace-nowrap">
-                        <i class="fas fa-rocket"></i>
-                        Get Started
-                    </button>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <section class="hero-section">
-        <div class="hero-bg"></div>
-        <div class="floating-elements">
-            <div class="sticky-note">
-                <i class="fas fa-rocket"></i>
-            </div>
-            <div class="sticky-note">
-                <i class="fas fa-bolt"></i>
-            </div>
-            <div class="sticky-note">
-                <i class="fas fa-users"></i>
-            </div>
-            <div class="sticky-note">
-                <i class="fas fa-briefcase"></i>
-            </div>
-            <div class="sticky-note">
-                <i class="fas fa-envelope"></i>
-            </div>
-            <div class="sticky-note">
-                <i class="fas fa-star"></i>
-            </div>
-        </div>
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div class="text-center">
-                <div class="mb-6 fade-in">
-                    <span class="text-lg md:text-xl text-gray-400 font-medium">AI · Hiring · Growth</span>
-                </div>
-                <h1 class="text-3xl sm:text-5xl md:text-7xl font-bold mb-6 fade-in text-white leading-tight px-2 break-words">
-                    Your Ultimate One-Stop<br>
-                    Platform to <span class="gradient-text-emphasis">Crack</span> Hiring
-                </h1>
-                <p class="text-base sm:text-xl md:text-2xl text-gray-300 mb-8 max-w-4xl mx-auto fade-in leading-relaxed px-2">
-                    Discover <span class="font-medium text-gray-200">top candidates</span>, send <span
-                        class="font-medium text-gray-200">personalized messages</span>,
-                    and land your <span class="font-semibold text-blue-400">dream hires</span> with AI-powered tools.
-                </p>
-                <div class="hero-cta flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-stretch sm:items-center mb-12 fade-in px-1">
-                    <button id="startHiringBtn" class="btn-primary pulse-animation">
-                        <i class="fas fa-rocket"></i>
-                        Start Hiring Now
-                    </button>
-                    <a href="/workflow" class="btn-secondary">
-                        <i class="fas fa-sitemap"></i>
-                        View Workflow
-                    </a>
-                    <a href="/direct-ai-interview" class="btn-secondary">
-                        <i class="fas fa-microphone"></i>
-                        Take AI Interview
-                    </a>
-                </div>
-
-                <!-- Stats -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto slide-up">
-                    <div class="text-center">
-                        <div class="stats-number">80%</div>
-                        <p class="text-gray-300">Time Saved</p>
-                    </div>
-                    <div class="text-center">
-                        <div class="stats-number">500+</div>
-                        <p class="text-gray-300">Companies</p>
-                    </div>
-                    <div class="text-center">
-                        <div class="stats-number">10K+</div>
-                        <p class="text-gray-300">Hires Made</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Features Section -->
-    <section id="features" class="py-12 md:py-20">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-8 text-white px-2 leading-tight">
-                    Everything you need to <span class="gradient-text">hire fast</span>
-                </h2>
-                <div class="max-w-4xl mx-auto mb-12">
-                    <p class="text-xl md:text-2xl text-gray-300 leading-relaxed mb-6">
-                        Our <span class="font-semibold text-blue-400">AI-powered platform</span> automates every step of
-                        your hiring process,
-                        from <span class="font-medium text-gray-200">job posting</span> to <span
-                            class="font-medium text-gray-200">candidate selection</span>.
-                    </p>
-                    <div class="flex flex-wrap justify-center items-center gap-6 text-sm text-gray-400">
-                        <div class="flex items-center gap-2">
-                            <div class="w-2 h-2 bg-blue-400 rounded-full"></div>
-                            <span>Smart Automation</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <div class="w-2 h-2 bg-green-400 rounded-full"></div>
-                            <span>Time Saving</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <div class="w-2 h-2 bg-purple-400 rounded-full"></div>
-                            <span>Quality Results</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div class="feature-card card-hover">
-                    <div class="app-mockup mb-6">
-                        <div class="mockup-screen">
-                            <div class="mockup-header">
-                                <div class="mockup-icon">
-                                    <i class="fas fa-robot"></i>
-                                </div>
-                                <span class="font-semibold text-gray-800">AI Job Generator</span>
-                            </div>
-                            <div class="mockup-content">
-                                <div class="mb-3">
-                                    <div class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs inline-block mb-2">
-                                        Software Engineer</div>
-                                    <p class="text-sm text-gray-600">Generate compelling job descriptions in seconds...
-                                    </p>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                                    <span class="text-xs text-gray-500">Ready to post</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <h3 class="text-2xl font-bold mb-4 text-white">AI Job Descriptions</h3>
-                    <p class="text-gray-300 mb-6">
-                        Generate compelling, optimized job descriptions in seconds using advanced AI.
-                        Perfect for LinkedIn and other job boards.
-                    </p>
-                    <a href="/job-posting" class="text-blue-400 hover:text-blue-300 font-semibold">
-                        Try it now <i class="fas fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
-
-                <div class="feature-card card-hover">
-                    <div class="app-mockup mb-6">
-                        <div class="mockup-screen">
-                            <div class="mockup-header">
-                                <div class="mockup-icon">
-                                    <i class="fas fa-users"></i>
-                                </div>
-                                <span class="font-semibold text-gray-800">Candidate Screening</span>
-                            </div>
-                            <div class="mockup-content">
-                                <div class="mb-3">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <span class="text-sm font-medium">Sarah Johnson</span>
-                                        <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">95%
-                                            Match</span>
-                                    </div>
-                                    <p class="text-xs text-gray-600">5 years Python, React experience</p>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                    <span class="text-xs text-gray-500">Top candidate</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <h3 class="text-2xl font-bold mb-4 text-white">Smart Candidate Screening</h3>
-                    <p class="text-gray-300 mb-6">
-                        Automatically analyze resumes and rank candidates based on job requirements.
-                        Find the best matches instantly.
-                    </p>
-                    <a href="/candidates" class="text-green-400 hover:text-green-300 font-semibold">
-                        View candidates <i class="fas fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
-
-                <div class="feature-card card-hover">
-                    <div class="app-mockup mb-6">
-                        <div class="mockup-screen">
-                            <div class="mockup-header">
-                                <div class="mockup-icon">
-                                    <i class="fas fa-calendar-alt"></i>
-                                </div>
-                                <span class="font-semibold text-gray-800">Interview Scheduler</span>
-                            </div>
-                            <div class="mockup-content">
-                                <div class="mb-3">
-                                    <div class="text-sm font-medium mb-1">Dec 15, 2024</div>
-                                    <div class="text-xs text-gray-600 mb-2">2:00 PM - 3:00 PM</div>
-                                    <div class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs inline-block">
-                                        Google Meet</div>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
-                                    <span class="text-xs text-gray-500">Scheduled</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <h3 class="text-2xl font-bold mb-4 text-white">Automated Scheduling</h3>
-                    <p class="text-gray-300 mb-6">
-                        Schedule interviews automatically with Google Calendar integration.
-                        Send invites and reminders seamlessly.
-                    </p>
-                    <a href="/scheduling" class="text-purple-400 hover:text-purple-300 font-semibold">
-                        Schedule now <i class="fas fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
-
-                <div class="feature-card card-hover">
-                    <div class="app-mockup mb-6">
-                        <div class="mockup-screen">
-                            <div class="mockup-header">
-                                <div class="mockup-icon">
-                                    <i class="fas fa-chart-line"></i>
-                                </div>
-                                <span class="font-semibold text-gray-800">Analytics</span>
-                            </div>
-                            <div class="mockup-content">
-                                <div class="mb-3">
-                                    <div class="flex justify-between items-center mb-2">
-                                        <span class="text-sm">Applications</span>
-                                        <span class="text-sm font-bold text-orange-600">247</span>
-                                    </div>
-                                    <div class="w-full bg-gray-200 rounded-full h-2">
-                                        <div class="bg-orange-500 h-2 rounded-full" style="width: 75%"></div>
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <div class="w-2 h-2 bg-orange-500 rounded-full"></div>
-                                    <span class="text-xs text-gray-500">+18 this week</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <h3 class="text-2xl font-bold mb-4 text-white">Analytics Dashboard</h3>
-                    <p class="text-gray-300 mb-6">
-                        Track your hiring metrics, candidate pipeline, and performance insights
-                        with detailed analytics.
-                    </p>
-                    <a href="/analytics" class="text-orange-400 hover:text-orange-300 font-semibold">
-                        View dashboard <i class="fas fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
-
-                <div class="feature-card card-hover">
-                    <div class="app-mockup mb-6">
-                        <div class="mockup-screen">
-                            <div class="mockup-header">
-                                <div class="mockup-icon">
-                                    <i class="fab fa-linkedin"></i>
-                                </div>
-                                <span class="font-semibold text-gray-800">LinkedIn</span>
-                            </div>
-                            <div class="mockup-content">
-                                <div class="mb-3">
-                                    <div class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs inline-block mb-2">
-                                        Posted</div>
-                                    <p class="text-sm text-gray-600">Software Engineer - Remote</p>
-                                    <div class="flex items-center gap-1 mt-2">
-                                        <i class="fas fa-eye text-xs text-gray-500"></i>
-                                        <span class="text-xs text-gray-500">1.2K views</span>
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                    <span class="text-xs text-gray-500">Active</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <h3 class="text-2xl font-bold mb-4 text-white">LinkedIn Integration</h3>
-                    <p class="text-gray-300 mb-6">
-                        Post job descriptions directly to LinkedIn with one click.
-                        Reach thousands of qualified candidates instantly.
-                    </p>
-                    <a href="/linkedin" class="text-indigo-400 hover:text-indigo-300 font-semibold">
-                        Connect LinkedIn <i class="fas fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
-
-                <div class="feature-card card-hover">
-                    <div class="app-mockup mb-6">
-                        <div class="mockup-screen">
-                            <div class="mockup-header">
-                                <div class="mockup-icon">
-                                    <i class="fas fa-robot"></i>
-                                </div>
-                                <span class="font-semibold text-gray-800">AI Interviewer</span>
-                            </div>
-                            <div class="mockup-content">
-                                <div class="mb-3">
-                                    <div class="flex items-center justify-between mb-2">
-                                        <span class="text-sm font-medium">Sarah Johnson</span>
-                                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">In
-                                            Progress</span>
-                                    </div>
-                                    <p class="text-xs text-gray-600">Question 3 of 5</p>
-                                    <div class="w-full bg-gray-200 rounded-full h-1 mt-2">
-                                        <div class="bg-blue-500 h-1 rounded-full" style="width: 60%"></div>
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                    <span class="text-xs text-gray-500">Live Interview</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <h3 class="text-2xl font-bold mb-4 text-white">AI Interviewer</h3>
-                    <p class="text-gray-300 mb-6">
-                        Conduct automated AI interviews with voice and text support.
-                        Get instant evaluation and feedback for candidates.
-                    </p>
-                    <a href="/direct-ai-interview" class="text-blue-400 hover:text-blue-300 font-semibold">
-                        Try AI Interview <i class="fas fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
-
-                <div class="feature-card card-hover">
-                    <div class="app-mockup mb-6">
-                        <div class="mockup-screen">
-                            <div class="mockup-header">
-                                <div class="mockup-icon">
-                                    <i class="fas fa-file-alt"></i>
-                                </div>
-                                <span class="font-semibold text-gray-800">Resume Manager</span>
-                            </div>
-                            <div class="mockup-content">
-                                <div class="mb-3">
-                                    <div class="flex items-center gap-2 mb-2">
-                                        <div
-                                            class="w-6 h-6 bg-teal-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
-                                            MJ</div>
-                                        <div>
-                                            <div class="text-sm font-medium">Michael Johnson</div>
-                                            <div class="text-xs text-gray-500">Senior Developer</div>
-                                        </div>
-                                    </div>
-                                    <div class="bg-teal-100 text-teal-800 px-2 py-1 rounded text-xs inline-block">PDF
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <div class="w-2 h-2 bg-teal-500 rounded-full"></div>
-                                    <span class="text-xs text-gray-500">Reviewed</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <h3 class="text-2xl font-bold mb-4 text-white">Resume Management</h3>
-                    <p class="text-gray-300 mb-6">
-                        Centralized resume storage and analysis. View, compare, and manage
-                        all candidate documents in one place.
-                    </p>
-                    <a href="/resumes" class="text-teal-400 hover:text-teal-300 font-semibold">
-                        Manage resumes <i class="fas fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    <script>
-        // Navigation scroll effect
-        let lastScrollTop = 0;
-        const navbar = document.getElementById('navbar');
-
-        window.addEventListener('scroll', () => {
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-
-            if (scrollTop > lastScrollTop && scrollTop > 100) {
-                navbar.classList.add('nav-hidden');
-            } else {
-                navbar.classList.remove('nav-hidden');
-            }
-
-            lastScrollTop = scrollTop;
-        });
-
-        // Smooth scrolling for navigation links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-                const panel = document.getElementById('mobileNavPanel');
-                const toggle = document.getElementById('mobileNavToggle');
-                const iconOpen = document.getElementById('mobileNavIconOpen');
-                const iconClose = document.getElementById('mobileNavIconClose');
-                if (window.matchMedia('(max-width: 767px)').matches && panel && !panel.classList.contains('hidden')) {
-                    panel.classList.add('hidden');
-                    panel.classList.remove('flex');
-                    if (iconOpen) iconOpen.classList.remove('hidden');
-                    if (iconClose) iconClose.classList.add('hidden');
-                    if (toggle) toggle.setAttribute('aria-expanded', 'false');
-                }
-            });
-        });
-
-        // Mobile nav hamburger
-        (function () {
-            const toggle = document.getElementById('mobileNavToggle');
-            const panel = document.getElementById('mobileNavPanel');
-            const iconOpen = document.getElementById('mobileNavIconOpen');
-            const iconClose = document.getElementById('mobileNavIconClose');
-            if (!toggle || !panel) return;
-            function closeMenu() {
-                if (window.matchMedia('(min-width: 768px)').matches) return;
-                panel.classList.add('hidden');
-                panel.classList.remove('flex');
-                if (iconOpen) iconOpen.classList.remove('hidden');
-                if (iconClose) iconClose.classList.add('hidden');
-                toggle.setAttribute('aria-expanded', 'false');
-            }
-            toggle.addEventListener('click', function () {
-                if (window.matchMedia('(min-width: 768px)').matches) return;
-                const open = panel.classList.contains('hidden');
-                if (open) {
-                    panel.classList.remove('hidden');
-                    panel.classList.add('flex');
-                    if (iconOpen) iconOpen.classList.add('hidden');
-                    if (iconClose) iconClose.classList.remove('hidden');
-                    toggle.setAttribute('aria-expanded', 'true');
-                } else {
-                    closeMenu();
-                }
-            });
-            window.addEventListener('resize', function () {
-                if (window.matchMedia('(min-width: 768px)').matches) {
-                    panel.classList.remove('hidden');
-                    panel.classList.add('flex');
-                    if (iconOpen) iconOpen.classList.remove('hidden');
-                    if (iconClose) iconClose.classList.add('hidden');
-                    toggle.setAttribute('aria-expanded', 'false');
-                } else {
-                    closeMenu();
-                }
-            });
-        })();
-
-        // Check authentication status on page load
-        let isAuthenticated = false;
-
-        async function checkAuthStatus() {
-            try {
-                const response = await fetch('/check-auth');
-                const data = await response.json();
-                isAuthenticated = data.authenticated;
-                updateButtonStates();
-            } catch (error) {
-                console.error('Failed to check auth status:', error);
-                isAuthenticated = false;
-                updateButtonStates();
-            }
-        }
-
-        function updateButtonStates() {
-            const loginBtn = document.getElementById('loginBtn');
-            const getStartedBtn = document.getElementById('getStartedBtn');
-            const startHiringBtn = document.getElementById('startHiringBtn');
-
-            if (isAuthenticated) {
-                loginBtn.innerHTML = '<i class="fas fa-user"></i> Dashboard';
-                getStartedBtn.innerHTML = '<i class="fas fa-tachometer-alt"></i> Dashboard';
-                startHiringBtn.innerHTML = '<i class="fas fa-rocket"></i> Start Hiring Now';
-            } else {
-                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
-                getStartedBtn.innerHTML = '<i class="fas fa-rocket"></i> Get Started';
-                startHiringBtn.innerHTML = '<i class="fas fa-play"></i> Start Hiring Now';
-            }
-        }
-
-        // Button event listeners
-        const loginBtn = document.getElementById('loginBtn');
-        if (loginBtn) {
-            loginBtn.addEventListener('click', () => {
-                window.location.href = isAuthenticated ? '/dashboard' : '/login';
-            });
-        }
-
-        const getStartedBtn = document.getElementById('getStartedBtn');
-        if (getStartedBtn) {
-            getStartedBtn.addEventListener('click', () => {
-                window.location.href = isAuthenticated ? '/dashboard' : '/login';
-            });
-        }
-
-        const startHiringBtn = document.getElementById('startHiringBtn');
-        if (startHiringBtn) {
-            startHiringBtn.addEventListener('click', () => {
-                window.location.href = isAuthenticated ? '/dashboard' : '/login';
-            });
-        }
-
-        const watchDemoBtn = document.getElementById('watchDemoBtn');
-        if (watchDemoBtn) {
-            watchDemoBtn.addEventListener('click', () => {
-                alert('Demo video coming soon!');
-            });
-        }
-
-        // Check auth status on page load
-        checkAuthStatus();
-    </script>
-</body>
-
-</html>
+{% extends "base_landing.html" %}
+{% block title %}HireFast — AI-powered hiring{% endblock %}
+
+{% block nav %}
+<nav class="lp-nav" aria-label="Primary">
+  <div class="lp-nav__inner">
+    <span class="lp-logo">HireFast</span>
+    <div class="lp-nav__actions">
+      <button type="button" id="loginBtn" class="btn-secondary" style="white-space:nowrap;">
+        <i class="fas fa-user"></i> <span id="loginBtnLabel">Login</span>
+      </button>
+      <button type="button" id="getStartedBtn" class="btn-primary" style="white-space:nowrap;">
+        <i class="fas fa-chart-line"></i> <span id="getStartedBtnLabel">Get started</span>
+      </button>
+    </div>
+  </div>
+</nav>
+{% endblock %}
+
+{% block body_inner %}
+<section class="lp-hero" aria-labelledby="lp-heading">
+  <div class="lp-decor" aria-hidden="true">
+    <div class="lp-tile"><i class="fas fa-rocket"></i></div>
+    <div class="lp-tile"><i class="fas fa-star"></i></div>
+    <div class="lp-tile"><i class="fas fa-users"></i></div>
+    <div class="lp-tile"><i class="fas fa-bolt"></i></div>
+    <div class="lp-tile"><i class="fas fa-briefcase"></i></div>
+    <div class="lp-tile"><i class="fas fa-envelope"></i></div>
+  </div>
+
+  <div class="lp-main">
+    <p class="lp-eyebrow">AI · Recruiting · Workflow</p>
+    <h1 class="lp-headline" id="lp-heading">
+      One workspace for your entire <em class="lp-crack">hiring</em> flow
+    </h1>
+    <p class="lp-lede">
+      Discover <strong>right-fit candidates</strong>, send <span class="lp-highlight">personalized outreach</span>, and move from first touch to
+      <span class="lp-dream">signed offer</span>—without leaving HireFast.
+    </p>
+
+    <div class="lp-actions">
+      <button type="button" id="startHiringBtn" class="lp-btn lp-btn--primary">
+        <i class="fas fa-rocket"></i> <span id="startHiringBtnLabel">Start Hiring Now</span>
+      </button>
+      <a href="/workflow" class="lp-btn lp-btn--ghost"><i class="fas fa-sitemap"></i> View Workflow</a>
+      <a href="/direct-ai-interview" class="lp-btn lp-btn--ghost"><i class="fas fa-microphone"></i> Take AI Interview</a>
+    </div>
+  </div>
+
+  <div class="lp-metrics-wrap">
+    <div class="lp-metrics" role="group" aria-label="Key metrics">
+      <div class="lp-metric">
+        <div class="lp-metric__val">80%</div>
+        <p class="lp-metric__lbl">Time Saved</p>
+      </div>
+      <div class="lp-metric">
+        <div class="lp-metric__val">500+</div>
+        <p class="lp-metric__lbl">Companies</p>
+      </div>
+      <div class="lp-metric">
+        <div class="lp-metric__val">10K+</div>
+        <p class="lp-metric__lbl">Hires Made</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="lp-band" id="features">
+  <h2 class="lp-band__title">Everything you need to <span>hire fast</span></h2>
+  <p class="lp-band__lede">
+    Job posts, screening, interviews, and analytics — one workflow from this page to your dashboard.
+  </p>
+  <div class="lp-cards">
+    <div class="panel">
+      <div class="stat-icon g-blue" style="width:44px;height:44px;margin-bottom:1rem;"><i class="fas fa-robot" style="color:#fff;"></i></div>
+      <h3>AI job descriptions</h3>
+      <p class="text-muted text-sm lp-card-desc">Generate and post roles, including LinkedIn.</p>
+      <a href="/job-posting" class="lp-link-ai">Try it <i class="fas fa-arrow-right" style="margin-left:0.25rem;"></i></a>
+    </div>
+    <div class="panel">
+      <div class="stat-icon g-green" style="width:44px;height:44px;margin-bottom:1rem;"><i class="fas fa-users" style="color:#fff;"></i></div>
+      <h3>Smart screening</h3>
+      <p class="text-muted text-sm lp-card-desc">Rank candidates against your latest JD.</p>
+      <a href="/candidates" class="lp-link-candidates">View candidates <i class="fas fa-arrow-right" style="margin-left:0.25rem;"></i></a>
+    </div>
+    <div class="panel">
+      <div class="stat-icon g-fuchsia" style="width:44px;height:44px;margin-bottom:1rem;"><i class="fas fa-calendar-alt" style="color:#fff;"></i></div>
+      <h3>Scheduling</h3>
+      <p class="text-muted text-sm lp-card-desc">Calendar-backed interviews and invites.</p>
+      <a href="/scheduling" class="lp-link-schedule">Schedule <i class="fas fa-arrow-right" style="margin-left:0.25rem;"></i></a>
+    </div>
+  </div>
+</section>
+
+<footer class="lp-footer">
+  <p>HireFast — AI-powered hiring workflows.</p>
+</footer>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  var isAuthenticated = false;
+
+  function go(url) { window.location.href = url; }
+
+  async function checkAuthStatus() {
+    try {
+      var res = await fetch('/check-auth', { credentials: 'same-origin' });
+      var data = await res.json();
+      isAuthenticated = !!data.authenticated;
+      updateButtonStates();
+    } catch (e) {
+      isAuthenticated = false;
+      updateButtonStates();
+    }
+  }
+
+  function updateButtonStates() {
+    var loginLabel = document.getElementById('loginBtnLabel');
+    var getLabel = document.getElementById('getStartedBtnLabel');
+    var startLabel = document.getElementById('startHiringBtnLabel');
+    if (isAuthenticated) {
+      if (loginLabel) loginLabel.textContent = 'Dashboard';
+      if (getLabel) getLabel.textContent = 'Dashboard';
+      if (startLabel) startLabel.textContent = 'Start Hiring Now';
+    } else {
+      if (loginLabel) loginLabel.textContent = 'Login';
+      if (getLabel) getLabel.textContent = 'Get started';
+      if (startLabel) startLabel.textContent = 'Start Hiring Now';
+    }
+  }
+
+  document.getElementById('loginBtn').addEventListener('click', function () {
+    go(isAuthenticated ? '/dashboard' : '/login');
+  });
+  document.getElementById('getStartedBtn').addEventListener('click', function () {
+    go(isAuthenticated ? '/dashboard' : '/login');
+  });
+  document.getElementById('startHiringBtn').addEventListener('click', function () {
+    go(isAuthenticated ? '/dashboard' : '/login');
+  });
+
+  checkAuthStatus();
+})();
+</script>
+{% endblock %}
