@@ -14,8 +14,9 @@ export default function Home() {
           HireFast
         </h1>
         <p className="mt-4 text-sm leading-relaxed text-slate-400 sm:text-base">
-          Live hiring workflows (jobs, LinkedIn, calendar, interviews) run on your Flask server. This site hosts a
-          small dashboard that talks to that API through a secure proxy.
+          With <code className="rounded bg-white/5 px-1 text-slate-400">BACKEND_URL</code> set, the same domain proxies
+          to your Flask app — dashboard, jobs, candidates, and settings are all served from the server (Jinja), not
+          duplicated here.
         </p>
         <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:justify-center">
           <Link

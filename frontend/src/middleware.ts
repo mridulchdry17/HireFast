@@ -4,17 +4,18 @@ import { NextRequest, NextResponse } from "next/server";
  * Transparent reverse proxy — makes your Vercel domain serve Flask's full UI.
  *
  * How it works:
- *   Most paths (e.g. /job-posting, /candidates) → rewritten to BACKEND_URL so Flask serves Jinja.
- *   Next.js routes / and /dashboard always stay on Next (React), even when BACKEND_URL is set.
+ *   When BACKEND_URL is set: almost every path (including /dashboard) → rewritten to Flask (Jinja + static).
+ *   Only the marketing home page / stays on Next.js (React).
  *
  * What is NOT proxied (handled by Next.js itself):
- *   /api/*               — Next.js route handlers (proxy, client-config)
+ *   /                    — landing page (React)
+ *   /api/proxy/*, /api/client-config — Next.js route handlers
  *   /_next/static/*      — Next.js compiled assets
  *   /_next/image/*       — Next.js image optimisation
  *   /favicon.ico         — favicon
  *
- * When BACKEND_URL is not set, everything falls through to Next.js pages
- * (page.tsx shows a "configure BACKEND_URL" hint — useful during local dev).
+ * When BACKEND_URL is not set, requests fall through to Next.js (including /dashboard React fallback
+ * and the home "configure BACKEND_URL" hint).
  */
 
 const BACKEND = (process.env.BACKEND_URL ?? "").trim().replace(/\/$/, "");
@@ -24,9 +25,7 @@ const NEXTJS_API_ROUTES = ["/api/proxy/", "/api/client-config"];
 
 /** Routes that must render the Next.js app even when BACKEND_URL is set (otherwise middleware rewrites to Flask). */
 function isNextjsAppRoute(pathname: string): boolean {
-  if (pathname === "/") return true;
-  if (pathname === "/dashboard" || pathname.startsWith("/dashboard/")) return true;
-  return false;
+  return pathname === "/" || pathname === "/index.html";
 }
 
 export function middleware(req: NextRequest) {
@@ -37,7 +36,7 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // React pages (e.g. /dashboard) — never rewrite to Flask
+  // Landing page only — never rewrite to Flask
   if (isNextjsAppRoute(pathname)) {
     return NextResponse.next();
   }
