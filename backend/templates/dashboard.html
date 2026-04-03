@@ -1,548 +1,780 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - HireFast</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard – HireFast</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@700&display=swap');
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { height: 100%; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: #070b14;
+      color: #f1f5f9;
+      min-height: 100dvh;
+      overflow-x: hidden;
+    }
 
-        html {
-            overflow-x: hidden;
-            max-width: 100%;
-        }
+    /* ── background blobs (exact React values) ── */
+    .blob {
+      pointer-events: none;
+      position: fixed;
+      border-radius: 50%;
+      z-index: 0;
+    }
+    /* -left-40 top-0 h-[420px] w-[420px] bg-indigo-600/25 blur-[100px] */
+    .blob-l { width:420px; height:420px; background:rgba(99,102,241,.25); top:0; left:-160px; filter:blur(100px); }
+    /* -right-32 bottom-0 h-[380px] w-[380px] bg-violet-600/20 blur-[90px] */
+    .blob-r { width:380px; height:380px; background:rgba(139,92,246,.20); bottom:0; right:-128px; filter:blur(90px); }
+    /* left-1/2 top-24 h-64 w-[80%] max-w-3xl bg-cyan-500/10 blur-[80px] */
+    .blob-c {
+      width:80%; max-width:768px; height:256px;
+      background:rgba(6,182,212,.10);
+      top:96px; left:50%; transform:translateX(-50%);
+      filter:blur(80px);
+    }
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
-            color: #f8fafc;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
+    /* ── grid backdrop (opacity[0.14] over the main content) ── */
+    .grid-bg {
+      pointer-events: none;
+      position: absolute;
+      inset: 0;
+      opacity: 0.14;
+      background-image:
+        linear-gradient(rgba(148,163,184,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148,163,184,.06) 1px, transparent 1px);
+      background-size: 32px 32px;
+      z-index: 0;
+    }
 
-        .gradient-text {
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
+    /* ── app layout ── */
+    .app {
+      position: relative;
+      display: flex;
+      min-height: 100dvh;
+      overflow: hidden;
+    }
 
-        .glass-effect {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
+    /* ── sidebar ──
+       React: fixed inset-y-0 left-0 z-40 flex w-[min(18rem,92vw)] … border-r border-white/[0.07]
+              bg-[#0a0f1c]/95 … backdrop-blur-xl … md:static md:w-72 md:min-w-[18rem] */
+    .sidebar {
+      position: relative;
+      z-index: 10;
+      width: 288px;        /* 18rem */
+      min-width: 288px;
+      display: flex;
+      flex-direction: column;
+      background: rgba(10,15,28,.95);
+      border-right: 1px solid rgba(255,255,255,.07);
+      backdrop-filter: blur(24px);
+      flex-shrink: 0;
+    }
 
-        .card-hover {
-            transition: all 0.3s ease;
-        }
+    /* logo */
+    .sb-logo {
+      padding: 20px 24px 20px;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+    }
+    /* from-blue-300 via-indigo-300 to-violet-300 */
+    .sb-logo h1 {
+      font-size: 1.125rem;
+      font-weight: 700;
+      letter-spacing: -.02em;
+      background: linear-gradient(135deg, #93c5fd 0%, #a5b4fc 50%, #c4b5fd 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .sb-logo p { font-size: .75rem; color: #94a3b8; margin-top: 4px; }
 
-        .card-hover:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-        }
+    /* nav */
+    .sb-nav {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 10px 10px;
+      overflow-y: auto;
+    }
+    /* React: rounded-xl px-3 py-2.5 text-sm gap-2 */
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: .875rem;
+      font-weight: 500;
+      color: #94a3b8;
+      text-decoration: none;
+      transition: background .18s, color .18s;
+      position: relative;
+    }
+    /* hover dot — React: h-1.5 w-1.5 rounded-full bg-white/40 opacity-0 group-hover:opacity-100 */
+    .nav-item .hover-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: rgba(255,255,255,.40);
+      opacity: 0;
+      flex-shrink: 0;
+      transition: opacity .18s;
+    }
+    .nav-item:hover .hover-dot { opacity: 1; }
+    .nav-item:hover { background: rgba(255,255,255,.06); color: #fff; }
+    /* active: from-indigo-600/90 to-violet-600/90 shadow-lg shadow-indigo-900/40 */
+    .nav-item.active {
+      background: linear-gradient(135deg, rgba(79,70,229,.90) 0%, rgba(109,40,217,.90) 100%);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(49,46,129,.45);
+    }
+    .nav-item.active .hover-dot { display: none; }
 
-        .btn-primary {
-            background: #3b82f6;
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.75rem;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-        }
+    /* sidebar footer */
+    .sb-footer {
+      padding: 12px 16px;
+      border-top: 1px solid rgba(255,255,255,.10);
+    }
+    /* React: h-10 w-10 rounded-2xl from-indigo-500 to-violet-600 shadow-inner shadow-white/10 */
+    .sb-avatar {
+      width: 40px; height: 40px; border-radius: 16px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .875rem; font-weight: 600; color: #fff;
+      overflow: hidden; flex-shrink: 0;
+      box-shadow: inset 0 1px 3px rgba(255,255,255,.12);
+    }
+    .sb-avatar img { width:100%; height:100%; object-fit:cover; display:none; border-radius:16px; }
+    .sb-user-row { display: flex; align-items: center; gap: 12px; }
+    .sb-user-info { min-width: 0; }
+    .sb-user-info .name { font-size: .875rem; font-weight: 500; color: #fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .sb-user-info .role { font-size: .75rem; color: #64748b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
-        }
+    .logout-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 9px 12px; border-radius: 10px; margin-top: 8px;
+      font-size: .8rem; font-weight: 500; color: #64748b;
+      background: none; border: none; cursor: pointer; width: 100%;
+      text-decoration: none; transition: background .18s, color .18s;
+    }
+    .logout-btn:hover { background: rgba(255,255,255,.06); color: #f1f5f9; }
 
-        .sidebar {
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(20px);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
-        }
+    /* ── mobile overlay ── */
+    .sb-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 9;
+      background: rgba(0,0,0,.70);
+      backdrop-filter: blur(4px);
+    }
+    .sb-overlay.show { display: block; }
 
-        .nav-item {
-            display: flex;
-            align-items: center;
-            padding: 0.75rem 1rem;
-            margin: 0.25rem 0;
-            border-radius: 0.75rem;
-            color: #cbd5e1;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
+    /* ── main wrap ── */
+    .main-wrap { flex: 1; min-width: 0; display: flex; flex-direction: column; position: relative; z-index: 1; }
 
-        .nav-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
+    /* mobile topbar: sticky top-0 z-20 … border-b border-white/[0.06] bg-[#070b14]/85 px-3 py-3 backdrop-blur-xl */
+    .topbar {
+      display: none;
+      position: sticky; top: 0; z-index: 8;
+      align-items: center; gap: 12px;
+      padding: 12px 12px;
+      background: rgba(7,11,20,.85);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      backdrop-filter: blur(24px);
+    }
+    .topbar-title { font-size: .875rem; font-weight: 700; color: #fff; }
+    .menu-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      border-radius: 12px; border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.05);
+      padding: 8px; color: #e2e8f0; cursor: pointer;
+      transition: background .18s;
+    }
+    .menu-btn:hover { background: rgba(255,255,255,.10); }
+    .menu-btn svg { width: 20px; height: 20px; }
 
-        .nav-item.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
+    /* ── content ── */
+    .content {
+      flex: 1; overflow-y: auto;
+      position: relative;
+    }
+    .content-inner {
+      position: relative; z-index: 10;
+      max-width: 1280px; margin: 0 auto;
+      padding: 32px 40px;
+    }
 
-        .stat-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 1.5rem;
-            padding: 1.5rem;
-        }
+    /* ── page header ── */
+    .page-header {
+      margin-bottom: 32px;
+      display: flex; flex-wrap: wrap; gap: 24px;
+      align-items: flex-start; justify-content: space-between;
+    }
 
-        .progress-bar {
-            background: linear-gradient(90deg, #10b981 0%, #3b82f6 100%);
-            height: 8px;
-            border-radius: 4px;
-            transition: width 0.3s ease;
-        }
+    /* live badge: rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] */
+    .live-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 4px 12px; border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      font-size: .6875rem; font-weight: 500;
+      text-transform: uppercase; letter-spacing: .06em; color: #94a3b8;
+      margin-bottom: 12px;
+    }
+    /* animate-pulse rounded-full bg-emerald-400  h-1.5 w-1.5 */
+    .live-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #34d399;
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
 
-        .status-pill {
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
+    /* mt-3 text-3xl font-bold tracking-tight sm:text-4xl */
+    .page-title { font-size: 2rem; font-weight: 700; letter-spacing: -.03em; color: #fff; }
+    /* mt-2 text-sm text-slate-400 */
+    .page-sub   { font-size: .875rem; color: #94a3b8; margin-top: 8px; max-width: 512px; line-height: 1.6; }
+    /* mt-2 text-xs text-slate-500 */
+    .api-status { font-size: .75rem; color: #475569; margin-top: 8px; }
+    .api-ok  { color: rgba(52,211,153,.90); }
+    .api-err { color: #fca5a5; }
 
-        .status-completed {
-            background: #10b981;
-            color: white;
-        }
+    /* open-full btn: rounded-full border border-white/10 bg-white/[0.06] px-4 py-2 text-xs */
+    .open-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 16px; border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.06);
+      font-size: .75rem; font-weight: 500; color: #e2e8f0;
+      text-decoration: none; white-space: nowrap; flex-shrink: 0;
+      transition: background .18s, border-color .18s;
+    }
+    .open-btn:hover { background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.20); }
+    .open-btn .arr { color: #64748b; }
 
-        .status-current {
-            background: #3b82f6;
-            color: white;
-        }
+    /* ── error banner ── */
+    .err-banner {
+      display: none; margin-bottom: 24px;
+      padding: 12px 16px; border-radius: 16px;
+      border: 1px solid rgba(251,191,36,.35);
+      background: linear-gradient(90deg, rgba(251,191,36,.10), transparent);
+      font-size: .875rem; color: #fde68a;
+      backdrop-filter: blur(4px);
+    }
 
-        .status-pending {
-            background: #8b5cf6;
-            color: white;
-        }
+    /* ── stat grid ── */
+    /* React: grid gap-4 sm:grid-cols-2 xl:grid-cols-4 */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 40px;
+    }
 
-        .workflow-step {
-            display: flex;
-            align-items: center;
-            padding: 1rem;
-            margin: 0.5rem 0;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-        }
+    /* React: rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.07] to-white/[0.02] p-5
+              shadow-xl shadow-black/20  hover:border-white/[0.14] hover:shadow-2xl */
+    .stat-card {
+      position: relative; overflow: hidden;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: linear-gradient(180deg, rgba(255,255,255,.07) 0%, rgba(255,255,255,.02) 100%);
+      padding: 20px;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,.20), 0 8px 10px -6px rgba(0,0,0,.20);
+      transition: border-color .3s, box-shadow .3s;
+    }
+    .stat-card:hover {
+      border-color: rgba(255,255,255,.14);
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,.55);
+    }
+    /* hover glow: absolute -right-8 -top-8 h-32 w-32 rounded-full … opacity-20 blur-2xl */
+    .stat-glow {
+      pointer-events: none;
+      position: absolute;
+      width: 128px; height: 128px; border-radius: 50%;
+      top: -32px; right: -32px;
+      opacity: 0;
+      filter: blur(24px);
+      transition: opacity .5s;
+    }
+    .stat-card:hover .stat-glow { opacity: .20; }
 
-        .workflow-step:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateX(8px);
-        }
+    /* top row: flex items-start justify-between gap-3 */
+    .stat-top { position: relative; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    /* text-xs font-medium uppercase tracking-wide text-slate-500 */
+    .stat-label { font-size: .75rem; font-weight: 500; text-transform: uppercase; letter-spacing: .05em; color: #64748b; }
+    /* h-11 w-11 rounded-2xl shadow-lg ring-1 ring-white/10 */
+    .stat-icon {
+      width: 44px; height: 44px; border-radius: 14px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 10px 15px -3px rgba(0,0,0,.30);
+      outline: 1px solid rgba(255,255,255,.10);
+    }
+    .stat-icon svg { width: 20px; height: 20px; opacity: .95; }
+    /* mt-4 font-mono text-3xl font-bold tabular-nums tracking-tight */
+    .stat-value {
+      position: relative;
+      font-family: 'JetBrains Mono', 'Fira Mono', monospace;
+      font-size: 2rem; font-weight: 700;
+      letter-spacing: -.04em; color: #fff;
+      margin-top: 16px;
+      font-variant-numeric: tabular-nums;
+    }
+    /* mt-2 text-xs text-slate-500 */
+    .stat-hint { position: relative; font-size: .75rem; color: #64748b; margin-top: 8px; }
 
-        .workflow-step.completed {
-            border-color: #10b981;
-            background: rgba(16, 185, 129, 0.1);
-        }
+    /* skeleton: h-[140px] animate-pulse rounded-2xl border border-white/5 bg-white/[0.04] */
+    .skeleton {
+      height: 140px; border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.05);
+      background: rgba(255,255,255,.04);
+      position: relative; overflow: hidden;
+    }
+    .skeleton::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.06) 50%, transparent 100%);
+      animation: shimmer 1.6s infinite;
+    }
+    @keyframes shimmer { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
 
-        .workflow-step.current {
-            border-color: #3b82f6;
-            background: rgba(59, 130, 246, 0.1);
-        }
+    /* icon gradient helpers (matching Tailwind values) */
+    .g-blue   { background: linear-gradient(135deg, #6366f1, #3b82f6, #06b6d4); }  /* indigo→blue→cyan */
+    .g-green  { background: linear-gradient(135deg, #10b981, #14b8a6); }            /* emerald→teal */
+    .g-fuchsia{ background: linear-gradient(135deg, #d946ef, #8b5cf6); }            /* fuchsia→violet */
+    .g-amber  { background: linear-gradient(135deg, #f59e0b, #f97316); }            /* amber→orange */
 
-        .fade-in {
-            animation: fadeIn 0.5s ease-in;
-        }
+    .glow-blue   { background: linear-gradient(135deg, #6366f1, #06b6d4); }
+    .glow-green  { background: linear-gradient(135deg, #10b981, #14b8a6); }
+    .glow-fuchsia{ background: linear-gradient(135deg, #d946ef, #8b5cf6); }
+    .glow-amber  { background: linear-gradient(135deg, #f59e0b, #f97316); }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
+    /* ── bottom 2-col grid ── */
+    /* React: mt-10 grid gap-6 lg:grid-cols-2 */
+    .bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 40px; }
 
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
+    /* React panels: rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.06] to-transparent p-6 shadow-xl */
+    .panel {
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: linear-gradient(180deg, rgba(255,255,255,.06) 0%, transparent 100%);
+      padding: 24px;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,.20), 0 8px 10px -6px rgba(0,0,0,.20);
+    }
+    .panel h3 { font-size: 1.125rem; font-weight: 600; color: #fff; }
+    .panel .sub { font-size: .875rem; color: #64748b; margin-top: 4px; margin-bottom: 20px; }
 
-        .pulse-animation {
-            animation: pulse 2s infinite;
-        }
+    /* quick action buttons */
+    .qa-wrap { display: flex; flex-direction: column; gap: 8px; }
+    .qa-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: .875rem; font-weight: 600; text-decoration: none;
+      transition: filter .18s, background .18s, color .18s;
+      cursor: pointer;
+    }
+    /* from-blue-600 to-indigo-600 shadow-lg shadow-indigo-900/40 hover:brightness-110 */
+    .qa-primary {
+      background: linear-gradient(135deg, #2563eb, #4f46e5);
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(49,46,129,.40);
+    }
+    .qa-primary:hover { filter: brightness(1.12); }
+    /* border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] text-slate-200 */
+    .qa-secondary {
+      background: rgba(255,255,255,.04);
+      color: #cbd5e1;
+      border: 1px solid rgba(255,255,255,.10);
+    }
+    .qa-secondary:hover { background: rgba(255,255,255,.08); color: #fff; }
 
-        @keyframes pulse {
+    /* activity list */
+    /* React: ul mt-5 space-y-0 → li flex gap-3 border-b border-white/[0.05] py-3 last:border-0 */
+    .act-list { list-style: none; margin-top: 20px; }
+    .act-item {
+      display: flex; gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+    }
+    .act-item:last-child { border-bottom: none; }
+    /* dot column: relative flex flex-col items-center pt-1.5 */
+    .act-dot-col { position: relative; display: flex; flex-direction: column; align-items: center; padding-top: 6px; }
+    /* h-2.5 w-2.5 rounded-full */
+    .act-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    /* absolute top-4 h-full w-px bg-gradient-to-b from-white/15 to-transparent */
+    .act-line {
+      position: absolute; top: 16px;
+      width: 1px; height: 100%;
+      background: linear-gradient(to bottom, rgba(255,255,255,.15), transparent);
+    }
+    .act-body { min-width: 0; flex: 1; }
+    /* text-sm font-medium leading-snug text-slate-100 */
+    .act-title { font-size: .875rem; font-weight: 500; line-height: 1.35; color: #f1f5f9; }
+    /* mt-0.5 truncate text-xs text-slate-500 */
+    .act-detail { font-size: .75rem; color: #64748b; margin-top: 2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    /* mt-1 text-[11px] text-slate-600 */
+    .act-time   { font-size: .6875rem; color: #475569; margin-top: 4px; }
+    .act-empty  { font-size: .875rem; color: #64748b; text-align: center; padding: 32px 0; }
 
-            0%,
-            100% {
-                transform: scale(1);
-            }
+    /* dot accent colours – matching accentRing() */
+    .dot-emerald { background: #34d399; box-shadow: 0 0 12px rgba(52,211,153,.45); }
+    .dot-sky      { background: #38bdf8; box-shadow: 0 0 12px rgba(56,189,248,.45); }
+    .dot-violet   { background: #a78bfa; box-shadow: 0 0 12px rgba(167,139,250,.45); }
+    .dot-gray     { background: #64748b; }
 
-            50% {
-                transform: scale(1.05);
-            }
-        }
+    /* ── workflow strip ──
+       React: mt-6 rounded-2xl border border-white/[0.08] bg-gradient-to-r from-indigo-950/40 via-slate-900/40 to-violet-950/40 p-6 */
+    .workflow-strip {
+      margin-top: 24px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.08);
+      background: linear-gradient(135deg,
+        rgba(30,27,75,.40) 0%,
+        rgba(15,23,42,.40) 50%,
+        rgba(46,16,101,.40) 100%);
+      padding: 24px;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,.30);
+    }
+    .wf-h3 { font-size: 1.125rem; font-weight: 600; color: #fff; }
+    /* sm:flex-row sm:items-center sm:justify-between */
+    .wf-row { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; margin-top: 16px; }
+    /* text-xs font-medium uppercase tracking-wide text-indigo-300/80 */
+    .wf-sublabel { font-size: .75rem; font-weight: 500; text-transform: uppercase; letter-spacing: .05em; color: rgba(165,180,252,.80); }
+    /* mt-1 truncate text-xl font-semibold */
+    .wf-role { font-size: 1.25rem; font-weight: 600; color: #fff; margin-top: 4px; overflow:hidden; text-overflow:ellipsis; }
+    /* mt-0.5 text-sm text-slate-400 */
+    .wf-company { font-size: .875rem; color: #94a3b8; margin-top: 2px; }
+    /* border-emerald-500/30 bg-emerald-500/15 px-4 py-2 text-xs font-semibold uppercase … text-emerald-200 */
+    .wf-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 16px; border-radius: 999px;
+      border: 1px solid rgba(52,211,153,.30);
+      background: rgba(52,211,153,.15);
+      font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+      color: #a7f3d0; flex-shrink: 0;
+    }
+    .wf-badge svg { width: 16px; height: 16px; }
+    .wf-empty { font-size: .875rem; color: #64748b; margin-top: 12px; }
+    .wf-empty a { color: #a5b4fc; }
 
-        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                left: -100%;
-                top: 0;
-                height: 100vh;
-                width: min(280px, 88vw);
-                z-index: 1000;
-                transition: left 0.3s ease;
-            }
-
-            .sidebar.open {
-                left: 0;
-            }
-
-            .sidebar-overlay {
-                display: none;
-                position: fixed;
-                inset: 0;
-                background: rgba(0, 0, 0, 0.5);
-                z-index: 999;
-            }
-
-            .sidebar-overlay.visible {
-                display: block;
-            }
-
-            .main-content {
-                margin-left: 0;
-            }
-        }
-    </style>
+    /* ── responsive ── */
+    @media (max-width: 1280px) { .stat-grid { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 900px)  { .bottom-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) {
+      .sidebar {
+        position: fixed; inset-y: 0; left: 0; z-index: 10;
+        transform: translateX(-100%);
+        transition: transform .3s cubic-bezier(.4,0,.2,1);
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,.40);
+      }
+      .sidebar.open { transform: translateX(0); }
+      .topbar { display: flex; }
+      .content-inner { padding: 16px; }
+      .page-title { font-size: 1.75rem; }
+      .page-header { gap: 16px; }
+    }
+    @media (max-width: 600px) { .stat-grid { grid-template-columns: 1fr; } }
+  </style>
 </head>
-
 <body>
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()" aria-hidden="true"></div>
-    <div class="flex h-screen">
-        <!-- Sidebar -->
-        <div class="sidebar flex w-64 flex-col p-4 sm:p-6">
-            <div class="mb-8">
-                <h1 class="text-2xl font-bold gradient-text">HireFast</h1>
-                <p class="text-sm text-gray-400 mt-1">AI-Powered HR Automation</p>
+
+  <!-- blobs -->
+  <div class="blob blob-l" aria-hidden="true"></div>
+  <div class="blob blob-r" aria-hidden="true"></div>
+  <div class="blob blob-c" aria-hidden="true"></div>
+
+  <!-- mobile sidebar overlay -->
+  <div class="sb-overlay" id="sbOverlay" onclick="closeSidebar()"></div>
+
+  <div class="app">
+
+    <!-- ───────────── SIDEBAR ───────────── -->
+    <aside class="sidebar" id="sidebar">
+
+      <div class="sb-logo">
+        <h1>HireFast</h1>
+        <p>AI-Powered HR Automation</p>
+      </div>
+
+      <nav class="sb-nav">
+        <a href="/dashboard"        class="nav-item active"><span class="hover-dot"></span>Dashboard</a>
+        <a href="/job-posting"      class="nav-item"><span class="hover-dot"></span>Create Job Post</a>
+        <a href="/candidates"       class="nav-item"><span class="hover-dot"></span>Candidates</a>
+        <a href="/scheduling"       class="nav-item"><span class="hover-dot"></span>Schedule Interviews</a>
+        <a href="/connect-calendar" class="nav-item"><span class="hover-dot"></span>Connect Calendar</a>
+        <a href="/analytics"        class="nav-item"><span class="hover-dot"></span>Analytics</a>
+        <a href="/settings"         class="nav-item"><span class="hover-dot"></span>Settings</a>
+      </nav>
+
+      <div class="sb-footer">
+        <div class="sb-user-row">
+          <div class="sb-avatar" id="sidebarAvatar">
+            <img id="sidebarAvatarImg" alt="" />
+            <span id="sidebarAvatarText">…</span>
+          </div>
+          <div class="sb-user-info">
+            <p class="name" id="sidebarName">…</p>
+            <p class="role" id="sidebarTitle">…</p>
+          </div>
+        </div>
+        <button class="logout-btn" onclick="logout()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          Logout
+        </button>
+      </div>
+
+    </aside>
+
+    <!-- ───────────── MAIN ───────────── -->
+    <div class="main-wrap">
+
+      <!-- mobile header -->
+      <header class="topbar">
+        <button class="menu-btn" onclick="toggleSidebar()" aria-label="Open menu">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <span class="topbar-title">Dashboard</span>
+      </header>
+
+      <main class="content">
+        <!-- grid backdrop inside scrollable area -->
+        <div class="grid-bg" aria-hidden="true"></div>
+
+        <div class="content-inner">
+
+          <!-- page header -->
+          <div class="page-header">
+            <div>
+              <div class="live-badge">Live data <span class="live-dot"></span></div>
+              <h2 class="page-title">Dashboard</h2>
+              <p class="page-sub">Welcome back. Metrics below are pulled from your HireFast database (jobs, applications, AI interviews).</p>
+              <p class="api-status" id="apiStatus">API: <span id="apiStatusText">connecting…</span></p>
+            </div>
+            <a href="/" class="open-btn" id="openBtn" style="align-self:flex-start;margin-top:20px">
+              Open full HireFast <span class="arr">↗</span>
+            </a>
+          </div>
+
+          <!-- error banner -->
+          <div class="err-banner" id="errBanner"></div>
+
+          <!-- stat cards -->
+          <div class="stat-grid" id="statGrid">
+            <div class="skeleton"></div>
+            <div class="skeleton"></div>
+            <div class="skeleton"></div>
+            <div class="skeleton"></div>
+          </div>
+
+          <!-- bottom 2-col -->
+          <div class="bottom-grid">
+
+            <!-- quick actions -->
+            <div class="panel">
+              <h3>Quick actions</h3>
+              <p class="sub">Jump straight into the full workflow.</p>
+              <div class="qa-wrap">
+                <a href="/job-posting" class="qa-btn qa-primary">
+                  <span style="font-size:1.1rem;line-height:1">+</span> Create job post
+                </a>
+                <a href="/candidates"  class="qa-btn qa-secondary">View candidates</a>
+                <a href="/scheduling"  class="qa-btn qa-secondary">Schedule interviews</a>
+              </div>
             </div>
 
-            <nav class="space-y-2">
-                <a href="/dashboard" class="nav-item active">
-                    <i class="fas fa-tachometer-alt w-5 mr-3"></i>
-                    Dashboard
-                </a>
-                <a href="/job-posting" class="nav-item">
-                    <i class="fas fa-plus-circle w-5 mr-3"></i>
-                    Create Job Post
-                </a>
-                <a href="/candidates" class="nav-item">
-                    <i class="fas fa-users w-5 mr-3"></i>
-                    Candidates
-                </a>
-                <a href="/scheduling" class="nav-item">
-                    <i class="fas fa-calendar-alt w-5 mr-3"></i>
-                    Schedule Interviews
-                </a>
-                <a href="/connect-calendar" class="nav-item">
-                    <i class="fas fa-calendar-check w-5 mr-3"></i>
-                    Connect Calendar
-                </a>
-                <a href="/analytics" class="nav-item">
-                    <i class="fas fa-chart-line w-5 mr-3"></i>
-                    Analytics
-                </a>
-                <a href="/settings" class="nav-item">
-                    <i class="fas fa-cog w-5 mr-3"></i>
-                    Settings
-                </a>
-            </nav>
-
-            <div class="mt-auto pt-6">
-                <div class="flex items-center mb-4">
-                    <div id="sidebarAvatar"
-                        class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-3 overflow-hidden">
-                        <span id="sidebarAvatarText" class="text-white font-bold text-sm">…</span>
-                    </div>
-                    <div>
-                        <p id="sidebarName" class="font-semibold text-sm">…</p>
-                        <p id="sidebarTitle" class="text-xs text-gray-400">…</p>
-                    </div>
-                </div>
-                <button onclick="logout()" class="nav-item w-full text-left">
-                    <i class="fas fa-sign-out-alt w-5 mr-3"></i>
-                    Logout
-                </button>
+            <!-- recent activity -->
+            <div class="panel">
+              <h3>Recent activity</h3>
+              <p class="sub">Latest applications, jobs, and AI interviews.</p>
+              <ul class="act-list" id="actList">
+                <li class="act-empty">Loading…</li>
+              </ul>
             </div>
-        </div>
 
-        <!-- Main Content -->
-        <div class="flex-1 flex flex-col overflow-hidden">
-            <!-- Header -->
-            <header class="glass-effect border-b border-gray-700 p-4 sm:p-6">
-                <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                    <div class="flex min-w-0 items-start gap-3">
-                        <button type="button" id="sidebarToggle" class="mt-1 inline-flex rounded-lg bg-gray-700 p-2 text-white md:hidden" aria-label="Open menu" onclick="toggleSidebar()">
-                            <i class="fas fa-bars"></i>
-                        </button>
-                        <div class="min-w-0">
-                            <h2 class="text-2xl font-bold text-white sm:text-3xl">Dashboard</h2>
-                            <p class="mt-1 text-sm text-gray-400">Welcome back! Here&apos;s what&apos;s happening with your hiring process.</p>
-                        </div>
-                    </div>
-                    <div class="flex flex-wrap items-center gap-2 sm:gap-4">
-                        <div class="flex items-center space-x-2">
-                            <div class="h-3 w-3 shrink-0 rounded-full bg-green-500"></div>
-                            <span class="text-xs text-gray-300 sm:text-sm">LinkedIn Connected</span>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <div class="h-3 w-3 shrink-0 rounded-full bg-green-500"></div>
-                            <span class="text-xs text-gray-300 sm:text-sm">Google Calendar Connected</span>
-                        </div>
-                    </div>
-                </div>
-            </header>
+          </div>
 
-            <!-- Dashboard Content -->
-            <main class="flex-1 overflow-y-auto p-4 sm:p-6">
-                <!-- Stats Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div class="stat-card card-hover">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-400 text-sm">Active Job Posts</p>
-                                <p class="text-3xl font-bold text-white">12</p>
-                            </div>
-                            <div
-                                class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                                <i class="fas fa-briefcase text-white text-xl"></i>
-                            </div>
-                        </div>
-                        <div class="mt-4">
-                            <div class="flex items-center text-sm">
-                                <span class="text-green-400">+3 this week</span>
-                            </div>
-                        </div>
-                    </div>
+          <!-- workflow strip -->
+          <div class="workflow-strip">
+            <h3 class="wf-h3">Current hiring workflow</h3>
+            <div id="wfBody">
+              <p class="wf-empty">Loading…</p>
+            </div>
+          </div>
 
-                    <div class="stat-card card-hover">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-400 text-sm">Total Applications</p>
-                                <p class="text-3xl font-bold text-white">247</p>
-                            </div>
-                            <div
-                                class="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-600 rounded-xl flex items-center justify-center">
-                                <i class="fas fa-users text-white text-xl"></i>
-                            </div>
-                        </div>
-                        <div class="mt-4">
-                            <div class="flex items-center text-sm">
-                                <span class="text-green-400">+18 today</span>
-                            </div>
-                        </div>
-                    </div>
+        </div><!-- /content-inner -->
+      </main>
+    </div><!-- /main-wrap -->
+  </div><!-- /app -->
 
-                    <div class="stat-card card-hover">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-400 text-sm">Interviews Scheduled</p>
-                                <p class="text-3xl font-bold text-white">8</p>
-                            </div>
-                            <div
-                                class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
-                                <i class="fas fa-calendar-alt text-white text-xl"></i>
-                            </div>
-                        </div>
-                        <div class="mt-4">
-                            <div class="flex items-center text-sm">
-                                <span class="text-blue-400">3 this week</span>
-                            </div>
-                        </div>
-                    </div>
+  <!-- shared sidebar profile loader -->
+  <script src="{{ url_for('static', filename='js/sidebar-profile.js') }}"></script>
 
-                    <div class="stat-card card-hover">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-400 text-sm">Hires This Month</p>
-                                <p class="text-3xl font-bold text-white">5</p>
-                            </div>
-                            <div
-                                class="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center">
-                                <i class="fas fa-trophy text-white text-xl"></i>
-                            </div>
-                        </div>
-                        <div class="mt-4">
-                            <div class="flex items-center text-sm">
-                                <span class="text-green-400">+2 from last month</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+  <script>
+    /* ── sidebar mobile ── */
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('sbOverlay').classList.toggle('show');
+    }
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sbOverlay').classList.remove('show');
+    }
+    window.addEventListener('resize', function () {
+      if (window.innerWidth > 768) closeSidebar();
+    });
 
-                <!-- Quick Actions -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                    <div class="glass-effect rounded-2xl p-6">
-                        <h3 class="text-xl font-bold mb-6 text-white">Quick Actions</h3>
-                        <div class="space-y-4">
-                            <button onclick="window.location.href='/job-posting'"
-                                class="w-full btn-primary justify-center">
-                                <i class="fas fa-plus"></i>
-                                Create New Job Post
-                            </button>
-                            <button onclick="window.location.href='/candidates'"
-                                class="w-full btn-secondary justify-center">
-                                <i class="fas fa-users"></i>
-                                View All Candidates
-                            </button>
-                            <button onclick="window.location.href='/scheduling'"
-                                class="w-full btn-secondary justify-center">
-                                <i class="fas fa-calendar-plus"></i>
-                                Schedule Interview
-                            </button>
-                        </div>
-                    </div>
+    /* ── logout ── */
+    function logout() {
+      if (confirm('Are you sure you want to logout?')) window.location.href = '/logout';
+    }
 
-                    <div class="glass-effect rounded-2xl p-6">
-                        <h3 class="text-xl font-bold mb-6 text-white">Recent Activity</h3>
-                        <div class="space-y-4">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-                                <div class="flex-1">
-                                    <p class="text-sm">New application for Software Engineer</p>
-                                    <p class="text-xs text-gray-400">2 minutes ago</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center space-x-3">
-                                <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                <div class="flex-1">
-                                    <p class="text-sm">Interview scheduled with Sarah Johnson</p>
-                                    <p class="text-xs text-gray-400">1 hour ago</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center space-x-3">
-                                <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
-                                <div class="flex-1">
-                                    <p class="text-sm">Job post published to LinkedIn</p>
-                                    <p class="text-xs text-gray-400">3 hours ago</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    /* ── helpers ── */
+    function relTime(iso) {
+      if (!iso) return '';
+      var d = new Date(iso), sec = (Date.now() - d.getTime()) / 1000;
+      if (sec < 45)     return 'just now';
+      if (sec < 3600)   return Math.max(1, Math.floor(sec / 60)) + ' min ago';
+      if (sec < 86400)  return Math.floor(sec / 3600) + ' hr ago';
+      if (sec < 172800) return 'yesterday';
+      return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    }
 
-                <!-- Hiring Workflow -->
-                <div class="glass-effect rounded-2xl p-6">
-                    <h3 class="text-xl font-bold mb-6 text-white">Current Hiring Workflow</h3>
-                    <div class="space-y-4">
-                        <div class="workflow-step completed">
-                            <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-4">
-                                <i class="fas fa-check text-white text-sm"></i>
-                            </div>
-                            <div class="flex-1">
-                                <h4 class="font-semibold text-white">Job Description Created</h4>
-                                <p class="text-sm text-gray-400">Software Engineer - Full Stack Developer</p>
-                            </div>
-                            <span class="status-pill status-completed">Completed</span>
-                        </div>
+    function dotCls(accent) {
+      return { emerald: 'dot-emerald', sky: 'dot-sky', violet: 'dot-violet' }[accent] || 'dot-gray';
+    }
 
-                        <div class="workflow-step completed">
-                            <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-4">
-                                <i class="fas fa-check text-white text-sm"></i>
-                            </div>
-                            <div class="flex-1">
-                                <h4 class="font-semibold text-white">Posted to LinkedIn</h4>
-                                <p class="text-sm text-gray-400">Published 2 days ago</p>
-                            </div>
-                            <span class="status-pill status-completed">Completed</span>
-                        </div>
+    /* ── SVG icons (matching the React SVG paths) ── */
+    var SVG = {
+      briefcase: '<svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255V19a2 2 0 01-2 2H5a2 2 0 01-2-2v-5.745M21 13.255V8a2 2 0 00-2-2h-1.5M21 13.255l-3.182-1.591a2 2 0 00-1.636 0L12 13.745M5 6V4a2 2 0 012-2h10a2 2 0 012 2v2M5 6h14M5 6v7.255a2 2 0 001.118 1.79l5 2.824a2 2 0 001.764 0l5-2.824A2 2 0 0021 13.255"/></svg>',
+      users: '<svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>',
+      calendar: '<svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>',
+      check: '<svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+    };
 
-                        <div class="workflow-step current">
-                            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center mr-4">
-                                <i class="fas fa-users text-white text-sm"></i>
-                            </div>
-                            <div class="flex-1">
-                                <h4 class="font-semibold text-white">Candidate Screening</h4>
-                                <p class="text-sm text-gray-400">247 applications received</p>
-                            </div>
-                            <span class="status-pill status-current">In Progress</span>
-                        </div>
+    /* ── render stat cards ── */
+    function renderStats(d) {
+      var jw = d.jobs_this_week || 0;
+      var at = d.applications_today || 0;
+      var aw = d.applications_this_week || 0;
+      var iw = d.interview_sessions_this_week || 0;
+      var iv = d.interviews_engaged != null ? d.interviews_engaged : (d.ai_interview_sessions || 0);
 
-                        <div class="workflow-step">
-                            <div class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center mr-4">
-                                <i class="fas fa-calendar-alt text-white text-sm"></i>
-                            </div>
-                            <div class="flex-1">
-                                <h4 class="font-semibold text-white">Interview Scheduling</h4>
-                                <p class="text-sm text-gray-400">Waiting for top candidates</p>
-                            </div>
-                            <span class="status-pill status-pending">Pending</span>
-                        </div>
+      var cards = [
+        { label:'Active job posts',      value: d.job_count || 0,
+          hint: jw > 0 ? '+' + jw + ' this week' : 'No new roles this week',
+          icon: SVG.briefcase, grad:'g-blue', glow:'glow-blue' },
+        { label:'Total applications',    value: d.application_count || 0,
+          hint: at > 0 ? '+' + at + ' today' : aw > 0 ? '+' + aw + ' this week' : 'Waiting for applicants',
+          icon: SVG.users, grad:'g-green', glow:'glow-green' },
+        { label:'Interview pipeline',    value: iv,
+          hint: iw > 0 ? iw + ' session touches this week' : 'Sessions started or completed',
+          icon: SVG.calendar, grad:'g-fuchsia', glow:'glow-fuchsia' },
+        { label:'Completed interviews',  value: d.completed_interviews_this_month || 0,
+          hint: 'This month (AI)',
+          icon: SVG.check, grad:'g-amber', glow:'glow-amber' }
+      ];
 
-                        <div class="workflow-step">
-                            <div class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center mr-4">
-                                <i class="fas fa-handshake text-white text-sm"></i>
-                            </div>
-                            <div class="flex-1">
-                                <h4 class="font-semibold text-white">Final Decision</h4>
-                                <p class="text-sm text-gray-400">Awaiting interview results</p>
-                            </div>
-                            <span class="status-pill status-pending">Pending</span>
-                        </div>
-                    </div>
-                </div>
-            </main>
-        </div>
-    </div>
+      var html = '';
+      cards.forEach(function (c) {
+        html +=
+          '<div class="stat-card">' +
+          '  <div class="stat-glow ' + c.glow + '"></div>' +
+          '  <div class="stat-top">' +
+          '    <p class="stat-label">' + c.label + '</p>' +
+          '    <div class="stat-icon ' + c.grad + '">' + c.icon + '</div>' +
+          '  </div>' +
+          '  <p class="stat-value">' + c.value + '</p>' +
+          '  <p class="stat-hint">' + c.hint + '</p>' +
+          '</div>';
+      });
 
-    <script src="{{ url_for('static', filename='js/sidebar-profile.js') }}"></script>
-    <script>
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                window.location.href = '/logout';
-            }
+      document.getElementById('statGrid').innerHTML = html;
+    }
+
+    /* ── render activity ── */
+    function renderActivity(items) {
+      var el = document.getElementById('actList');
+      if (!items || !items.length) {
+        el.innerHTML = '<li class="act-empty">No activity yet — create a job or receive applications.</li>';
+        return;
+      }
+      var html = '';
+      items.forEach(function (item, idx) {
+        var last = idx === items.length - 1;
+        html +=
+          '<li class="act-item">' +
+          '  <div class="act-dot-col">' +
+          '    <span class="act-dot ' + dotCls(item.accent) + '"></span>' +
+          (last ? '' : '    <span class="act-line"></span>') +
+          '  </div>' +
+          '  <div class="act-body">' +
+          '    <p class="act-title">' + (item.title || '') + '</p>' +
+          (item.detail ? '<p class="act-detail">' + item.detail + '</p>' : '') +
+          '    <p class="act-time">' + relTime(item.at) + '</p>' +
+          '  </div>' +
+          '</li>';
+      });
+      el.innerHTML = html;
+    }
+
+    /* ── render workflow ── */
+    function renderWorkflow(w) {
+      var el = document.getElementById('wfBody');
+      if (!w || !w.role) {
+        el.innerHTML = '<p class="wf-empty">No job postings yet. Create one under <a href="/job-posting">Create Job Post</a>.</p>';
+        return;
+      }
+      el.innerHTML =
+        '<div class="wf-row">' +
+        '  <div style="min-width:0">' +
+        '    <p class="wf-sublabel">' + (w.step_label || 'Latest role') + '</p>' +
+        '    <p class="wf-role">' + w.role + '</p>' +
+        (w.company_name ? '<p class="wf-company">' + w.company_name + '</p>' : '') +
+        '  </div>' +
+        '  <span class="wf-badge">' +
+        '    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>' +
+        '    In database' +
+        '  </span>' +
+        '</div>';
+    }
+
+    /* ── main fetch ── */
+    async function loadDashboard() {
+      try {
+        var res  = await fetch('/dashboard-summary');
+        var data = await res.json();
+
+        if (!res.ok || data.error) {
+          var b = document.getElementById('errBanner');
+          b.textContent = (data && data.error) ? data.error : 'Could not load stats (' + res.status + ')';
+          b.style.display = 'block';
+          document.getElementById('statGrid').innerHTML = '';
+          document.getElementById('actList').innerHTML  = '<li class="act-empty">—</li>';
+          document.getElementById('wfBody').innerHTML   = '<p class="wf-empty">—</p>';
+          document.getElementById('apiStatusText').className = 'api-err';
+          document.getElementById('apiStatusText').textContent = 'error';
+          return;
         }
 
-        function toggleSidebar() {
-            const sidebar = document.querySelector('.sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            if (!sidebar) return;
-            sidebar.classList.toggle('open');
-            if (overlay && window.innerWidth <= 768) {
-                overlay.classList.toggle('visible', sidebar.classList.contains('open'));
-            }
-        }
+        renderStats(data);
+        renderActivity(data.recent_activity);
+        renderWorkflow(data.workflow);
 
-        function closeSidebar() {
-            const sidebar = document.querySelector('.sidebar');
-            const overlay = document.getElementById('sidebarOverlay');
-            if (sidebar) sidebar.classList.remove('open');
-            if (overlay) overlay.classList.remove('visible');
-        }
+        var st = document.getElementById('apiStatusText');
+        st.className = 'api-ok';
+        st.textContent = 'hirefast-api — ok';
 
-        window.addEventListener('resize', function () {
-            if (window.innerWidth > 768) closeSidebar();
-        });
+      } catch(e) {
+        var b = document.getElementById('errBanner');
+        b.textContent = 'Could not reach /dashboard-summary — is Flask running?';
+        b.style.display = 'block';
+        var st = document.getElementById('apiStatusText');
+        st.className = 'api-err';
+        st.textContent = 'unreachable';
+        document.getElementById('statGrid').innerHTML = '';
+        document.getElementById('actList').innerHTML  = '<li class="act-empty">—</li>';
+        document.getElementById('wfBody').innerHTML   = '<p class="wf-empty">—</p>';
+      }
+    }
 
-        document.querySelectorAll('.sidebar a').forEach(function (a) {
-            a.addEventListener('click', function () {
-                if (window.innerWidth <= 768) closeSidebar();
-            });
-        });
-    </script>
+    document.addEventListener('DOMContentLoaded', loadDashboard);
+  </script>
 </body>
-
 </html>

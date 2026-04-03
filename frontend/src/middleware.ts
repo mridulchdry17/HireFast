@@ -4,9 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
  * Transparent reverse proxy — makes your Vercel domain serve Flask's full UI.
  *
  * How it works:
- *   Browser → hire-fast-lime.vercel.app/dashboard
- *   Middleware → fetches BACKEND_URL/dashboard (Flask Jinja template)
- *   Response returned to browser (users never see the backend URL / VM IP)
+ *   Most paths (e.g. /job-posting, /candidates) → rewritten to BACKEND_URL so Flask serves Jinja.
+ *   Next.js routes / and /dashboard always stay on Next (React), even when BACKEND_URL is set.
  *
  * What is NOT proxied (handled by Next.js itself):
  *   /api/*               — Next.js route handlers (proxy, client-config)
@@ -23,11 +22,23 @@ const BACKEND = (process.env.BACKEND_URL ?? "").trim().replace(/\/$/, "");
 // Next.js-owned API routes — everything else under /api/* belongs to Flask.
 const NEXTJS_API_ROUTES = ["/api/proxy/", "/api/client-config"];
 
+/** Routes that must render the Next.js app even when BACKEND_URL is set (otherwise middleware rewrites to Flask). */
+function isNextjsAppRoute(pathname: string): boolean {
+  if (pathname === "/") return true;
+  if (pathname === "/dashboard" || pathname.startsWith("/dashboard/")) return true;
+  return false;
+}
+
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Only protect Next.js's own API routes; Flask also uses /api/* (e.g. /api/ai-interview/*)
   if (NEXTJS_API_ROUTES.some((r) => pathname.startsWith(r))) {
+    return NextResponse.next();
+  }
+
+  // React pages (e.g. /dashboard) — never rewrite to Flask
+  if (isNextjsAppRoute(pathname)) {
     return NextResponse.next();
   }
 

@@ -2,6 +2,8 @@
 Hiring workflow routes for job description generation and posting.
 """
 from flask import Blueprint, request, jsonify, session, send_file
+from datetime import datetime, timedelta
+from sqlalchemy import or_
 import io
 from app.services.ai_service import AIService
 from app.services.linkedin_service import LinkedInService
@@ -9,7 +11,7 @@ from app.services.job_service import JobService
 from app.services.google_service import GoogleService
 from app.services.resume_service import ResumeService
 from app.models.hiring import HRHiringState
-from app.models.db_models import JobPosting, Application, AIInterviewSession
+from app.models.db_models import db, JobPosting, Application, AIInterviewSession
 
 hiring_bp = Blueprint('hiring', __name__)
 
@@ -150,15 +152,111 @@ def get_latest_jd_api():
 
 
 
+def _build_dashboard_activity():
+    """Recent events from JobPosting, Application, AIInterviewSession (merged, newest first)."""
+    rows = []
+
+    for job in JobPosting.query.order_by(JobPosting.created_at.desc()).limit(4).all():
+        rows.append(
+            {
+                "kind": "job",
+                "title": f"Job description saved — {job.role}",
+                "detail": job.company_name or None,
+                "at": job.created_at.isoformat() + "Z" if job.created_at else None,
+                "accent": "violet",
+            }
+        )
+
+    for app in Application.query.order_by(Application.created_at.desc()).limit(12).all():
+        job = db.session.get(JobPosting, app.job_id)
+        role = job.role if job else "Unknown role"
+        rows.append(
+            {
+                "kind": "application",
+                "title": f"New application — {role}",
+                "detail": app.candidate_name,
+                "at": app.created_at.isoformat() + "Z" if app.created_at else None,
+                "accent": "emerald",
+            }
+        )
+
+    for sess in AIInterviewSession.query.order_by(AIInterviewSession.created_at.desc()).limit(12).all():
+        if sess.status == "completed":
+            title = f"AI interview completed — {sess.job_role}"
+        elif sess.started_at:
+            title = f"AI interview in progress — {sess.job_role}"
+        else:
+            title = f"AI interview session — {sess.job_role}"
+        rows.append(
+            {
+                "kind": "interview",
+                "title": title,
+                "detail": sess.candidate_name,
+                "at": sess.created_at.isoformat() + "Z" if sess.created_at else None,
+                "accent": "sky",
+            }
+        )
+
+    rows = [r for r in rows if r.get("at")]
+    rows.sort(key=lambda r: r["at"], reverse=True)
+    return rows[:10]
+
+
 @hiring_bp.route('/dashboard-summary')
 def dashboard_summary_api():
-    """Counts for the Vercel dashboard — real DB stats (no session required)."""
+    """Aggregates for the Next.js dashboard — real DB stats (no session required)."""
     try:
+        now = datetime.utcnow()
+        week_ago = now - timedelta(days=7)
+        start_of_month = datetime(now.year, now.month, 1)
+        start_of_today = datetime(now.year, now.month, now.day)
+
+        job_count = JobPosting.query.count()
+        jobs_this_week = JobPosting.query.filter(JobPosting.created_at >= week_ago).count()
+
+        application_count = Application.query.count()
+        applications_this_week = Application.query.filter(Application.created_at >= week_ago).count()
+        applications_today = Application.query.filter(Application.created_at >= start_of_today).count()
+
+        ai_interview_sessions = AIInterviewSession.query.count()
+        interviews_engaged = AIInterviewSession.query.filter(
+            or_(
+                AIInterviewSession.started_at.isnot(None),
+                AIInterviewSession.status.in_(["in_progress", "completed"]),
+            )
+        ).count()
+        interview_sessions_this_week = AIInterviewSession.query.filter(
+            AIInterviewSession.created_at >= week_ago
+        ).count()
+
+        completed_interviews_this_month = AIInterviewSession.query.filter(
+            AIInterviewSession.completed_at.isnot(None),
+            AIInterviewSession.completed_at >= start_of_month,
+        ).count()
+
+        latest_job = JobPosting.query.order_by(JobPosting.created_at.desc()).first()
+        workflow = None
+        if latest_job:
+            workflow = {
+                "role": latest_job.role,
+                "company_name": latest_job.company_name,
+                "created_at": latest_job.created_at.isoformat() + "Z" if latest_job.created_at else None,
+                "step_label": "Job description created",
+            }
+
         return jsonify(
             {
-                "job_count": JobPosting.query.count(),
-                "application_count": Application.query.count(),
-                "ai_interview_sessions": AIInterviewSession.query.count(),
+                "job_count": job_count,
+                "jobs_this_week": jobs_this_week,
+                "application_count": application_count,
+                "applications_this_week": applications_this_week,
+                "applications_today": applications_today,
+                "ai_interview_sessions": ai_interview_sessions,
+                "interviews_engaged": interviews_engaged,
+                "interview_sessions_this_week": interview_sessions_this_week,
+                "completed_interviews_this_month": completed_interviews_this_month,
+                "recent_activity": _build_dashboard_activity(),
+                "workflow": workflow,
             }
         )
     except Exception as e:
