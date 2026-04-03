@@ -36,7 +36,13 @@ class Config:
         _db_url = "postgresql://" + _db_url[len("postgres://") :]
     SQLALCHEMY_DATABASE_URI = _db_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    
+    # Neon / poolers often close idle SSL connections; background jobs (e.g. audio cleanup)
+    # wake after long sleep and must not reuse dead sockets.
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_pre_ping": True,
+        "pool_recycle": int(os.environ.get("SQLALCHEMY_POOL_RECYCLE", "280")),
+    }
+
     # Storage settings
     UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB limit

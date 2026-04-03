@@ -503,18 +503,12 @@
         </div>
     </div>
 
+    <script src="{{ url_for('static', filename='js/sidebar-profile.js') }}"></script>
     <script>
         function logout() {
             if (confirm('Are you sure you want to logout?')) {
                 window.location.href = '/logout';
             }
-        }
-
-        function initials(name) {
-            if (!name || !String(name).trim()) return '?';
-            const p = String(name).trim().split(/\s+/);
-            if (p.length === 1) return p[0].slice(0, 2).toUpperCase();
-            return (p[0][0] + p[p.length - 1][0]).toUpperCase();
         }
 
         async function loadMe() {
@@ -530,28 +524,8 @@
             document.getElementById('profileJobTitle').value = me.job_title || '';
             document.getElementById('profileCompany').value = me.company || '';
 
-            document.getElementById('sidebarName').textContent = me.full_name || me.email || 'Recruiter';
-            document.getElementById('sidebarTitle').textContent = me.job_title || me.email || '—';
-
-            const wrap = document.getElementById('sidebarAvatar');
-            const avText = document.getElementById('sidebarAvatarText');
-            if (me.picture_url) {
-                avText.style.display = 'none';
-                let img = document.getElementById('sidebarAvatarImg');
-                if (!img) {
-                    img = document.createElement('img');
-                    img.id = 'sidebarAvatarImg';
-                    img.className = 'w-full h-full object-cover rounded-full';
-                    img.alt = '';
-                    wrap.appendChild(img);
-                }
-                img.src = me.picture_url;
-                img.style.display = 'block';
-            } else {
-                const img = document.getElementById('sidebarAvatarImg');
-                if (img) img.style.display = 'none';
-                avText.style.display = 'inline';
-                avText.textContent = initials(me.full_name || me.email);
+            if (window.HireFastApplySidebarFromUser) {
+                window.HireFastApplySidebarFromUser(me);
             }
 
             const dot = document.getElementById('liConnDot');
