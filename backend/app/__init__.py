@@ -84,23 +84,23 @@ def create_app(config_name='default'):
     
     @app.route('/dashboard')
     def dashboard():
-        return render_template('dashboard.html')
+        return render_template('dashboard.html', active_nav='dashboard')
     
     @app.route('/job-posting')
     def job_posting():
-        return render_template('job-posting.html')
+        return render_template('job-posting.html', active_nav='job_posting')
     
     @app.route('/candidates')
     def candidates():
-        return render_template('candidates.html')
+        return render_template('candidates.html', active_nav='candidates')
     
     @app.route('/scheduling')
     def scheduling():
-        return render_template('scheduling.html')
+        return render_template('scheduling.html', active_nav='scheduling')
     
     @app.route('/analytics')
     def analytics():
-        return render_template('analytics.html')
+        return render_template('analytics.html', active_nav='analytics')
     
     @app.route('/settings')
     def settings():
@@ -108,7 +108,7 @@ def create_app(config_name='default'):
         if not uid or not RecruiterUser.query.get(uid):
             session.clear()
             return redirect(url_for('login'))
-        return render_template('settings.html')
+        return render_template('settings.html', active_nav='settings')
     
     @app.route('/contact')
     def contact():

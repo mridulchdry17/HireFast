@@ -1,593 +1,248 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base_app.html" %}
+{% block title %}Settings – HireFast{% endblock %}
+{% block mobile_title %}Settings{% endblock %}
+{% block page_title %}Settings{% endblock %}
+{% block page_sub %}Manage your account and application preferences.{% endblock %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Settings - HireFast</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" crossorigin="anonymous" />
+{% endblock %}
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
-            color: #f8fafc;
-            min-height: 100vh;
-        }
-
-        .gradient-text {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .glass-effect {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .sidebar {
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(20px);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            padding: 0.75rem 1rem;
-            margin: 0.25rem 0;
-            border-radius: 0.75rem;
-            color: #cbd5e1;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-
-        .nav-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-
-        .nav-item.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .settings-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 1.5rem;
-            padding: 1.5rem;
-        }
-
-        .form-input {
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 0.75rem;
-            padding: 0.75rem 1rem;
-            color: #f8fafc !important;
-            width: 100%;
-            transition: all 0.3s ease;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: #667eea;
-            background: rgba(15, 23, 42, 0.95);
-            color: #f8fafc !important;
-        }
-
-        .form-input::placeholder {
-            color: #94a3b8;
-        }
-
-        select.form-input {
-            color: #f8fafc !important;
-        }
-
-        select.form-input option {
-            background: rgba(15, 23, 42, 0.95);
-            color: #f8fafc;
-        }
-
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 60px;
-            height: 34px;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 34px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 26px;
-            width: 26px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-        input:checked+.slider {
-            background-color: #667eea;
-        }
-
-        input:checked+.slider:before {
-            transform: translateX(26px);
-        }
-
-        .connection-status {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .status-connected {
-            color: #10b981;
-        }
-
-        .status-disconnected {
-            color: #ef4444;
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                left: -100%;
-                top: 0;
-                height: 100vh;
-                width: 280px;
-                z-index: 1000;
-                transition: left 0.3s ease;
-            }
-
-            .sidebar.open {
-                left: 0;
-            }
-        }
-    </style>
-</head>
-
-<body>
-    <div class="flex h-screen">
-        <!-- Sidebar -->
-        <div class="sidebar w-64 p-6">
-            <div class="mb-8">
-                <h1 class="text-2xl font-bold gradient-text">HireFast</h1>
-                <p class="text-sm text-gray-400 mt-1">AI-Powered HR Automation</p>
-            </div>
-
-            <nav class="space-y-2">
-                <a href="/dashboard" class="nav-item">
-                    <i class="fas fa-tachometer-alt w-5 mr-3"></i>
-                    Dashboard
-                </a>
-                <a href="/job-posting" class="nav-item">
-                    <i class="fas fa-plus-circle w-5 mr-3"></i>
-                    Create Job Post
-                </a>
-                <a href="/candidates" class="nav-item">
-                    <i class="fas fa-users w-5 mr-3"></i>
-                    Candidates
-                </a>
-                <a href="/scheduling" class="nav-item">
-                    <i class="fas fa-calendar-alt w-5 mr-3"></i>
-                    Schedule Interviews
-                </a>
-                <a href="/connect-calendar" class="nav-item">
-                    <i class="fas fa-calendar-check w-5 mr-3"></i>
-                    Connect Calendar
-                </a>
-                <a href="/analytics" class="nav-item">
-                    <i class="fas fa-chart-line w-5 mr-3"></i>
-                    Analytics
-                </a>
-                <a href="/settings" class="nav-item active">
-                    <i class="fas fa-cog w-5 mr-3"></i>
-                    Settings
-                </a>
-            </nav>
-
-            <div class="mt-auto pt-6">
-                <div class="flex items-center mb-4">
-                    <div id="sidebarAvatar"
-                        class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-3 overflow-hidden">
-                        <span id="sidebarAvatarText" class="text-white font-bold text-sm">—</span>
-                    </div>
-                    <div>
-                        <p id="sidebarName" class="font-semibold text-sm">…</p>
-                        <p id="sidebarTitle" class="text-xs text-gray-400">…</p>
-                    </div>
-                </div>
-                <button onclick="logout()" class="nav-item w-full text-left">
-                    <i class="fas fa-sign-out-alt w-5 mr-3"></i>
-                    Logout
-                </button>
-            </div>
-        </div>
-
-        <!-- Main Content -->
-        <div class="flex-1 flex flex-col overflow-hidden">
-            <!-- Header -->
-            <header class="glass-effect p-6 border-b border-gray-700">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h2 class="text-3xl font-bold">Settings</h2>
-                        <p class="text-gray-400 mt-1">Manage your account and application preferences</p>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Content -->
-            <main class="flex-1 overflow-y-auto p-6">
-                <div class="max-w-4xl mx-auto space-y-8">
-                    <!-- Profile Settings -->
-                    <div class="settings-card">
-                        <h3 class="text-xl font-bold mb-6">Profile Settings</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-medium mb-2">Full Name</label>
-                                <input type="text" id="profileFullName" class="form-input"
-                                    placeholder="From LinkedIn after login">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium mb-2">Email Address</label>
-                                <input type="email" id="profileEmail" class="form-input"
-                                    placeholder="From LinkedIn (email scope)">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium mb-2">Job Title</label>
-                                <input type="text" id="profileJobTitle" class="form-input"
-                                    placeholder="Enter your job title">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium mb-2">Company</label>
-                                <input type="text" id="profileCompany" class="form-input"
-                                    placeholder="Enter your company name">
-                            </div>
-                        </div>
-                        <p id="profileSaveMsg" class="text-sm mt-4 text-gray-400 hidden"></p>
-                        <div class="mt-6">
-                            <button type="button" class="btn-primary" id="profileSaveBtn">
-                                <i class="fas fa-save"></i>
-                                Save Changes
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Integration Settings -->
-                    <div class="settings-card">
-                        <h3 class="text-xl font-bold mb-6">Integrations</h3>
-                        <div class="space-y-6">
-                            <div class="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
-                                <div class="flex items-center space-x-4">
-                                    <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
-                                        <i class="fab fa-linkedin text-white text-xl"></i>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-semibold">LinkedIn</h4>
-                                        <p class="text-sm text-gray-400">Post job descriptions and manage applications
-                                        </p>
-                                    </div>
-                                </div>
-                                <div class="flex items-center space-x-4">
-                                    <div class="connection-status" id="liConnWrap">
-                                        <i class="fas fa-circle status-connected" id="liConnDot"></i>
-                                        <span class="text-sm" id="liConnLabel">…</span>
-                                    </div>
-                                    <a href="/login" class="btn-secondary inline-flex items-center" id="liConnBtn">
-                                        <i class="fas fa-plug"></i>
-                                        <span class="ml-2">Connect</span>
-                                    </a>
-                                </div>
-                            </div>
-
-                            <div class="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
-                                <div class="flex items-center space-x-4">
-                                    <div class="w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center">
-                                        <i class="fab fa-google text-white text-xl"></i>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-semibold">Google Calendar</h4>
-                                        <p class="text-sm text-gray-400">Schedule interviews and send calendar invites
-                                        </p>
-                                    </div>
-                                </div>
-                                <div class="flex items-center space-x-4">
-                                    <div class="connection-status">
-                                        <i class="fas fa-circle status-connected"></i>
-                                        <span class="text-sm">Connected</span>
-                                    </div>
-                                    <button class="btn-secondary">
-                                        <i class="fas fa-cog"></i>
-                                        Configure
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
-                                <div class="flex items-center space-x-4">
-                                    <div class="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center">
-                                        <i class="fas fa-table text-white text-xl"></i>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-semibold">Google Sheets</h4>
-                                        <p class="text-sm text-gray-400">Manage candidate data and applications</p>
-                                    </div>
-                                </div>
-                                <div class="flex items-center space-x-4">
-                                    <div class="connection-status">
-                                        <i class="fas fa-circle status-connected"></i>
-                                        <span class="text-sm">Connected</span>
-                                    </div>
-                                    <button class="btn-secondary">
-                                        <i class="fas fa-cog"></i>
-                                        Configure
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Notification Settings -->
-                    <div class="settings-card">
-                        <h3 class="text-xl font-bold mb-6">Notifications</h3>
-                        <div class="space-y-4">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <h4 class="font-semibold">Email Notifications</h4>
-                                    <p class="text-sm text-gray-400">Receive email updates about new applications and
-                                        interviews</p>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" checked>
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <h4 class="font-semibold">SMS Notifications</h4>
-                                    <p class="text-sm text-gray-400">Receive SMS alerts for urgent hiring updates</p>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox">
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <h4 class="font-semibold">Calendar Reminders</h4>
-                                    <p class="text-sm text-gray-400">Get reminders before scheduled interviews</p>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" checked>
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <h4 class="font-semibold">Weekly Reports</h4>
-                                    <p class="text-sm text-gray-400">Receive weekly hiring performance summaries</p>
-                                </div>
-                                <label class="toggle-switch">
-                                    <input type="checkbox" checked>
-                                    <span class="slider"></span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- AI Settings -->
-                    <div class="settings-card">
-                        <h3 class="text-xl font-bold mb-6">AI Preferences</h3>
-                        <div class="space-y-6">
-                            <div>
-                                <label class="block text-sm font-medium mb-2">Job Description Style</label>
-                                <select class="form-input">
-                                    <option>Professional & Formal</option>
-                                    <option>Casual & Friendly</option>
-                                    <option>Technical & Detailed</option>
-                                    <option>Creative & Engaging</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium mb-2">Candidate Screening Criteria</label>
-                                <div class="space-y-2">
-                                    <label class="flex items-center">
-                                        <input type="checkbox" checked class="mr-3">
-                                        <span>Technical Skills Match</span>
-                                    </label>
-                                    <label class="flex items-center">
-                                        <input type="checkbox" checked class="mr-3">
-                                        <span>Experience Level</span>
-                                    </label>
-                                    <label class="flex items-center">
-                                        <input type="checkbox" class="mr-3">
-                                        <span>Education Background</span>
-                                    </label>
-                                    <label class="flex items-center">
-                                        <input type="checkbox" checked class="mr-3">
-                                        <span>Location Preference</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium mb-2">Auto-screening Threshold</label>
-                                <input type="range" min="0" max="100" value="75" class="w-full">
-                                <div class="flex justify-between text-sm text-gray-400 mt-1">
-                                    <span>Strict (0%)</span>
-                                    <span>Current: 75%</span>
-                                    <span>Lenient (100%)</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Security Settings -->
-                    <div class="settings-card">
-                        <h3 class="text-xl font-bold mb-6">Security</h3>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium mb-2">Current Password</label>
-                                <input type="password" class="form-input" placeholder="Enter current password">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium mb-2">New Password</label>
-                                <input type="password" class="form-input" placeholder="Enter new password">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium mb-2">Confirm New Password</label>
-                                <input type="password" class="form-input" placeholder="Confirm new password">
-                            </div>
-                            <button class="btn-primary">
-                                <i class="fas fa-key"></i>
-                                Update Password
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Danger Zone -->
-                    <div class="settings-card border-red-500">
-                        <h3 class="text-xl font-bold mb-6 text-red-400">Danger Zone</h3>
-                        <div class="space-y-4">
-                            <div class="p-4 bg-red-900 bg-opacity-20 border border-red-500 rounded-lg">
-                                <h4 class="font-semibold text-red-400 mb-2">Delete Account</h4>
-                                <p class="text-sm text-gray-400 mb-4">Permanently delete your account and all associated
-                                    data. This action cannot be undone.</p>
-                                <button
-                                    class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors">
-                                    <i class="fas fa-trash mr-2"></i>
-                                    Delete Account
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </main>
-        </div>
+{% block content %}
+<div class="settings-max">
+  <div class="settings-card">
+    <h3 style="font-size:1.125rem;font-weight:600;color:#fff;margin-bottom:1.5rem;">Profile</h3>
+    <div class="form-grid-2">
+      <div>
+        <label class="label-field">Full name</label>
+        <input type="text" id="profileFullName" class="form-input" placeholder="From LinkedIn after login" />
+      </div>
+      <div>
+        <label class="label-field">Email</label>
+        <input type="email" id="profileEmail" class="form-input" placeholder="From LinkedIn (email scope)" />
+      </div>
+      <div>
+        <label class="label-field">Job title</label>
+        <input type="text" id="profileJobTitle" class="form-input" placeholder="Your role" />
+      </div>
+      <div>
+        <label class="label-field">Company</label>
+        <input type="text" id="profileCompany" class="form-input" placeholder="Company name" />
+      </div>
     </div>
+    <p id="profileSaveMsg" class="text-sm mt-4 hidden"></p>
+    <div class="mt-4">
+      <button type="button" class="btn-primary" id="profileSaveBtn"><i class="fas fa-save"></i> Save changes</button>
+    </div>
+  </div>
 
-    <script src="{{ url_for('static', filename='js/sidebar-profile.js') }}"></script>
-    <script>
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                window.location.href = '/logout';
-            }
-        }
+  <div class="settings-card">
+    <h3 style="font-size:1.125rem;font-weight:600;color:#fff;margin-bottom:1.5rem;">Integrations</h3>
+    <div class="flex flex-wrap gap-4" style="flex-direction:column;">
+      <div class="settings-int-row">
+        <div class="flex items-center gap-4">
+          <div class="stat-icon g-blue" style="width:48px;height:48px;"><i class="fab fa-linkedin" style="color:#fff;"></i></div>
+          <div>
+            <h4 style="font-weight:600;color:#fff;">LinkedIn</h4>
+            <p class="text-sm text-muted">Post job descriptions and manage applications</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 flex-wrap">
+          <div class="connection-status" id="liConnWrap">
+            <i class="fas fa-circle status-connected" id="liConnDot"></i>
+            <span class="text-sm" id="liConnLabel">…</span>
+          </div>
+          <a href="/login" class="btn-secondary" id="liConnBtn" style="text-decoration:none;"><i class="fas fa-plug"></i> <span>Connect</span></a>
+        </div>
+      </div>
 
-        async function loadMe() {
-            const res = await fetch('/api/me', { credentials: 'same-origin' });
-            if (res.status === 401) {
-                window.location.href = '/login';
-                return;
-            }
-            if (!res.ok) return;
-            const me = await res.json();
-            document.getElementById('profileFullName').value = me.full_name || '';
-            document.getElementById('profileEmail').value = me.email || '';
-            document.getElementById('profileJobTitle').value = me.job_title || '';
-            document.getElementById('profileCompany').value = me.company || '';
+      <div class="settings-int-row">
+        <div class="flex items-center gap-4">
+          <div class="stat-icon" style="width:48px;height:48px;background:linear-gradient(135deg,#ef4444,#dc2626);"><i class="fab fa-google" style="color:#fff;"></i></div>
+          <div>
+            <h4 style="font-weight:600;color:#fff;">Google Calendar</h4>
+            <p class="text-sm text-muted">Schedule interviews and send invites</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 flex-wrap">
+          <div class="connection-status"><i class="fas fa-circle status-connected"></i><span class="text-sm">Connected</span></div>
+          <button type="button" class="btn-secondary"><i class="fas fa-cog"></i> Configure</button>
+        </div>
+      </div>
 
-            if (window.HireFastApplySidebarFromUser) {
-                window.HireFastApplySidebarFromUser(me);
-            }
+      <div class="settings-int-row">
+        <div class="flex items-center gap-4">
+          <div class="stat-icon g-green" style="width:48px;height:48px;"><i class="fas fa-table" style="color:#fff;"></i></div>
+          <div>
+            <h4 style="font-weight:600;color:#fff;">Google Sheets</h4>
+            <p class="text-sm text-muted">Candidate data and applications</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 flex-wrap">
+          <div class="connection-status"><i class="fas fa-circle status-connected"></i><span class="text-sm">Connected</span></div>
+          <button type="button" class="btn-secondary"><i class="fas fa-cog"></i> Configure</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-            const dot = document.getElementById('liConnDot');
-            const lbl = document.getElementById('liConnLabel');
-            const btnSpan = document.querySelector('#liConnBtn span');
-            if (me.linkedin_connected) {
-                dot.classList.add('status-connected');
-                dot.classList.remove('status-disconnected');
-                lbl.textContent = 'Connected';
-                if (btnSpan) btnSpan.textContent = 'Reconnect';
-            } else {
-                dot.classList.remove('status-connected');
-                dot.classList.add('status-disconnected');
-                lbl.textContent = 'Session expired — sign in again';
-                if (btnSpan) btnSpan.textContent = 'Connect';
-            }
-        }
+  <div class="settings-card">
+    <h3 style="font-size:1.125rem;font-weight:600;color:#fff;margin-bottom:1.5rem;">Notifications</h3>
+    <div class="flex flex-wrap gap-4" style="flex-direction:column;">
+      <div class="flex-between flex-wrap gap-3">
+        <div>
+          <h4 style="font-weight:600;color:#fff;">Email notifications</h4>
+          <p class="text-sm text-muted">Updates about new applications and interviews</p>
+        </div>
+        <label class="toggle-switch"><input type="checkbox" checked /><span class="slider"></span></label>
+      </div>
+      <div class="flex-between flex-wrap gap-3">
+        <div>
+          <h4 style="font-weight:600;color:#fff;">SMS notifications</h4>
+          <p class="text-sm text-muted">Urgent hiring alerts</p>
+        </div>
+        <label class="toggle-switch"><input type="checkbox" /><span class="slider"></span></label>
+      </div>
+      <div class="flex-between flex-wrap gap-3">
+        <div>
+          <h4 style="font-weight:600;color:#fff;">Calendar reminders</h4>
+          <p class="text-sm text-muted">Reminders before interviews</p>
+        </div>
+        <label class="toggle-switch"><input type="checkbox" checked /><span class="slider"></span></label>
+      </div>
+      <div class="flex-between flex-wrap gap-3">
+        <div>
+          <h4 style="font-weight:600;color:#fff;">Weekly reports</h4>
+          <p class="text-sm text-muted">Hiring performance summaries</p>
+        </div>
+        <label class="toggle-switch"><input type="checkbox" checked /><span class="slider"></span></label>
+      </div>
+    </div>
+  </div>
 
-        document.getElementById('profileSaveBtn').addEventListener('click', async () => {
-            const msg = document.getElementById('profileSaveMsg');
-            msg.classList.remove('hidden', 'text-green-400', 'text-red-400');
-            const body = {
-                full_name: document.getElementById('profileFullName').value,
-                email: document.getElementById('profileEmail').value,
-                job_title: document.getElementById('profileJobTitle').value,
-                company: document.getElementById('profileCompany').value,
-            };
-            const res = await fetch('/api/me/profile', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'same-origin',
-                body: JSON.stringify(body),
-            });
-            msg.classList.remove('hidden');
-            if (res.ok) {
-                msg.textContent = 'Saved.';
-                msg.classList.add('text-green-400');
-                loadMe();
-            } else {
-                msg.textContent = 'Could not save.';
-                msg.classList.add('text-red-400');
-            }
-        });
+  <div class="settings-card">
+    <h3 style="font-size:1.125rem;font-weight:600;color:#fff;margin-bottom:1.5rem;">AI preferences</h3>
+    <div class="flex flex-wrap gap-4" style="flex-direction:column;">
+      <div>
+        <label class="label-field">Job description style</label>
+        <select class="form-input">
+          <option>Professional &amp; formal</option>
+          <option>Casual &amp; friendly</option>
+          <option>Technical &amp; detailed</option>
+          <option>Creative &amp; engaging</option>
+        </select>
+      </div>
+      <div>
+        <label class="label-field">Screening criteria</label>
+        <div class="flex flex-wrap gap-2" style="flex-direction:column;">
+          <label class="flex items-center gap-2 text-sm"><input type="checkbox" checked /> Technical skills match</label>
+          <label class="flex items-center gap-2 text-sm"><input type="checkbox" checked /> Experience level</label>
+          <label class="flex items-center gap-2 text-sm"><input type="checkbox" /> Education background</label>
+          <label class="flex items-center gap-2 text-sm"><input type="checkbox" checked /> Location preference</label>
+        </div>
+      </div>
+      <div>
+        <label class="label-field">Auto-screening threshold</label>
+        <input type="range" min="0" max="100" value="75" class="form-input" style="padding:0;" />
+        <div class="flex-between text-sm text-muted mt-1">
+          <span>Strict</span><span id="threshLabel">Current: 75%</span><span>Lenient</span>
+        </div>
+      </div>
+    </div>
+  </div>
 
-        document.addEventListener('DOMContentLoaded', loadMe);
+  <div class="settings-card">
+    <h3 style="font-size:1.125rem;font-weight:600;color:#fff;margin-bottom:1.5rem;">Security</h3>
+    <div class="flex flex-wrap gap-4" style="flex-direction:column;">
+      <div>
+        <label class="label-field">Current password</label>
+        <input type="password" class="form-input" placeholder="Current password" />
+      </div>
+      <div>
+        <label class="label-field">New password</label>
+        <input type="password" class="form-input" placeholder="New password" />
+      </div>
+      <div>
+        <label class="label-field">Confirm new password</label>
+        <input type="password" class="form-input" placeholder="Confirm" />
+      </div>
+      <button type="button" class="btn-primary" style="align-self:flex-start;"><i class="fas fa-key"></i> Update password</button>
+    </div>
+  </div>
 
-        // Add mobile menu toggle functionality
-        function toggleSidebar() {
-            const sidebar = document.querySelector('.sidebar');
-            sidebar.classList.toggle('open');
-        }
+  <div class="settings-card settings-danger">
+    <h3 style="font-size:1.125rem;font-weight:600;color:#fca5a5;margin-bottom:1rem;">Danger zone</h3>
+    <div class="danger-box">
+      <h4 style="font-weight:600;color:#fecaca;margin-bottom:0.5rem;">Delete account</h4>
+      <p class="text-sm text-muted mb-4">Permanently delete your account and associated data. This cannot be undone.</p>
+      <button type="button" class="btn-danger"><i class="fas fa-trash"></i> Delete account</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
 
-        // Add mobile menu button for small screens
-        if (window.innerWidth <= 768) {
-            const header = document.querySelector('header');
-            const menuButton = document.createElement('button');
-            menuButton.innerHTML = '<i class="fas fa-bars"></i>';
-            menuButton.className = 'md:hidden p-2 rounded-lg bg-gray-700 text-white';
-            menuButton.onclick = toggleSidebar;
-            header.querySelector('.flex').prepend(menuButton);
-        }
-    </script>
-</body>
+{% block extra_scripts %}
+<script>
+(function () {
+  async function loadMe() {
+    var res = await fetch('/api/me', { credentials: 'same-origin' });
+    if (res.status === 401) { window.location.href = '/login'; return; }
+    if (!res.ok) return;
+    var me = await res.json();
+    document.getElementById('profileFullName').value = me.full_name || '';
+    document.getElementById('profileEmail').value = me.email || '';
+    document.getElementById('profileJobTitle').value = me.job_title || '';
+    document.getElementById('profileCompany').value = me.company || '';
+    if (window.HireFastApplySidebarFromUser) window.HireFastApplySidebarFromUser(me);
 
-</html>
+    var dot = document.getElementById('liConnDot');
+    var lbl = document.getElementById('liConnLabel');
+    var btnSpan = document.querySelector('#liConnBtn span');
+    if (me.linkedin_connected) {
+      dot.classList.add('status-connected');
+      dot.classList.remove('status-disconnected');
+      lbl.textContent = 'Connected';
+      if (btnSpan) btnSpan.textContent = 'Reconnect';
+    } else {
+      dot.classList.remove('status-connected');
+      dot.classList.add('status-disconnected');
+      lbl.textContent = 'Session expired — sign in again';
+      if (btnSpan) btnSpan.textContent = 'Connect';
+    }
+  }
+
+  document.getElementById('profileSaveBtn').addEventListener('click', async function () {
+    var msg = document.getElementById('profileSaveMsg');
+    msg.classList.remove('hidden', 'text-green-400', 'text-red-400');
+    var body = {
+      full_name: document.getElementById('profileFullName').value,
+      email: document.getElementById('profileEmail').value,
+      job_title: document.getElementById('profileJobTitle').value,
+      company: document.getElementById('profileCompany').value
+    };
+    var res = await fetch('/api/me/profile', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify(body)
+    });
+    msg.classList.remove('hidden');
+    if (res.ok) {
+      msg.textContent = 'Saved.';
+      msg.classList.add('text-green-400');
+      loadMe();
+    } else {
+      msg.textContent = 'Could not save.';
+      msg.classList.add('text-red-400');
+    }
+  });
+
+  document.querySelector('input[type="range"]').addEventListener('input', function () {
+    var el = document.getElementById('threshLabel');
+    if (el) el.textContent = 'Current: ' + this.value + '%';
+  });
+
+  document.addEventListener('DOMContentLoaded', loadMe);
+})();
+</script>
+{% endblock %}

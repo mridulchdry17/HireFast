@@ -1,780 +1,141 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard – HireFast</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@700&display=swap');
+{% extends "base_app.html" %}
+{% block title %}Dashboard – HireFast{% endblock %}
+{% block mobile_title %}Dashboard{% endblock %}
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { height: 100%; }
-    body {
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      background: #070b14;
-      color: #f1f5f9;
-      min-height: 100dvh;
-      overflow-x: hidden;
-    }
+{% block page_header %}
+<div class="page-header">
+  <div>
+    <div class="live-badge">Live data <span class="live-dot"></span></div>
+    <h2 class="page-title">Dashboard</h2>
+    <p class="page-sub">Welcome back. Metrics below are pulled from your HireFast database (jobs, applications, AI interviews).</p>
+    <p class="api-status" id="apiStatus">API: <span id="apiStatusText">connecting…</span></p>
+  </div>
+  <a href="/" class="open-btn" id="openBtn" style="align-self:flex-start;margin-top:20px">
+    Open full HireFast <span class="arr">↗</span>
+  </a>
+</div>
+{% endblock %}
 
-    /* ── background blobs (exact React values) ── */
-    .blob {
-      pointer-events: none;
-      position: fixed;
-      border-radius: 50%;
-      z-index: 0;
-    }
-    /* -left-40 top-0 h-[420px] w-[420px] bg-indigo-600/25 blur-[100px] */
-    .blob-l { width:420px; height:420px; background:rgba(99,102,241,.25); top:0; left:-160px; filter:blur(100px); }
-    /* -right-32 bottom-0 h-[380px] w-[380px] bg-violet-600/20 blur-[90px] */
-    .blob-r { width:380px; height:380px; background:rgba(139,92,246,.20); bottom:0; right:-128px; filter:blur(90px); }
-    /* left-1/2 top-24 h-64 w-[80%] max-w-3xl bg-cyan-500/10 blur-[80px] */
-    .blob-c {
-      width:80%; max-width:768px; height:256px;
-      background:rgba(6,182,212,.10);
-      top:96px; left:50%; transform:translateX(-50%);
-      filter:blur(80px);
-    }
+{% block content %}
+<div class="err-banner" id="errBanner"></div>
 
-    /* ── grid backdrop (opacity[0.14] over the main content) ── */
-    .grid-bg {
-      pointer-events: none;
-      position: absolute;
-      inset: 0;
-      opacity: 0.14;
-      background-image:
-        linear-gradient(rgba(148,163,184,.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(148,163,184,.06) 1px, transparent 1px);
-      background-size: 32px 32px;
-      z-index: 0;
-    }
+<div class="stat-grid" id="statGrid">
+  <div class="skeleton"></div>
+  <div class="skeleton"></div>
+  <div class="skeleton"></div>
+  <div class="skeleton"></div>
+</div>
 
-    /* ── app layout ── */
-    .app {
-      position: relative;
-      display: flex;
-      min-height: 100dvh;
-      overflow: hidden;
-    }
+<div class="bottom-grid">
+  <div class="panel">
+    <h3>Quick actions</h3>
+    <p class="sub">Jump straight into the full workflow.</p>
+    <div class="qa-wrap">
+      <a href="/job-posting" class="qa-btn qa-primary"><span style="font-size:1.1rem;line-height:1">+</span> Create job post</a>
+      <a href="/candidates" class="qa-btn qa-secondary">View candidates</a>
+      <a href="/scheduling" class="qa-btn qa-secondary">Schedule interviews</a>
+    </div>
+  </div>
+  <div class="panel">
+    <h3>Recent activity</h3>
+    <p class="sub">Latest applications, jobs, and AI interviews.</p>
+    <ul class="act-list" id="actList">
+      <li class="act-empty">Loading…</li>
+    </ul>
+  </div>
+</div>
 
-    /* ── sidebar ──
-       React: fixed inset-y-0 left-0 z-40 flex w-[min(18rem,92vw)] … border-r border-white/[0.07]
-              bg-[#0a0f1c]/95 … backdrop-blur-xl … md:static md:w-72 md:min-w-[18rem] */
-    .sidebar {
-      position: relative;
-      z-index: 10;
-      width: 288px;        /* 18rem */
-      min-width: 288px;
-      display: flex;
-      flex-direction: column;
-      background: rgba(10,15,28,.95);
-      border-right: 1px solid rgba(255,255,255,.07);
-      backdrop-filter: blur(24px);
-      flex-shrink: 0;
-    }
+<div class="workflow-strip">
+  <h3 class="wf-h3">Current hiring workflow</h3>
+  <div id="wfBody"><p class="wf-empty">Loading…</p></div>
+</div>
+{% endblock %}
 
-    /* logo */
-    .sb-logo {
-      padding: 20px 24px 20px;
-      border-bottom: 1px solid rgba(255,255,255,.10);
-    }
-    /* from-blue-300 via-indigo-300 to-violet-300 */
-    .sb-logo h1 {
-      font-size: 1.125rem;
-      font-weight: 700;
-      letter-spacing: -.02em;
-      background: linear-gradient(135deg, #93c5fd 0%, #a5b4fc 50%, #c4b5fd 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-    .sb-logo p { font-size: .75rem; color: #94a3b8; margin-top: 4px; }
-
-    /* nav */
-    .sb-nav {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      padding: 10px 10px;
-      overflow-y: auto;
-    }
-    /* React: rounded-xl px-3 py-2.5 text-sm gap-2 */
-    .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 12px;
-      border-radius: 12px;
-      font-size: .875rem;
-      font-weight: 500;
-      color: #94a3b8;
-      text-decoration: none;
-      transition: background .18s, color .18s;
-      position: relative;
-    }
-    /* hover dot — React: h-1.5 w-1.5 rounded-full bg-white/40 opacity-0 group-hover:opacity-100 */
-    .nav-item .hover-dot {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: rgba(255,255,255,.40);
-      opacity: 0;
-      flex-shrink: 0;
-      transition: opacity .18s;
-    }
-    .nav-item:hover .hover-dot { opacity: 1; }
-    .nav-item:hover { background: rgba(255,255,255,.06); color: #fff; }
-    /* active: from-indigo-600/90 to-violet-600/90 shadow-lg shadow-indigo-900/40 */
-    .nav-item.active {
-      background: linear-gradient(135deg, rgba(79,70,229,.90) 0%, rgba(109,40,217,.90) 100%);
-      color: #fff;
-      box-shadow: 0 4px 20px rgba(49,46,129,.45);
-    }
-    .nav-item.active .hover-dot { display: none; }
-
-    /* sidebar footer */
-    .sb-footer {
-      padding: 12px 16px;
-      border-top: 1px solid rgba(255,255,255,.10);
-    }
-    /* React: h-10 w-10 rounded-2xl from-indigo-500 to-violet-600 shadow-inner shadow-white/10 */
-    .sb-avatar {
-      width: 40px; height: 40px; border-radius: 16px;
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
-      display: flex; align-items: center; justify-content: center;
-      font-size: .875rem; font-weight: 600; color: #fff;
-      overflow: hidden; flex-shrink: 0;
-      box-shadow: inset 0 1px 3px rgba(255,255,255,.12);
-    }
-    .sb-avatar img { width:100%; height:100%; object-fit:cover; display:none; border-radius:16px; }
-    .sb-user-row { display: flex; align-items: center; gap: 12px; }
-    .sb-user-info { min-width: 0; }
-    .sb-user-info .name { font-size: .875rem; font-weight: 500; color: #fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .sb-user-info .role { font-size: .75rem; color: #64748b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-
-    .logout-btn {
-      display: flex; align-items: center; gap: 8px;
-      padding: 9px 12px; border-radius: 10px; margin-top: 8px;
-      font-size: .8rem; font-weight: 500; color: #64748b;
-      background: none; border: none; cursor: pointer; width: 100%;
-      text-decoration: none; transition: background .18s, color .18s;
-    }
-    .logout-btn:hover { background: rgba(255,255,255,.06); color: #f1f5f9; }
-
-    /* ── mobile overlay ── */
-    .sb-overlay {
-      display: none;
-      position: fixed; inset: 0; z-index: 9;
-      background: rgba(0,0,0,.70);
-      backdrop-filter: blur(4px);
-    }
-    .sb-overlay.show { display: block; }
-
-    /* ── main wrap ── */
-    .main-wrap { flex: 1; min-width: 0; display: flex; flex-direction: column; position: relative; z-index: 1; }
-
-    /* mobile topbar: sticky top-0 z-20 … border-b border-white/[0.06] bg-[#070b14]/85 px-3 py-3 backdrop-blur-xl */
-    .topbar {
-      display: none;
-      position: sticky; top: 0; z-index: 8;
-      align-items: center; gap: 12px;
-      padding: 12px 12px;
-      background: rgba(7,11,20,.85);
-      border-bottom: 1px solid rgba(255,255,255,.06);
-      backdrop-filter: blur(24px);
-    }
-    .topbar-title { font-size: .875rem; font-weight: 700; color: #fff; }
-    .menu-btn {
-      display: inline-flex; align-items: center; justify-content: center;
-      border-radius: 12px; border: 1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.05);
-      padding: 8px; color: #e2e8f0; cursor: pointer;
-      transition: background .18s;
-    }
-    .menu-btn:hover { background: rgba(255,255,255,.10); }
-    .menu-btn svg { width: 20px; height: 20px; }
-
-    /* ── content ── */
-    .content {
-      flex: 1; overflow-y: auto;
-      position: relative;
-    }
-    .content-inner {
-      position: relative; z-index: 10;
-      max-width: 1280px; margin: 0 auto;
-      padding: 32px 40px;
-    }
-
-    /* ── page header ── */
-    .page-header {
-      margin-bottom: 32px;
-      display: flex; flex-wrap: wrap; gap: 24px;
-      align-items: flex-start; justify-content: space-between;
-    }
-
-    /* live badge: rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] */
-    .live-badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 4px 12px; border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
-      font-size: .6875rem; font-weight: 500;
-      text-transform: uppercase; letter-spacing: .06em; color: #94a3b8;
-      margin-bottom: 12px;
-    }
-    /* animate-pulse rounded-full bg-emerald-400  h-1.5 w-1.5 */
-    .live-dot {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: #34d399;
-      animation: pulse 1.8s ease-in-out infinite;
-    }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
-
-    /* mt-3 text-3xl font-bold tracking-tight sm:text-4xl */
-    .page-title { font-size: 2rem; font-weight: 700; letter-spacing: -.03em; color: #fff; }
-    /* mt-2 text-sm text-slate-400 */
-    .page-sub   { font-size: .875rem; color: #94a3b8; margin-top: 8px; max-width: 512px; line-height: 1.6; }
-    /* mt-2 text-xs text-slate-500 */
-    .api-status { font-size: .75rem; color: #475569; margin-top: 8px; }
-    .api-ok  { color: rgba(52,211,153,.90); }
-    .api-err { color: #fca5a5; }
-
-    /* open-full btn: rounded-full border border-white/10 bg-white/[0.06] px-4 py-2 text-xs */
-    .open-btn {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 8px 16px; border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.06);
-      font-size: .75rem; font-weight: 500; color: #e2e8f0;
-      text-decoration: none; white-space: nowrap; flex-shrink: 0;
-      transition: background .18s, border-color .18s;
-    }
-    .open-btn:hover { background: rgba(255,255,255,.10); border-color: rgba(255,255,255,.20); }
-    .open-btn .arr { color: #64748b; }
-
-    /* ── error banner ── */
-    .err-banner {
-      display: none; margin-bottom: 24px;
-      padding: 12px 16px; border-radius: 16px;
-      border: 1px solid rgba(251,191,36,.35);
-      background: linear-gradient(90deg, rgba(251,191,36,.10), transparent);
-      font-size: .875rem; color: #fde68a;
-      backdrop-filter: blur(4px);
-    }
-
-    /* ── stat grid ── */
-    /* React: grid gap-4 sm:grid-cols-2 xl:grid-cols-4 */
-    .stat-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      margin-bottom: 40px;
-    }
-
-    /* React: rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.07] to-white/[0.02] p-5
-              shadow-xl shadow-black/20  hover:border-white/[0.14] hover:shadow-2xl */
-    .stat-card {
-      position: relative; overflow: hidden;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,.08);
-      background: linear-gradient(180deg, rgba(255,255,255,.07) 0%, rgba(255,255,255,.02) 100%);
-      padding: 20px;
-      box-shadow: 0 20px 25px -5px rgba(0,0,0,.20), 0 8px 10px -6px rgba(0,0,0,.20);
-      transition: border-color .3s, box-shadow .3s;
-    }
-    .stat-card:hover {
-      border-color: rgba(255,255,255,.14);
-      box-shadow: 0 25px 50px -12px rgba(0,0,0,.55);
-    }
-    /* hover glow: absolute -right-8 -top-8 h-32 w-32 rounded-full … opacity-20 blur-2xl */
-    .stat-glow {
-      pointer-events: none;
-      position: absolute;
-      width: 128px; height: 128px; border-radius: 50%;
-      top: -32px; right: -32px;
-      opacity: 0;
-      filter: blur(24px);
-      transition: opacity .5s;
-    }
-    .stat-card:hover .stat-glow { opacity: .20; }
-
-    /* top row: flex items-start justify-between gap-3 */
-    .stat-top { position: relative; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-    /* text-xs font-medium uppercase tracking-wide text-slate-500 */
-    .stat-label { font-size: .75rem; font-weight: 500; text-transform: uppercase; letter-spacing: .05em; color: #64748b; }
-    /* h-11 w-11 rounded-2xl shadow-lg ring-1 ring-white/10 */
-    .stat-icon {
-      width: 44px; height: 44px; border-radius: 14px; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 10px 15px -3px rgba(0,0,0,.30);
-      outline: 1px solid rgba(255,255,255,.10);
-    }
-    .stat-icon svg { width: 20px; height: 20px; opacity: .95; }
-    /* mt-4 font-mono text-3xl font-bold tabular-nums tracking-tight */
-    .stat-value {
-      position: relative;
-      font-family: 'JetBrains Mono', 'Fira Mono', monospace;
-      font-size: 2rem; font-weight: 700;
-      letter-spacing: -.04em; color: #fff;
-      margin-top: 16px;
-      font-variant-numeric: tabular-nums;
-    }
-    /* mt-2 text-xs text-slate-500 */
-    .stat-hint { position: relative; font-size: .75rem; color: #64748b; margin-top: 8px; }
-
-    /* skeleton: h-[140px] animate-pulse rounded-2xl border border-white/5 bg-white/[0.04] */
-    .skeleton {
-      height: 140px; border-radius: 16px;
-      border: 1px solid rgba(255,255,255,.05);
-      background: rgba(255,255,255,.04);
-      position: relative; overflow: hidden;
-    }
-    .skeleton::after {
-      content: '';
-      position: absolute; inset: 0;
-      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.06) 50%, transparent 100%);
-      animation: shimmer 1.6s infinite;
-    }
-    @keyframes shimmer { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
-
-    /* icon gradient helpers (matching Tailwind values) */
-    .g-blue   { background: linear-gradient(135deg, #6366f1, #3b82f6, #06b6d4); }  /* indigo→blue→cyan */
-    .g-green  { background: linear-gradient(135deg, #10b981, #14b8a6); }            /* emerald→teal */
-    .g-fuchsia{ background: linear-gradient(135deg, #d946ef, #8b5cf6); }            /* fuchsia→violet */
-    .g-amber  { background: linear-gradient(135deg, #f59e0b, #f97316); }            /* amber→orange */
-
-    .glow-blue   { background: linear-gradient(135deg, #6366f1, #06b6d4); }
-    .glow-green  { background: linear-gradient(135deg, #10b981, #14b8a6); }
-    .glow-fuchsia{ background: linear-gradient(135deg, #d946ef, #8b5cf6); }
-    .glow-amber  { background: linear-gradient(135deg, #f59e0b, #f97316); }
-
-    /* ── bottom 2-col grid ── */
-    /* React: mt-10 grid gap-6 lg:grid-cols-2 */
-    .bottom-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 40px; }
-
-    /* React panels: rounded-2xl border border-white/[0.08] bg-gradient-to-b from-white/[0.06] to-transparent p-6 shadow-xl */
-    .panel {
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,.08);
-      background: linear-gradient(180deg, rgba(255,255,255,.06) 0%, transparent 100%);
-      padding: 24px;
-      box-shadow: 0 20px 25px -5px rgba(0,0,0,.20), 0 8px 10px -6px rgba(0,0,0,.20);
-    }
-    .panel h3 { font-size: 1.125rem; font-weight: 600; color: #fff; }
-    .panel .sub { font-size: .875rem; color: #64748b; margin-top: 4px; margin-bottom: 20px; }
-
-    /* quick action buttons */
-    .qa-wrap { display: flex; flex-direction: column; gap: 8px; }
-    .qa-btn {
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      border-radius: 12px;
-      padding: 14px 16px;
-      font-size: .875rem; font-weight: 600; text-decoration: none;
-      transition: filter .18s, background .18s, color .18s;
-      cursor: pointer;
-    }
-    /* from-blue-600 to-indigo-600 shadow-lg shadow-indigo-900/40 hover:brightness-110 */
-    .qa-primary {
-      background: linear-gradient(135deg, #2563eb, #4f46e5);
-      color: #fff;
-      box-shadow: 0 8px 24px rgba(49,46,129,.40);
-    }
-    .qa-primary:hover { filter: brightness(1.12); }
-    /* border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] text-slate-200 */
-    .qa-secondary {
-      background: rgba(255,255,255,.04);
-      color: #cbd5e1;
-      border: 1px solid rgba(255,255,255,.10);
-    }
-    .qa-secondary:hover { background: rgba(255,255,255,.08); color: #fff; }
-
-    /* activity list */
-    /* React: ul mt-5 space-y-0 → li flex gap-3 border-b border-white/[0.05] py-3 last:border-0 */
-    .act-list { list-style: none; margin-top: 20px; }
-    .act-item {
-      display: flex; gap: 12px;
-      padding: 12px 0;
-      border-bottom: 1px solid rgba(255,255,255,.05);
-    }
-    .act-item:last-child { border-bottom: none; }
-    /* dot column: relative flex flex-col items-center pt-1.5 */
-    .act-dot-col { position: relative; display: flex; flex-direction: column; align-items: center; padding-top: 6px; }
-    /* h-2.5 w-2.5 rounded-full */
-    .act-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-    /* absolute top-4 h-full w-px bg-gradient-to-b from-white/15 to-transparent */
-    .act-line {
-      position: absolute; top: 16px;
-      width: 1px; height: 100%;
-      background: linear-gradient(to bottom, rgba(255,255,255,.15), transparent);
-    }
-    .act-body { min-width: 0; flex: 1; }
-    /* text-sm font-medium leading-snug text-slate-100 */
-    .act-title { font-size: .875rem; font-weight: 500; line-height: 1.35; color: #f1f5f9; }
-    /* mt-0.5 truncate text-xs text-slate-500 */
-    .act-detail { font-size: .75rem; color: #64748b; margin-top: 2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    /* mt-1 text-[11px] text-slate-600 */
-    .act-time   { font-size: .6875rem; color: #475569; margin-top: 4px; }
-    .act-empty  { font-size: .875rem; color: #64748b; text-align: center; padding: 32px 0; }
-
-    /* dot accent colours – matching accentRing() */
-    .dot-emerald { background: #34d399; box-shadow: 0 0 12px rgba(52,211,153,.45); }
-    .dot-sky      { background: #38bdf8; box-shadow: 0 0 12px rgba(56,189,248,.45); }
-    .dot-violet   { background: #a78bfa; box-shadow: 0 0 12px rgba(167,139,250,.45); }
-    .dot-gray     { background: #64748b; }
-
-    /* ── workflow strip ──
-       React: mt-6 rounded-2xl border border-white/[0.08] bg-gradient-to-r from-indigo-950/40 via-slate-900/40 to-violet-950/40 p-6 */
-    .workflow-strip {
-      margin-top: 24px;
-      border-radius: 16px;
-      border: 1px solid rgba(255,255,255,.08);
-      background: linear-gradient(135deg,
-        rgba(30,27,75,.40) 0%,
-        rgba(15,23,42,.40) 50%,
-        rgba(46,16,101,.40) 100%);
-      padding: 24px;
-      box-shadow: 0 25px 50px -12px rgba(0,0,0,.30);
-    }
-    .wf-h3 { font-size: 1.125rem; font-weight: 600; color: #fff; }
-    /* sm:flex-row sm:items-center sm:justify-between */
-    .wf-row { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: space-between; margin-top: 16px; }
-    /* text-xs font-medium uppercase tracking-wide text-indigo-300/80 */
-    .wf-sublabel { font-size: .75rem; font-weight: 500; text-transform: uppercase; letter-spacing: .05em; color: rgba(165,180,252,.80); }
-    /* mt-1 truncate text-xl font-semibold */
-    .wf-role { font-size: 1.25rem; font-weight: 600; color: #fff; margin-top: 4px; overflow:hidden; text-overflow:ellipsis; }
-    /* mt-0.5 text-sm text-slate-400 */
-    .wf-company { font-size: .875rem; color: #94a3b8; margin-top: 2px; }
-    /* border-emerald-500/30 bg-emerald-500/15 px-4 py-2 text-xs font-semibold uppercase … text-emerald-200 */
-    .wf-badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 8px 16px; border-radius: 999px;
-      border: 1px solid rgba(52,211,153,.30);
-      background: rgba(52,211,153,.15);
-      font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
-      color: #a7f3d0; flex-shrink: 0;
-    }
-    .wf-badge svg { width: 16px; height: 16px; }
-    .wf-empty { font-size: .875rem; color: #64748b; margin-top: 12px; }
-    .wf-empty a { color: #a5b4fc; }
-
-    /* ── responsive ── */
-    @media (max-width: 1280px) { .stat-grid { grid-template-columns: repeat(2,1fr); } }
-    @media (max-width: 900px)  { .bottom-grid { grid-template-columns: 1fr; } }
-    @media (max-width: 768px) {
-      .sidebar {
-        position: fixed; inset-y: 0; left: 0; z-index: 10;
-        transform: translateX(-100%);
-        transition: transform .3s cubic-bezier(.4,0,.2,1);
-        box-shadow: 0 25px 50px -12px rgba(0,0,0,.40);
-      }
-      .sidebar.open { transform: translateX(0); }
-      .topbar { display: flex; }
-      .content-inner { padding: 16px; }
-      .page-title { font-size: 1.75rem; }
-      .page-header { gap: 16px; }
-    }
-    @media (max-width: 600px) { .stat-grid { grid-template-columns: 1fr; } }
-  </style>
-</head>
-<body>
-
-  <!-- blobs -->
-  <div class="blob blob-l" aria-hidden="true"></div>
-  <div class="blob blob-r" aria-hidden="true"></div>
-  <div class="blob blob-c" aria-hidden="true"></div>
-
-  <!-- mobile sidebar overlay -->
-  <div class="sb-overlay" id="sbOverlay" onclick="closeSidebar()"></div>
-
-  <div class="app">
-
-    <!-- ───────────── SIDEBAR ───────────── -->
-    <aside class="sidebar" id="sidebar">
-
-      <div class="sb-logo">
-        <h1>HireFast</h1>
-        <p>AI-Powered HR Automation</p>
-      </div>
-
-      <nav class="sb-nav">
-        <a href="/dashboard"        class="nav-item active"><span class="hover-dot"></span>Dashboard</a>
-        <a href="/job-posting"      class="nav-item"><span class="hover-dot"></span>Create Job Post</a>
-        <a href="/candidates"       class="nav-item"><span class="hover-dot"></span>Candidates</a>
-        <a href="/scheduling"       class="nav-item"><span class="hover-dot"></span>Schedule Interviews</a>
-        <a href="/connect-calendar" class="nav-item"><span class="hover-dot"></span>Connect Calendar</a>
-        <a href="/analytics"        class="nav-item"><span class="hover-dot"></span>Analytics</a>
-        <a href="/settings"         class="nav-item"><span class="hover-dot"></span>Settings</a>
-      </nav>
-
-      <div class="sb-footer">
-        <div class="sb-user-row">
-          <div class="sb-avatar" id="sidebarAvatar">
-            <img id="sidebarAvatarImg" alt="" />
-            <span id="sidebarAvatarText">…</span>
-          </div>
-          <div class="sb-user-info">
-            <p class="name" id="sidebarName">…</p>
-            <p class="role" id="sidebarTitle">…</p>
-          </div>
-        </div>
-        <button class="logout-btn" onclick="logout()">
-          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-          Logout
-        </button>
-      </div>
-
-    </aside>
-
-    <!-- ───────────── MAIN ───────────── -->
-    <div class="main-wrap">
-
-      <!-- mobile header -->
-      <header class="topbar">
-        <button class="menu-btn" onclick="toggleSidebar()" aria-label="Open menu">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-        </button>
-        <span class="topbar-title">Dashboard</span>
-      </header>
-
-      <main class="content">
-        <!-- grid backdrop inside scrollable area -->
-        <div class="grid-bg" aria-hidden="true"></div>
-
-        <div class="content-inner">
-
-          <!-- page header -->
-          <div class="page-header">
-            <div>
-              <div class="live-badge">Live data <span class="live-dot"></span></div>
-              <h2 class="page-title">Dashboard</h2>
-              <p class="page-sub">Welcome back. Metrics below are pulled from your HireFast database (jobs, applications, AI interviews).</p>
-              <p class="api-status" id="apiStatus">API: <span id="apiStatusText">connecting…</span></p>
-            </div>
-            <a href="/" class="open-btn" id="openBtn" style="align-self:flex-start;margin-top:20px">
-              Open full HireFast <span class="arr">↗</span>
-            </a>
-          </div>
-
-          <!-- error banner -->
-          <div class="err-banner" id="errBanner"></div>
-
-          <!-- stat cards -->
-          <div class="stat-grid" id="statGrid">
-            <div class="skeleton"></div>
-            <div class="skeleton"></div>
-            <div class="skeleton"></div>
-            <div class="skeleton"></div>
-          </div>
-
-          <!-- bottom 2-col -->
-          <div class="bottom-grid">
-
-            <!-- quick actions -->
-            <div class="panel">
-              <h3>Quick actions</h3>
-              <p class="sub">Jump straight into the full workflow.</p>
-              <div class="qa-wrap">
-                <a href="/job-posting" class="qa-btn qa-primary">
-                  <span style="font-size:1.1rem;line-height:1">+</span> Create job post
-                </a>
-                <a href="/candidates"  class="qa-btn qa-secondary">View candidates</a>
-                <a href="/scheduling"  class="qa-btn qa-secondary">Schedule interviews</a>
-              </div>
-            </div>
-
-            <!-- recent activity -->
-            <div class="panel">
-              <h3>Recent activity</h3>
-              <p class="sub">Latest applications, jobs, and AI interviews.</p>
-              <ul class="act-list" id="actList">
-                <li class="act-empty">Loading…</li>
-              </ul>
-            </div>
-
-          </div>
-
-          <!-- workflow strip -->
-          <div class="workflow-strip">
-            <h3 class="wf-h3">Current hiring workflow</h3>
-            <div id="wfBody">
-              <p class="wf-empty">Loading…</p>
-            </div>
-          </div>
-
-        </div><!-- /content-inner -->
-      </main>
-    </div><!-- /main-wrap -->
-  </div><!-- /app -->
-
-  <!-- shared sidebar profile loader -->
-  <script src="{{ url_for('static', filename='js/sidebar-profile.js') }}"></script>
-
-  <script>
-    /* ── sidebar mobile ── */
-    function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('open');
-      document.getElementById('sbOverlay').classList.toggle('show');
-    }
-    function closeSidebar() {
-      document.getElementById('sidebar').classList.remove('open');
-      document.getElementById('sbOverlay').classList.remove('show');
-    }
-    window.addEventListener('resize', function () {
-      if (window.innerWidth > 768) closeSidebar();
+{% block extra_scripts %}
+<script>
+(function () {
+  function relTime(iso) {
+    if (!iso) return '';
+    var d = new Date(iso), sec = (Date.now() - d.getTime()) / 1000;
+    if (sec < 45) return 'just now';
+    if (sec < 3600) return Math.max(1, Math.floor(sec / 60)) + ' min ago';
+    if (sec < 86400) return Math.floor(sec / 3600) + ' hr ago';
+    if (sec < 172800) return 'yesterday';
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  }
+  function dotCls(accent) {
+    return { emerald: 'dot-emerald', sky: 'dot-sky', violet: 'dot-violet' }[accent] || 'dot-gray';
+  }
+  var SVG = {
+    briefcase: '<svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255V19a2 2 0 01-2 2H5a2 2 0 01-2-2v-5.745M21 13.255V8a2 2 0 00-2-2h-1.5M21 13.255l-3.182-1.591a2 2 0 00-1.636 0L12 13.745M5 6V4a2 2 0 012-2h10a2 2 0 012 2v2M5 6h14M5 6v7.255a2 2 0 001.118 1.79l5 2.824a2 2 0 001.764 0l5-2.824A2 2 0 0021 13.255"/></svg>',
+    users: '<svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>',
+    calendar: '<svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>',
+    check: '<svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+  };
+  function renderStats(d) {
+    var jw = d.jobs_this_week || 0, at = d.applications_today || 0, aw = d.applications_this_week || 0;
+    var iw = d.interview_sessions_this_week || 0;
+    var iv = d.interviews_engaged != null ? d.interviews_engaged : (d.ai_interview_sessions || 0);
+    var cards = [
+      { label:'Active job posts', value: d.job_count || 0, hint: jw > 0 ? '+' + jw + ' this week' : 'No new roles this week', icon: SVG.briefcase, grad:'g-blue', glow:'glow-blue' },
+      { label:'Total applications', value: d.application_count || 0, hint: at > 0 ? '+' + at + ' today' : aw > 0 ? '+' + aw + ' this week' : 'Waiting for applicants', icon: SVG.users, grad:'g-green', glow:'glow-green' },
+      { label:'Interview pipeline', value: iv, hint: iw > 0 ? iw + ' session touches this week' : 'Sessions started or completed', icon: SVG.calendar, grad:'g-fuchsia', glow:'glow-fuchsia' },
+      { label:'Completed interviews', value: d.completed_interviews_this_month || 0, hint: 'This month (AI)', icon: SVG.check, grad:'g-amber', glow:'glow-amber' }
+    ];
+    var html = '';
+    cards.forEach(function (c) {
+      html += '<div class="stat-card"><div class="stat-glow ' + c.glow + '"></div><div class="stat-top"><p class="stat-label">' + c.label + '</p><div class="stat-icon ' + c.grad + '">' + c.icon + '</div></div><p class="stat-value">' + c.value + '</p><p class="stat-hint">' + c.hint + '</p></div>';
     });
-
-    /* ── logout ── */
-    function logout() {
-      if (confirm('Are you sure you want to logout?')) window.location.href = '/logout';
+    document.getElementById('statGrid').innerHTML = html;
+  }
+  function renderActivity(items) {
+    var el = document.getElementById('actList');
+    if (!items || !items.length) {
+      el.innerHTML = '<li class="act-empty">No activity yet — create a job or receive applications.</li>';
+      return;
     }
-
-    /* ── helpers ── */
-    function relTime(iso) {
-      if (!iso) return '';
-      var d = new Date(iso), sec = (Date.now() - d.getTime()) / 1000;
-      if (sec < 45)     return 'just now';
-      if (sec < 3600)   return Math.max(1, Math.floor(sec / 60)) + ' min ago';
-      if (sec < 86400)  return Math.floor(sec / 3600) + ' hr ago';
-      if (sec < 172800) return 'yesterday';
-      return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    var html = '';
+    items.forEach(function (item, idx) {
+      var last = idx === items.length - 1;
+      html += '<li class="act-item"><div class="act-dot-col"><span class="act-dot ' + dotCls(item.accent) + '"></span>' + (last ? '' : '<span class="act-line"></span>') + '</div><div class="act-body"><p class="act-title">' + (item.title || '') + '</p>' + (item.detail ? '<p class="act-detail">' + item.detail + '</p>' : '') + '<p class="act-time">' + relTime(item.at) + '</p></div></li>';
+    });
+    el.innerHTML = html;
+  }
+  function renderWorkflow(w) {
+    var el = document.getElementById('wfBody');
+    if (!w || !w.role) {
+      el.innerHTML = '<p class="wf-empty">No job postings yet. Create one under <a href="/job-posting">Create Job Post</a>.</p>';
+      return;
     }
-
-    function dotCls(accent) {
-      return { emerald: 'dot-emerald', sky: 'dot-sky', violet: 'dot-violet' }[accent] || 'dot-gray';
-    }
-
-    /* ── SVG icons (matching the React SVG paths) ── */
-    var SVG = {
-      briefcase: '<svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255V19a2 2 0 01-2 2H5a2 2 0 01-2-2v-5.745M21 13.255V8a2 2 0 00-2-2h-1.5M21 13.255l-3.182-1.591a2 2 0 00-1.636 0L12 13.745M5 6V4a2 2 0 012-2h10a2 2 0 012 2v2M5 6h14M5 6v7.255a2 2 0 001.118 1.79l5 2.824a2 2 0 001.764 0l5-2.824A2 2 0 0021 13.255"/></svg>',
-      users: '<svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>',
-      calendar: '<svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>',
-      check: '<svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
-    };
-
-    /* ── render stat cards ── */
-    function renderStats(d) {
-      var jw = d.jobs_this_week || 0;
-      var at = d.applications_today || 0;
-      var aw = d.applications_this_week || 0;
-      var iw = d.interview_sessions_this_week || 0;
-      var iv = d.interviews_engaged != null ? d.interviews_engaged : (d.ai_interview_sessions || 0);
-
-      var cards = [
-        { label:'Active job posts',      value: d.job_count || 0,
-          hint: jw > 0 ? '+' + jw + ' this week' : 'No new roles this week',
-          icon: SVG.briefcase, grad:'g-blue', glow:'glow-blue' },
-        { label:'Total applications',    value: d.application_count || 0,
-          hint: at > 0 ? '+' + at + ' today' : aw > 0 ? '+' + aw + ' this week' : 'Waiting for applicants',
-          icon: SVG.users, grad:'g-green', glow:'glow-green' },
-        { label:'Interview pipeline',    value: iv,
-          hint: iw > 0 ? iw + ' session touches this week' : 'Sessions started or completed',
-          icon: SVG.calendar, grad:'g-fuchsia', glow:'glow-fuchsia' },
-        { label:'Completed interviews',  value: d.completed_interviews_this_month || 0,
-          hint: 'This month (AI)',
-          icon: SVG.check, grad:'g-amber', glow:'glow-amber' }
-      ];
-
-      var html = '';
-      cards.forEach(function (c) {
-        html +=
-          '<div class="stat-card">' +
-          '  <div class="stat-glow ' + c.glow + '"></div>' +
-          '  <div class="stat-top">' +
-          '    <p class="stat-label">' + c.label + '</p>' +
-          '    <div class="stat-icon ' + c.grad + '">' + c.icon + '</div>' +
-          '  </div>' +
-          '  <p class="stat-value">' + c.value + '</p>' +
-          '  <p class="stat-hint">' + c.hint + '</p>' +
-          '</div>';
-      });
-
-      document.getElementById('statGrid').innerHTML = html;
-    }
-
-    /* ── render activity ── */
-    function renderActivity(items) {
-      var el = document.getElementById('actList');
-      if (!items || !items.length) {
-        el.innerHTML = '<li class="act-empty">No activity yet — create a job or receive applications.</li>';
-        return;
-      }
-      var html = '';
-      items.forEach(function (item, idx) {
-        var last = idx === items.length - 1;
-        html +=
-          '<li class="act-item">' +
-          '  <div class="act-dot-col">' +
-          '    <span class="act-dot ' + dotCls(item.accent) + '"></span>' +
-          (last ? '' : '    <span class="act-line"></span>') +
-          '  </div>' +
-          '  <div class="act-body">' +
-          '    <p class="act-title">' + (item.title || '') + '</p>' +
-          (item.detail ? '<p class="act-detail">' + item.detail + '</p>' : '') +
-          '    <p class="act-time">' + relTime(item.at) + '</p>' +
-          '  </div>' +
-          '</li>';
-      });
-      el.innerHTML = html;
-    }
-
-    /* ── render workflow ── */
-    function renderWorkflow(w) {
-      var el = document.getElementById('wfBody');
-      if (!w || !w.role) {
-        el.innerHTML = '<p class="wf-empty">No job postings yet. Create one under <a href="/job-posting">Create Job Post</a>.</p>';
-        return;
-      }
-      el.innerHTML =
-        '<div class="wf-row">' +
-        '  <div style="min-width:0">' +
-        '    <p class="wf-sublabel">' + (w.step_label || 'Latest role') + '</p>' +
-        '    <p class="wf-role">' + w.role + '</p>' +
-        (w.company_name ? '<p class="wf-company">' + w.company_name + '</p>' : '') +
-        '  </div>' +
-        '  <span class="wf-badge">' +
-        '    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>' +
-        '    In database' +
-        '  </span>' +
-        '</div>';
-    }
-
-    /* ── main fetch ── */
-    async function loadDashboard() {
-      try {
-        var res  = await fetch('/dashboard-summary');
-        var data = await res.json();
-
-        if (!res.ok || data.error) {
-          var b = document.getElementById('errBanner');
-          b.textContent = (data && data.error) ? data.error : 'Could not load stats (' + res.status + ')';
-          b.style.display = 'block';
-          document.getElementById('statGrid').innerHTML = '';
-          document.getElementById('actList').innerHTML  = '<li class="act-empty">—</li>';
-          document.getElementById('wfBody').innerHTML   = '<p class="wf-empty">—</p>';
-          document.getElementById('apiStatusText').className = 'api-err';
-          document.getElementById('apiStatusText').textContent = 'error';
-          return;
-        }
-
-        renderStats(data);
-        renderActivity(data.recent_activity);
-        renderWorkflow(data.workflow);
-
-        var st = document.getElementById('apiStatusText');
-        st.className = 'api-ok';
-        st.textContent = 'hirefast-api — ok';
-
-      } catch(e) {
-        var b = document.getElementById('errBanner');
-        b.textContent = 'Could not reach /dashboard-summary — is Flask running?';
-        b.style.display = 'block';
-        var st = document.getElementById('apiStatusText');
-        st.className = 'api-err';
-        st.textContent = 'unreachable';
+    el.innerHTML = '<div class="wf-row"><div style="min-width:0"><p class="wf-sublabel">' + (w.step_label || 'Latest role') + '</p><p class="wf-role">' + w.role + '</p>' + (w.company_name ? '<p class="wf-company">' + w.company_name + '</p>' : '') + '</div><span class="wf-badge"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>In database</span></div>';
+  }
+  async function loadDashboard() {
+    try {
+      var res = await fetch('/dashboard-summary');
+      var data = await res.json();
+      if (!res.ok || data.error) {
+        document.getElementById('errBanner').textContent = (data && data.error) ? data.error : 'Could not load stats (' + res.status + ')';
+        document.getElementById('errBanner').style.display = 'block';
         document.getElementById('statGrid').innerHTML = '';
-        document.getElementById('actList').innerHTML  = '<li class="act-empty">—</li>';
-        document.getElementById('wfBody').innerHTML   = '<p class="wf-empty">—</p>';
+        document.getElementById('actList').innerHTML = '<li class="act-empty">—</li>';
+        document.getElementById('wfBody').innerHTML = '<p class="wf-empty">—</p>';
+        document.getElementById('apiStatusText').className = 'api-err';
+        document.getElementById('apiStatusText').textContent = 'error';
+        return;
       }
+      renderStats(data);
+      renderActivity(data.recent_activity);
+      renderWorkflow(data.workflow);
+      document.getElementById('apiStatusText').className = 'api-ok';
+      document.getElementById('apiStatusText').textContent = 'hirefast-api — ok';
+    } catch (e) {
+      document.getElementById('errBanner').textContent = 'Could not reach /dashboard-summary — is Flask running?';
+      document.getElementById('errBanner').style.display = 'block';
+      document.getElementById('apiStatusText').className = 'api-err';
+      document.getElementById('apiStatusText').textContent = 'unreachable';
     }
-
-    document.addEventListener('DOMContentLoaded', loadDashboard);
-  </script>
-</body>
-</html>
+  }
+  document.addEventListener('DOMContentLoaded', loadDashboard);
+})();
+</script>
+{% endblock %}

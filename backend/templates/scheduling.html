@@ -1,890 +1,354 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schedule Interviews - HireFast</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
-            color: #f8fafc;
-            min-height: 100vh;
-        }
-
-        .gradient-text {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .glass-effect {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .sidebar {
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(20px);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            padding: 0.75rem 1rem;
-            margin: 0.25rem 0;
-            border-radius: 0.75rem;
-            color: #cbd5e1;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-
-        .nav-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-
-        .nav-item.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .panel {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 1.5rem;
-            padding: 1.5rem;
-        }
-
-        /* Calendar */
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 4px;
-        }
-
-        .calendar-header-day {
-            text-align: center;
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: #64748b;
-            padding: 0.5rem 0;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .calendar-day {
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 0.5rem;
-            cursor: pointer;
-            font-size: 0.85rem;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            position: relative;
-            color: #94a3b8;
-        }
-
-        .calendar-day:hover {
-            background: rgba(102, 126, 234, 0.2);
-            color: white;
-        }
-
-        .calendar-day.today {
-            color: #667eea;
-            font-weight: 700;
-        }
-
-        .calendar-day.selected {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            font-weight: 700;
-        }
-
-        .calendar-day.has-interview::after {
-            content: '';
-            position: absolute;
-            bottom: 3px;
-            width: 5px;
-            height: 5px;
-            background: #10b981;
-            border-radius: 50%;
-        }
-
-        .calendar-day.other-month {
-            color: #374151;
-            cursor: default;
-        }
-
-        .calendar-day.other-month:hover {
-            background: transparent;
-        }
-
-        /* Interview Mode Selection */
-        .mode-selector {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .mode-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 1rem;
-            padding: 1rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: center;
-        }
-
-        .mode-card:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(102, 126, 234, 0.5);
-        }
-
-        .mode-card.active {
-            background: rgba(102, 126, 234, 0.15);
-            border-color: #667eea;
-        }
-
-        .mode-card i {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-            display: block;
-        }
-
-        .mode-card h4 {
-            font-size: 0.9rem;
-            font-weight: 700;
-            margin-bottom: 0.2rem;
-        }
-
-        .mode-card p {
-            font-size: 0.7rem;
-            color: #94a3b8;
-        }
-
-        /* Form */
-        .form-input {
-            background: rgba(15, 23, 42, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 0.75rem;
-            padding: 0.7rem 1rem;
-            color: #f8fafc;
-            width: 100%;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-            font-family: inherit;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: #667eea;
-            background: rgba(15, 23, 42, 0.9);
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
-        }
-
-        .form-input::placeholder {
-            color: #475569;
-        }
-
-        select.form-input {
-            cursor: pointer;
-        }
-
-        select.form-input option {
-            background: #1e293b;
-            color: #f8fafc;
-        }
-
-        input[type="time"],
-        input[type="date"] {
-            color-scheme: dark;
-        }
-
-        input[type="time"]::-webkit-calendar-picker-indicator,
-        input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(0.7);
-            cursor: pointer;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: #94a3b8;
-            margin-bottom: 0.4rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 0.8rem 1.5rem;
-            border-radius: 0.75rem;
-            font-weight: 600;
-            font-size: 0.9rem;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            width: 100%;
-            justify-content: center;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-primary:disabled {
-            opacity: 0.5;
-            transform: none;
-            cursor: not-allowed;
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.07);
-            color: #94a3b8;
-            padding: 0.8rem 1.5rem;
-            border-radius: 0.75rem;
-            font-weight: 600;
-            font-size: 0.9rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            width: 100%;
-            justify-content: center;
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.12);
-            color: white;
-        }
-
-        .loading-spinner {
-            display: inline-block;
-            width: 18px;
-            height: 18px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        .interview-item {
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 1rem;
-            padding: 1rem 1.2rem;
-            transition: all 0.2s ease;
-        }
-
-        .interview-item:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(102, 126, 234, 0.3);
-        }
-
-        .status-badge {
-            padding: 0.2rem 0.6rem;
-            border-radius: 9999px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .status-scheduled {
-            background: rgba(59, 130, 246, 0.2);
-            color: #60a5fa;
-            border: 1px solid rgba(59, 130, 246, 0.3);
-        }
-
-        .status-completed {
-            background: rgba(16, 185, 129, 0.2);
-            color: #34d399;
-            border: 1px solid rgba(16, 185, 129, 0.3);
-        }
-
-        .status-cancelled {
-            background: rgba(239, 68, 68, 0.2);
-            color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-        }
-
-        .alert {
-            padding: 0.75rem 1rem;
-            border-radius: 0.75rem;
-            margin-bottom: 1rem;
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .alert-success {
-            background: rgba(16, 185, 129, 0.15);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            color: #34d399;
-        }
-
-        .alert-error {
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #f87171;
-        }
-
-        .cal-nav-btn {
-            background: rgba(255, 255, 255, 0.07);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #94a3b8;
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-
-        .cal-nav-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-            color: white;
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                left: -100%;
-                top: 0;
-                height: 100vh;
-                width: 280px;
-                z-index: 1000;
-                transition: left 0.3s ease;
-            }
-
-            .sidebar.open {
-                left: 0;
-            }
-        }
-    </style>
-</head>
-
-<body>
-    <div class="flex h-screen">
-        <!-- Sidebar -->
-        <div class="sidebar w-64 p-6 flex-shrink-0 flex flex-col">
-            <div class="mb-8">
-                <h1 class="text-2xl font-bold gradient-text">HireFast</h1>
-                <p class="text-sm text-gray-400 mt-1">AI-Powered HR Automation</p>
-            </div>
-
-            <nav class="space-y-1">
-                <a href="/dashboard" class="nav-item"><i class="fas fa-tachometer-alt w-5 mr-3"></i>Dashboard</a>
-                <a href="/job-posting" class="nav-item"><i class="fas fa-plus-circle w-5 mr-3"></i>Create Job Post</a>
-                <a href="/candidates" class="nav-item"><i class="fas fa-users w-5 mr-3"></i>Candidates</a>
-                <a href="/scheduling" class="nav-item active"><i class="fas fa-calendar-alt w-5 mr-3"></i>Schedule
-                    Interviews</a>
-                <a href="/connect-calendar" class="nav-item"><i class="fas fa-calendar-check w-5 mr-3"></i>Connect
-                    Calendar</a>
-                <a href="/analytics" class="nav-item"><i class="fas fa-chart-line w-5 mr-3"></i>Analytics</a>
-                <a href="/settings" class="nav-item"><i class="fas fa-cog w-5 mr-3"></i>Settings</a>
-            </nav>
-
-            <div class="mt-auto pt-6">
-                <div class="flex items-center mb-4">
-                    <div id="sidebarAvatar"
-                        class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-3 overflow-hidden">
-                        <span id="sidebarAvatarText" class="text-white font-bold text-sm">…</span>
-                    </div>
-                    <div>
-                        <p id="sidebarName" class="font-semibold text-sm">…</p>
-                        <p id="sidebarTitle" class="text-xs text-gray-400">…</p>
-                    </div>
-                </div>
-                <button onclick="logout()" class="nav-item w-full text-left">
-                    <i class="fas fa-sign-out-alt w-5 mr-3"></i>Logout
-                </button>
-            </div>
-        </div>
-
-        <!-- Main Content -->
-        <div class="flex-1 flex flex-col overflow-hidden">
-            <!-- Header -->
-            <header class="glass-effect px-8 py-5 border-b border-gray-700 flex-shrink-0">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h2 class="text-2xl font-bold">Schedule Interviews</h2>
-                        <p class="text-gray-400 text-sm mt-0.5">Manage and schedule candidate interviews</p>
-                    </div>
-                    <div class="flex items-center space-x-3">
-                        <div id="statusDot" class="w-2.5 h-2.5 bg-red-500 rounded-full"></div>
-                        <span id="statusText" class="text-sm text-gray-400">Checking calendar…</span>
-                        <a id="connectCalendarBtn" href="/connect-calendar"
-                            class="hidden ml-3 px-4 py-2 text-sm font-semibold rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:opacity-90 transition">
-                            <i class="fas fa-plug mr-1"></i> Connect Calendar
-                        </a>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Page Body: 3-column layout -->
-            <main class="flex-1 overflow-y-auto p-6">
-                <div class="grid grid-cols-1 xl:grid-cols-3 gap-6 h-full">
-
-                    <!-- LEFT: Calendar -->
-                    <div class="xl:col-span-1 space-y-4">
-                        <div class="panel">
-                            <!-- Month navigation -->
-                            <div class="flex items-center justify-between mb-4">
-                                <button class="cal-nav-btn" onclick="changeMonth(-1)"><i
-                                        class="fas fa-chevron-left text-xs"></i></button>
-                                <h3 id="calendarTitle" class="text-base font-bold"></h3>
-                                <button class="cal-nav-btn" onclick="changeMonth(1)"><i
-                                        class="fas fa-chevron-right text-xs"></i></button>
-                            </div>
-
-                            <!-- Day headers -->
-                            <div class="calendar-grid mb-1">
-                                <div class="calendar-header-day">Su</div>
-                                <div class="calendar-header-day">Mo</div>
-                                <div class="calendar-header-day">Tu</div>
-                                <div class="calendar-header-day">We</div>
-                                <div class="calendar-header-day">Th</div>
-                                <div class="calendar-header-day">Fr</div>
-                                <div class="calendar-header-day">Sa</div>
-                            </div>
-                            <div id="calendarGrid" class="calendar-grid"></div>
-
-                            <!-- Legend -->
-                            <div class="flex items-center gap-4 mt-4 pt-3 border-t border-gray-700">
-                                <div class="flex items-center gap-1.5 text-xs text-gray-400">
-                                    <span class="inline-block w-2 h-2 bg-green-500 rounded-full"></span> Has interview
-                                </div>
-                                <div class="flex items-center gap-1.5 text-xs text-gray-400">
-                                    <span
-                                        class="inline-block w-4 h-4 rounded bg-gradient-to-br from-purple-500 to-blue-500 opacity-70"></span>
-                                    Selected
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Upcoming interviews list -->
-                        <div class="panel">
-                            <h3 class="text-sm font-bold text-gray-300 mb-3 uppercase tracking-wider">Upcoming
-                                Interviews</h3>
-                            <div id="upcomingList" class="space-y-2 text-sm text-gray-400">
-                                <p class="text-center py-4 text-gray-600">No upcoming interviews</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- RIGHT: Inline Schedule Form -->
-                    <div class="xl:col-span-2">
-                        <div class="panel h-full flex flex-col">
-                            <div class="flex items-center gap-3 mb-6">
-                                <div
-                                    class="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center">
-                                    <i class="fas fa-calendar-plus text-white text-sm"></i>
-                                </div>
-                                <div>
-                                    <h3 class="text-lg font-bold">Schedule New Interview</h3>
-                                    <p id="selectedDateLabel" class="text-xs text-gray-400 mt-0.5">Select a date from
-                                        the calendar or fill in manually</p>
-                                </div>
-                            </div>
-
-                            <!-- Alert area -->
-                            <div id="alertArea"></div>
-
-                            <form id="scheduleForm" class="flex-1 flex flex-col gap-4">
-                                <!-- Interview Mode Toggle -->
-                                <div>
-                                    <label class="form-label">Interview Mode</label>
-                                    <div class="mode-selector">
-                                        <div class="mode-card active" id="modeHuman"
-                                            onclick="setInterviewMode('human')">
-                                            <i class="fas fa-video text-blue-400"></i>
-                                            <h4>Human Interview</h4>
-                                            <p>GMeet invite sent via Calendar</p>
-                                        </div>
-                                        <div class="mode-card" id="modeAI" onclick="setInterviewMode('ai')">
-                                            <i class="fas fa-robot text-purple-400"></i>
-                                            <h4>AI Screening</h4>
-                                            <p>Self-paced link (48h window)</p>
-                                        </div>
-                                    </div>
-                                    <input type="hidden" id="interviewMode" value="human">
-                                </div>
-                                <!-- Row 1 -->
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="form-label">Candidate Name <span
-                                                class="text-purple-400">*</span></label>
-                                        <input type="text" id="candidateName" class="form-input"
-                                            placeholder="e.g. John Smith" required>
-                                    </div>
-                                    <div>
-                                        <label class="form-label">Candidate Email <span
-                                                class="text-purple-400">*</span></label>
-                                        <input type="email" id="candidateEmail" class="form-input"
-                                            placeholder="candidate@email.com" required>
-                                    </div>
-                                </div>
-
-                                <!-- Row 2 -->
-                                <div>
-                                    <label class="form-label">Position</label>
-                                    <input type="text" id="position" class="form-input"
-                                        placeholder="e.g. Software Engineer">
-                                </div>
-
-                                <!-- Row 3: Date + Time + Duration -->
-                                <div class="grid grid-cols-3 gap-4" id="dateTimeRow">
-                                    <div>
-                                        <label class="form-label" id="dateLabel">Interview Date <span
-                                                class="text-purple-400">*</span></label>
-                                        <input type="date" id="interviewDate" class="form-input" required>
-                                    </div>
-                                    <div class="human-only">
-                                        <label class="form-label">Interview Time <span
-                                                class="text-purple-400">*</span></label>
-                                        <input type="time" id="interviewTime" class="form-input" value="10:00" required>
-                                    </div>
-                                    <div class="human-only">
-                                        <label class="form-label">Duration</label>
-                                        <select id="duration" class="form-input">
-                                            <option value="30">30 minutes</option>
-                                            <option value="45">45 minutes</option>
-                                            <option value="60" selected>60 minutes</option>
-                                            <option value="90">90 minutes</option>
-                                            <option value="120">2 hours</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <!-- Row 4 -->
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="form-label">Interviewer Email (Optional)</label>
-                                        <input type="email" id="interviewerEmail" class="form-input"
-                                            placeholder="interviewer@company.com">
-                                    </div>
-                                    <div>
-                                        <label class="form-label">Interview Type</label>
-                                        <select id="interviewType" class="form-input">
-                                            <option>Video Call (Google Meet)</option>
-                                            <option>Phone Screen</option>
-                                            <option>In-Person</option>
-                                            <option>Technical Assessment</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <!-- Row 5: Notes -->
-                                <div>
-                                    <label class="form-label">Notes (Optional)</label>
-                                    <textarea id="notes" class="form-input" rows="3"
-                                        placeholder="Any additional notes for the interview…"
-                                        style="resize:vertical;"></textarea>
-                                </div>
-
-                                <input type="hidden" id="application_id" value="">
-                                <input type="hidden" id="resume_path" value="">
-
-                                <!-- Actions -->
-                                <div class="grid grid-cols-2 gap-3 mt-auto pt-2">
-                                    <button type="button" class="btn-secondary" onclick="resetForm()">
-                                        <i class="fas fa-undo"></i> Clear Form
-                                    </button>
-                                    <button type="submit" id="submitBtn" class="btn-primary">
-                                        <i class="fas fa-calendar-check"></i> Schedule Interview
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-
-                </div>
-            </main>
-        </div>
+{% extends "base_app.html" %}
+{% block title %}Schedule interviews – HireFast{% endblock %}
+{% block mobile_title %}Scheduling{% endblock %}
+{% block page_title %}Schedule interviews{% endblock %}
+{% block page_sub %}Manage and schedule candidate interviews.{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" crossorigin="anonymous" />
+{% endblock %}
+
+{% block page_header_extra %}
+<div class="flex items-center gap-3 flex-wrap" style="justify-content:flex-end;">
+  <span id="statusDot" class="status-dot bad" aria-hidden="true"></span>
+  <span id="statusText" class="text-sm text-muted">Checking calendar…</span>
+  <a id="connectCalendarBtn" href="/connect-calendar" class="connect-cal-btn hidden"><i class="fas fa-plug"></i> Connect calendar</a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="sched-layout">
+  <div class="flex flex-wrap gap-4" style="flex-direction:column;">
+    <div class="panel">
+      <div class="flex-between mb-4">
+        <button type="button" class="cal-nav-btn" onclick="changeMonth(-1)" aria-label="Previous month"><i class="fas fa-chevron-left text-xs"></i></button>
+        <h3 id="calendarTitle" class="cal-title"></h3>
+        <button type="button" class="cal-nav-btn" onclick="changeMonth(1)" aria-label="Next month"><i class="fas fa-chevron-right text-xs"></i></button>
+      </div>
+      <div class="calendar-grid mb-1">
+        <div class="calendar-header-day">Su</div>
+        <div class="calendar-header-day">Mo</div>
+        <div class="calendar-header-day">Tu</div>
+        <div class="calendar-header-day">We</div>
+        <div class="calendar-header-day">Th</div>
+        <div class="calendar-header-day">Fr</div>
+        <div class="calendar-header-day">Sa</div>
+      </div>
+      <div id="calendarGrid" class="calendar-grid"></div>
+      <div class="flex gap-4 mt-4 pt-3" style="border-top:1px solid rgba(255,255,255,.08);">
+        <div class="flex items-center gap-2 text-xs text-muted"><span class="status-dot ok" style="width:6px;height:6px;"></span> Has interview</div>
+        <div class="flex items-center gap-2 text-xs text-muted"><span style="width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,#6366f1,#8b5cf6);opacity:.85;"></span> Selected</div>
+      </div>
     </div>
 
-    <script src="{{ url_for('static', filename='js/sidebar-profile.js') }}"></script>
-    <script>
-        // ── Calendar ──────────────────────────────────────────────────────────
-        let currentDate = new Date();
-        let selectedDate = null;
+    <div class="panel">
+      <h3 class="text-sm font-semibold text-muted mb-3" style="letter-spacing:0.08em;text-transform:uppercase;">Upcoming interviews</h3>
+      <div id="upcomingList" class="flex flex-wrap gap-2" style="flex-direction:column;">
+        <p class="text-center py-4 text-muted" style="font-size:0.875rem;">No upcoming interviews</p>
+      </div>
+    </div>
+  </div>
 
-        function generateCalendar() {
-            const grid = document.getElementById('calendarGrid');
-            const title = document.getElementById('calendarTitle');
+  <div class="panel sched-form-panel">
+    <div class="flex gap-3 mb-6">
+      <div class="stat-icon g-fuchsia" style="width:44px;height:44px;"><i class="fas fa-calendar-plus" style="color:#fff;"></i></div>
+      <div>
+        <h3 style="font-size:1.125rem;font-weight:600;color:#fff;">Schedule new interview</h3>
+        <p id="selectedDateLabel" class="text-xs text-muted mt-1">Select a date on the calendar or enter manually.</p>
+      </div>
+    </div>
 
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
+    <div id="alertArea"></div>
 
-            const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-            title.textContent = `${months[month]} ${year}`;
+    <form id="scheduleForm">
+      <div>
+        <span class="form-label">Interview mode</span>
+        <div class="mode-selector">
+          <div class="mode-card active" id="modeHuman" onclick="setInterviewMode('human')">
+            <i class="fas fa-video"></i>
+            <h4>Human interview</h4>
+            <p>Google Meet via Calendar</p>
+          </div>
+          <div class="mode-card" id="modeAI" onclick="setInterviewMode('ai')">
+            <i class="fas fa-robot"></i>
+            <h4>AI screening</h4>
+            <p>Self-paced link (48h)</p>
+          </div>
+        </div>
+        <input type="hidden" id="interviewMode" value="human" />
+      </div>
 
-            grid.innerHTML = '';
+      <div class="form-grid-2">
+        <div>
+          <label class="form-label">Candidate name <span style="color:#a5b4fc;">*</span></label>
+          <input type="text" id="candidateName" class="form-input" placeholder="e.g. Jane Doe" required />
+        </div>
+        <div>
+          <label class="form-label">Candidate email <span style="color:#a5b4fc;">*</span></label>
+          <input type="email" id="candidateEmail" class="form-input" placeholder="candidate@email.com" required />
+        </div>
+      </div>
 
-            const firstDay = new Date(year, month, 1).getDay();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const today = new Date();
+      <div>
+        <label class="form-label">Position</label>
+        <input type="text" id="position" class="form-input" placeholder="e.g. Software engineer" />
+      </div>
 
-            // Blanks before first
-            for (let i = 0; i < firstDay; i++) {
-                const blank = document.createElement('div');
-                blank.className = 'calendar-day other-month';
-                grid.appendChild(blank);
-            }
+      <div class="form-grid-3" id="dateTimeRow">
+        <div>
+          <label class="form-label" id="dateLabel">Interview date <span style="color:#a5b4fc;">*</span></label>
+          <input type="date" id="interviewDate" class="form-input" required />
+        </div>
+        <div class="human-only">
+          <label class="form-label">Interview time <span style="color:#a5b4fc;">*</span></label>
+          <input type="time" id="interviewTime" class="form-input" value="10:00" required />
+        </div>
+        <div class="human-only">
+          <label class="form-label">Duration</label>
+          <select id="duration" class="form-input">
+            <option value="30">30 minutes</option>
+            <option value="45">45 minutes</option>
+            <option value="60" selected>60 minutes</option>
+            <option value="90">90 minutes</option>
+            <option value="120">2 hours</option>
+          </select>
+        </div>
+      </div>
 
-            // Days
-            for (let day = 1; day <= daysInMonth; day++) {
-                const el = document.createElement('div');
-                el.className = 'calendar-day';
-                el.textContent = day;
+      <div class="form-grid-2">
+        <div>
+          <label class="form-label">Interviewer email (optional)</label>
+          <input type="email" id="interviewerEmail" class="form-input" placeholder="interviewer@company.com" />
+        </div>
+        <div>
+          <label class="form-label">Interview type</label>
+          <select id="interviewType" class="form-input">
+            <option>Video call (Google Meet)</option>
+            <option>Phone screen</option>
+            <option>In-person</option>
+            <option>Technical assessment</option>
+          </select>
+        </div>
+      </div>
 
-                const isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
-                if (isToday) el.classList.add('today');
+      <div>
+        <label class="form-label">Notes (optional)</label>
+        <textarea id="notes" class="form-input form-textarea" rows="3" placeholder="Additional context for the interview…"></textarea>
+      </div>
 
-                // Mark some days as having interviews (demo)
-                if ([5, 12, 18, 23].includes(day)) el.classList.add('has-interview');
+      <input type="hidden" id="application_id" value="" />
+      <input type="hidden" id="resume_path" value="" />
 
-                el.addEventListener('click', () => selectDay(day, el));
-                grid.appendChild(el);
-            }
-        }
+      <div class="form-grid-2 mt-4">
+        <button type="button" class="btn-secondary" onclick="resetForm()"><i class="fas fa-undo"></i> Clear form</button>
+        <button type="submit" id="submitBtn" class="btn-primary"><i class="fas fa-calendar-check"></i> Schedule interview</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
 
-        function selectDay(day, el) {
-            // Deselect previous
-            document.querySelectorAll('.calendar-day.selected').forEach(d => d.classList.remove('selected'));
-            el.classList.add('selected');
+{% block extra_scripts %}
+<script>
+(function () {
+  var currentDate = new Date();
+  var selectedDate = null;
 
-            const year = currentDate.getFullYear();
-            const month = currentDate.getMonth();
-            selectedDate = new Date(year, month, day);
+  function generateCalendar() {
+    var grid = document.getElementById('calendarGrid');
+    var title = document.getElementById('calendarTitle');
+    var year = currentDate.getFullYear();
+    var month = currentDate.getMonth();
+    var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    title.textContent = months[month] + ' ' + year;
+    grid.innerHTML = '';
+    var firstDay = new Date(year, month, 1).getDay();
+    var daysInMonth = new Date(year, month + 1, 0).getDate();
+    var today = new Date();
+    var i;
+    for (i = 0; i < firstDay; i++) {
+      var blank = document.createElement('div');
+      blank.className = 'calendar-day other-month';
+      grid.appendChild(blank);
+    }
+    for (var day = 1; day <= daysInMonth; day++) {
+      var el = document.createElement('div');
+      el.className = 'calendar-day';
+      el.textContent = day;
+      var isToday = day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+      if (isToday) el.classList.add('today');
+      if ([5,12,18,23].indexOf(day) !== -1) el.classList.add('has-interview');
+      el.addEventListener('click', (function (d, node) {
+        return function () { selectDay(d, node); };
+      })(day, el));
+      grid.appendChild(el);
+    }
+  }
 
-            // Fill date field
-            const yyyy = year;
-            const mm = String(month + 1).padStart(2, '0');
-            const dd = String(day).padStart(2, '0');
-            document.getElementById('interviewDate').value = `${yyyy}-${mm}-${dd}`;
+  function selectDay(day, el) {
+    document.querySelectorAll('.calendar-day.selected').forEach(function (d) { d.classList.remove('selected'); });
+    el.classList.add('selected');
+    var year = currentDate.getFullYear();
+    var month = currentDate.getMonth();
+    selectedDate = new Date(year, month, day);
+    var mm = String(month + 1).padStart(2, '0');
+    var dd = String(day).padStart(2, '0');
+    document.getElementById('interviewDate').value = year + '-' + mm + '-' + dd;
+    var shortM = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    document.getElementById('selectedDateLabel').textContent = 'Scheduling for ' + shortM[month] + ' ' + day + ', ' + year;
+  }
 
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            document.getElementById('selectedDateLabel').textContent = `Scheduling for ${months[month]} ${day}, ${year}`;
-        }
+  window.changeMonth = function (dir) {
+    currentDate.setMonth(currentDate.getMonth() + dir);
+    generateCalendar();
+  };
 
-        function changeMonth(dir) {
-            currentDate.setMonth(currentDate.getMonth() + dir);
-            generateCalendar();
-        }
+  async function checkStatus() {
+    try {
+      var res = await fetch('/check-calendar-status');
+      var data = await res.json();
+      var dot = document.getElementById('statusDot');
+      var txt = document.getElementById('statusText');
+      var btn = document.getElementById('connectCalendarBtn');
+      if (data.connected) {
+        dot.className = 'status-dot ok';
+        txt.textContent = 'Google Calendar connected';
+        btn.classList.add('hidden');
+      } else {
+        dot.className = 'status-dot bad';
+        txt.textContent = 'Calendar not connected';
+        btn.classList.remove('hidden');
+      }
+    } catch (e) { console.error(e); }
+  }
 
-        // ── Calendar Status ─────────────────────────────────────────────────
-        async function checkStatus() {
-            try {
-                const res = await fetch('/check-calendar-status');
-                const data = await res.json();
-                const dot = document.getElementById('statusDot');
-                const txt = document.getElementById('statusText');
-                const btn = document.getElementById('connectCalendarBtn');
+  function showAlert(msg, type) {
+    var area = document.getElementById('alertArea');
+    var icon = type === 'success' ? 'check-circle' : 'exclamation-circle';
+    area.innerHTML = '<div class="alert alert-' + type + '"><i class="fas fa-' + icon + '"></i> ' + msg + '</div>';
+    setTimeout(function () { area.innerHTML = ''; }, 5000);
+  }
 
-                if (data.connected) {
-                    dot.className = 'w-2.5 h-2.5 bg-green-500 rounded-full';
-                    txt.textContent = 'Google Calendar Connected';
-                    btn.classList.add('hidden');
-                } else {
-                    dot.className = 'w-2.5 h-2.5 bg-red-500 rounded-full';
-                    txt.textContent = 'Calendar not connected';
-                    btn.classList.remove('hidden');
-                }
-            } catch (e) {
-                console.error('Status check failed:', e);
-            }
-        }
+  window.resetForm = function () {
+    document.getElementById('scheduleForm').reset();
+    setInterviewMode('human');
+    document.getElementById('interviewTime').value = '10:00';
+    document.getElementById('selectedDateLabel').textContent = 'Select a date on the calendar or enter manually.';
+    document.querySelectorAll('.calendar-day.selected').forEach(function (d) { d.classList.remove('selected'); });
+  };
 
-        // ── Form ─────────────────────────────────────────────────────────────
-        function showAlert(msg, type) {
-            const area = document.getElementById('alertArea');
-            area.innerHTML = `
-                <div class="alert alert-${type}">
-                    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
-                    ${msg}
-                </div>`;
-            setTimeout(() => area.innerHTML = '', 5000);
-        }
+  window.setInterviewMode = function (mode) {
+    document.getElementById('interviewMode').value = mode;
+    var humanCard = document.getElementById('modeHuman');
+    var aiCard = document.getElementById('modeAI');
+    var humanOnly = document.querySelectorAll('.human-only');
+    var dateLabel = document.getElementById('dateLabel');
+    var submitBtn = document.getElementById('submitBtn');
+    if (mode === 'human') {
+      humanCard.classList.add('active');
+      aiCard.classList.remove('active');
+      humanOnly.forEach(function (el) { el.style.display = 'block'; });
+      dateLabel.innerHTML = 'Interview date <span style="color:#a5b4fc;">*</span>';
+      submitBtn.innerHTML = '<i class="fas fa-calendar-check"></i> Schedule interview';
+      document.getElementById('interviewTime').disabled = false;
+      document.getElementById('duration').disabled = false;
+    } else {
+      aiCard.classList.add('active');
+      humanCard.classList.remove('active');
+      humanOnly.forEach(function (el) { el.style.display = 'none'; });
+      dateLabel.innerHTML = 'Start date <span style="color:#a5b4fc;">*</span>';
+      submitBtn.innerHTML = '<i class="fas fa-robot"></i> Send AI interview invite';
+      document.getElementById('interviewTime').disabled = true;
+      document.getElementById('duration').disabled = true;
+    }
+  };
 
-        function resetForm() {
-            document.getElementById('scheduleForm').reset();
-            setInterviewMode('human');
-            document.getElementById('interviewTime').value = '10:00';
-            document.getElementById('selectedDateLabel').textContent = 'Select a date from the calendar or fill in manually';
-            document.querySelectorAll('.calendar-day.selected').forEach(d => d.classList.remove('selected'));
-        }
+  document.getElementById('scheduleForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var mode = document.getElementById('interviewMode').value;
+    var name = document.getElementById('candidateName').value.trim();
+    var email = document.getElementById('candidateEmail').value.trim();
+    var date = document.getElementById('interviewDate').value;
+    var time = document.getElementById('interviewTime').value;
+    var dur = document.getElementById('duration').value;
+    if (!name || !email || !date) {
+      showAlert('Please fill required fields.', 'error');
+      return;
+    }
+    if (mode === 'human' && !time) {
+      showAlert('Please set interview time.', 'error');
+      return;
+    }
+    var btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading-spinner"></span> Scheduling…';
+    try {
+      var res = await fetch('/schedule-interview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          candidate_name: name,
+          candidate_email: email,
+          position: document.getElementById('position').value.trim(),
+          interview_date: date,
+          interview_time: time || '09:00',
+          duration: parseInt(dur, 10),
+          interviewer_email: document.getElementById('interviewerEmail').value.trim(),
+          interview_type: document.getElementById('interviewType').value,
+          notes: document.getElementById('notes').value.trim(),
+          interview_mode: mode,
+          application_id: document.getElementById('application_id').value,
+          resume_path: document.getElementById('resume_path').value
+        })
+      });
+      var data = await res.json();
+      if (data.status === 'success') {
+        showAlert('Interview scheduled. Calendar invite sent where applicable.', 'success');
+        resetForm();
+        addUpcomingInterview(name, email, date, time || '—', document.getElementById('interviewType').value);
+      } else {
+        showAlert(data.message || data.error || 'Failed to schedule.', 'error');
+      }
+    } catch (err) {
+      showAlert('Network error. Try again.', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = mode === 'ai'
+        ? '<i class="fas fa-robot"></i> Send AI interview invite'
+        : '<i class="fas fa-calendar-check"></i> Schedule interview';
+    }
+  });
 
-        function setInterviewMode(mode) {
-            document.getElementById('interviewMode').value = mode;
+  function addUpcomingInterview(name, email, date, time, type) {
+    var list = document.getElementById('upcomingList');
+    var empty = list.querySelector('p');
+    if (empty) empty.remove();
+    var item = document.createElement('div');
+    item.className = 'interview-item';
+    item.innerHTML = '<div class="flex-between">' +
+      '<div class="flex items-center gap-2">' +
+      '<div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;color:#fff;">' +
+      name.charAt(0).toUpperCase() + '</div>' +
+      '<div><p class="text-sm" style="font-weight:600;color:#fff;">' + name.replace(/</g,'') + '</p>' +
+      '<p class="text-xs text-muted">' + date + ' · ' + time + '</p></div></div>' +
+      '<span class="status-badge status-scheduled">Scheduled</span></div>';
+    list.prepend(item);
+  }
 
-            const humanCard = document.getElementById('modeHuman');
-            const aiCard = document.getElementById('modeAI');
-            const humanOnly = document.querySelectorAll('.human-only');
-            const dateLabel = document.getElementById('dateLabel');
-            const submitBtn = document.getElementById('submitBtn');
+  generateCalendar();
+  checkStatus();
 
-            if (mode === 'human') {
-                humanCard.classList.add('active');
-                aiCard.classList.remove('active');
-                humanOnly.forEach(el => el.style.display = 'block');
-                dateLabel.innerHTML = 'Interview Date <span class="text-purple-400">*</span>';
-                submitBtn.innerHTML = '<i class="fas fa-calendar-check"></i> Schedule Interview';
-                document.getElementById('interviewTime').disabled = false;
-                document.getElementById('duration').disabled = false;
-            } else {
-                aiCard.classList.add('active');
-                humanCard.classList.remove('active');
-                humanOnly.forEach(el => el.style.display = 'none');
-                dateLabel.innerHTML = 'Start Date <span class="text-purple-400">*</span>';
-                submitBtn.innerHTML = '<i class="fas fa-robot"></i> Send AI Interview Invite';
-                document.getElementById('interviewTime').disabled = true;
-                document.getElementById('duration').disabled = true;
-            }
-        }
+  var urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.has('name')) document.getElementById('candidateName').value = urlParams.get('name');
+  if (urlParams.has('email')) document.getElementById('candidateEmail').value = urlParams.get('email');
+  if (urlParams.has('position')) document.getElementById('position').value = urlParams.get('position');
+  if (urlParams.has('app_id')) document.getElementById('application_id').value = urlParams.get('app_id');
+  if (urlParams.has('resume')) document.getElementById('resume_path').value = urlParams.get('resume');
 
-        document.getElementById('scheduleForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const name = document.getElementById('candidateName').value.trim();
-            const email = document.getElementById('candidateEmail').value.trim();
-            const date = document.getElementById('interviewDate').value;
-            const time = document.getElementById('interviewTime').value;
-            const dur = document.getElementById('duration').value;
-            const iEmail = document.getElementById('interviewerEmail').value.trim();
-            const type = document.getElementById('interviewType').value;
-            const notes = document.getElementById('notes').value.trim();
-
-            if (!name || !email || !date || !time) {
-                showAlert('Please fill in all required fields.', 'error');
-                return;
-            }
-
-            const btn = document.getElementById('submitBtn');
-            btn.disabled = true;
-            btn.innerHTML = '<div class="loading-spinner"></div> Scheduling…';
-
-            try {
-                const res = await fetch('/schedule-interview', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        candidate_name: name,
-                        candidate_email: email,
-                        position: document.getElementById('position').value.trim(),
-                        interview_date: date,
-                        interview_time: time,
-                        duration: parseInt(dur),
-                        interviewer_email: iEmail,
-                        interview_type: type,
-                        notes: notes,
-                        interview_mode: document.getElementById('interviewMode').value,
-                        application_id: document.getElementById('application_id').value,
-                        resume_path: document.getElementById('resume_path').value
-                    })
-                });
-
-                const data = await res.json();
-
-                if (data.status === 'success') {
-                    showAlert(`✅ Interview scheduled with ${name} on ${date} at ${time}! Calendar invite sent.`, 'success');
-                    resetForm();
-                    // Add to upcoming list
-                    addUpcomingInterview(name, email, date, time, type);
-                } else {
-                    showAlert(data.message || data.error || 'Failed to schedule interview.', 'error');
-                }
-            } catch (err) {
-                showAlert('Network error. Please try again.', 'error');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-calendar-check"></i> Schedule Interview';
-            }
-        });
-
-        function addUpcomingInterview(name, email, date, time, type) {
-            const list = document.getElementById('upcomingList');
-            const empty = list.querySelector('p');
-            if (empty) empty.remove();
-
-            const item = document.createElement('div');
-            item.className = 'interview-item';
-            item.innerHTML = `
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-xs font-bold text-white">
-                            ${name.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                            <p class="text-sm font-semibold text-white">${name}</p>
-                            <p class="text-xs text-gray-500">${date} · ${time}</p>
-                        </div>
-                    </div>
-                    <span class="status-badge status-scheduled">Scheduled</span>
-                </div>`;
-            list.prepend(item);
-        }
-
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) window.location.href = '/logout';
-        }
-
-        // Init
-        generateCalendar();
-        checkStatus();
-
-        // Populating from URL params
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('name')) document.getElementById('candidateName').value = urlParams.get('name');
-        if (urlParams.has('email')) document.getElementById('candidateEmail').value = urlParams.get('email');
-        if (urlParams.has('position')) document.getElementById('position').value = urlParams.get('position');
-        if (urlParams.has('app_id')) document.getElementById('application_id').value = urlParams.get('app_id');
-        if (urlParams.has('resume')) document.getElementById('resume_path').value = urlParams.get('resume');
-
-        // Set today's date as default
-        const today = new Date();
-        const dd = String(today.getDate()).padStart(2, '0');
-        const mm = String(today.getMonth() + 1).padStart(2, '0');
-        document.getElementById('interviewDate').value = `${today.getFullYear()}-${mm}-${dd}`;
-    </script>
-</body>
-
-</html>
+  var today = new Date();
+  var dd = String(today.getDate()).padStart(2, '0');
+  var mm = String(today.getMonth() + 1).padStart(2, '0');
+  document.getElementById('interviewDate').value = today.getFullYear() + '-' + mm + '-' + dd;
+})();
+</script>
+{% endblock %}

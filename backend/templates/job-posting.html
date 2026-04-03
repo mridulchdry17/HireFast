@@ -1,622 +1,194 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base_app.html" %}
+{% block title %}Create Job Post – HireFast{% endblock %}
+{% block mobile_title %}Create Job Post{% endblock %}
+{% block page_title %}Create Job Post{% endblock %}
+{% block page_sub %}Generate AI-powered job descriptions and post them to LinkedIn.{% endblock %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Job Post - HireFast</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" crossorigin="anonymous" />
+{% endblock %}
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
-            color: #f8fafc;
-            min-height: 100vh;
-        }
-
-        .gradient-text {
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .glass-effect {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
-
-        .card-hover {
-            transition: all 0.3s ease;
-        }
-
-        .card-hover:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.75rem;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.75rem;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            cursor: pointer;
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
-
-        .sidebar {
-            background: rgba(15, 23, 42, 0.95);
-            backdrop-filter: blur(20px);
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            padding: 0.75rem 1rem;
-            margin: 0.25rem 0;
-            border-radius: 0.75rem;
-            color: #cbd5e1;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-
-        .nav-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-
-        .nav-item.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .form-input {
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 0.75rem;
-            padding: 0.75rem 1rem;
-            color: #f8fafc !important;
-            width: 100%;
-            transition: all 0.3s ease;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: #667eea;
-            background: rgba(15, 23, 42, 0.95);
-            color: #f8fafc !important;
-        }
-
-        .form-input::placeholder {
-            color: #94a3b8;
-        }
-
-        .form-textarea {
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 0.75rem;
-            padding: 0.75rem 1rem;
-            color: #f8fafc !important;
-            width: 100%;
-            min-height: 120px;
-            resize: vertical;
-            transition: all 0.3s ease;
-        }
-
-        .form-textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            background: rgba(15, 23, 42, 0.95);
-            color: #f8fafc !important;
-        }
-
-        .form-textarea::placeholder {
-            color: #94a3b8;
-        }
-
-        select.form-input {
-            color: #f8fafc !important;
-        }
-
-        select.form-input option {
-            background: rgba(15, 23, 42, 0.95);
-            color: #f8fafc;
-        }
-
-        .preview-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 1.5rem;
-            padding: 2rem;
-        }
-
-        .preview-content {
-            background: rgba(15, 23, 42, 0.9);
-            color: #f8fafc;
-            padding: 2rem;
-            border-radius: 1rem;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            line-height: 1.6;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        .fade-in {
-            animation: fadeIn 0.5s ease-in;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .success-message {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            color: #10b981;
-            padding: 1rem;
-            border-radius: 0.75rem;
-            margin-bottom: 1rem;
-        }
-
-        .error-message {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #ef4444;
-            padding: 1rem;
-            border-radius: 0.75rem;
-            margin-bottom: 1rem;
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                position: fixed;
-                left: -100%;
-                top: 0;
-                height: 100vh;
-                width: 280px;
-                z-index: 1000;
-                transition: left 0.3s ease;
-            }
-
-            .sidebar.open {
-                left: 0;
-            }
-
-            .main-content {
-                margin-left: 0;
-            }
-        }
-    </style>
-</head>
-
-<body>
-    <div class="flex h-screen">
-        <!-- Sidebar -->
-        <div class="sidebar w-64 p-6">
-            <div class="mb-8">
-                <h1 class="text-2xl font-bold gradient-text">HireFast</h1>
-                <p class="text-sm text-gray-400 mt-1">AI-Powered HR Automation</p>
-            </div>
-
-            <nav class="space-y-2">
-                <a href="/dashboard" class="nav-item">
-                    <i class="fas fa-tachometer-alt w-5 mr-3"></i>
-                    Dashboard
-                </a>
-                <a href="/job-posting" class="nav-item active">
-                    <i class="fas fa-plus-circle w-5 mr-3"></i>
-                    Create Job Post
-                </a>
-                <a href="/candidates" class="nav-item">
-                    <i class="fas fa-users w-5 mr-3"></i>
-                    Candidates
-                </a>
-                <a href="/scheduling" class="nav-item">
-                    <i class="fas fa-calendar-alt w-5 mr-3"></i>
-                    Schedule Interviews
-                </a>
-                <a href="/connect-calendar" class="nav-item">
-                    <i class="fas fa-calendar-check w-5 mr-3"></i>
-                    Connect Calendar
-                </a>
-                <a href="/analytics" class="nav-item">
-                    <i class="fas fa-chart-line w-5 mr-3"></i>
-                    Analytics
-                </a>
-                <a href="/settings" class="nav-item">
-                    <i class="fas fa-cog w-5 mr-3"></i>
-                    Settings
-                </a>
-            </nav>
-
-            <div class="mt-auto pt-6">
-                <div class="flex items-center mb-4">
-                    <div id="sidebarAvatar"
-                        class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mr-3 overflow-hidden">
-                        <span id="sidebarAvatarText" class="text-white font-bold text-sm">…</span>
-                    </div>
-                    <div>
-                        <p id="sidebarName" class="font-semibold text-sm">…</p>
-                        <p id="sidebarTitle" class="text-xs text-gray-400">…</p>
-                    </div>
-                </div>
-                <button onclick="logout()" class="nav-item w-full text-left">
-                    <i class="fas fa-sign-out-alt w-5 mr-3"></i>
-                    Logout
-                </button>
-            </div>
+{% block content %}
+<div class="layout-two-col">
+  <div class="stack" style="display:flex;flex-direction:column;gap:1.5rem;">
+    <div class="app-glass" style="padding:1.5rem;">
+      <h3 style="font-size:1.125rem;font-weight:600;color:#fff;margin-bottom:1.25rem;">Job Details</h3>
+      <div id="messages"></div>
+      <form id="jobForm" style="display:flex;flex-direction:column;gap:1.25rem;">
+        <div>
+          <label class="label-field" for="jobTitle">Job Title *</label>
+          <input type="text" id="jobTitle" class="form-input" placeholder="e.g., Software Engineer" required />
         </div>
-
-        <!-- Main Content -->
-        <div class="flex-1 flex flex-col overflow-hidden">
-            <!-- Header -->
-            <header class="glass-effect p-6 border-b border-gray-700">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <h2 class="text-3xl font-bold text-white">Create Job Post</h2>
-                        <p class="text-gray-400 mt-1">Generate AI-powered job descriptions and post them to LinkedIn</p>
-                    </div>
-                    <div class="flex items-center space-x-4">
-                        <div class="flex items-center space-x-2">
-                            <div class="w-3 h-3 bg-green-500 rounded-full"></div>
-                            <span class="text-sm text-gray-300">LinkedIn Connected</span>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Content -->
-            <main class="flex-1 overflow-y-auto p-6">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <!-- Form Section -->
-                    <div class="space-y-6">
-                        <div class="glass-effect rounded-2xl p-6">
-                            <h3 class="text-xl font-bold mb-6 text-white">Job Details</h3>
-
-                            <div id="messages"></div>
-
-                            <form id="jobForm" class="space-y-6">
-                                <div>
-                                    <label class="block text-sm font-medium mb-2 text-gray-300">Job Title *</label>
-                                    <input type="text" id="jobTitle" class="form-input"
-                                        placeholder="e.g., Software Engineer, Marketing Manager" required>
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-medium mb-2 text-gray-300">Company Name *</label>
-                                    <input type="text" id="companyName" class="form-input"
-                                        placeholder="Your company name" required>
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-medium mb-2 text-gray-300">Location</label>
-                                    <input type="text" id="location" class="form-input"
-                                        placeholder="e.g., San Francisco, CA or Remote">
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-medium mb-2 text-gray-300">Employment Type</label>
-                                    <select id="employmentType" class="form-input">
-                                        <option value="">Select employment type</option>
-                                        <option value="Full-time">Full-time</option>
-                                        <option value="Part-time">Part-time</option>
-                                        <option value="Contract">Contract</option>
-                                        <option value="Internship">Internship</option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-medium mb-2 text-gray-300">Additional Requirements
-                                        (Optional)</label>
-                                    <textarea id="additionalRequirements" class="form-textarea"
-                                        placeholder="Any specific requirements, skills, or details you'd like to include..."></textarea>
-                                </div>
-
-                                <div class="flex space-x-4">
-                                    <button type="button" id="generateBtn" class="btn-primary flex-1">
-                                        <i class="fas fa-magic"></i>
-                                        Generate Job Description
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-
-                        <!-- Generated Job Description -->
-                        <div id="generatedSection" class="glass-effect rounded-2xl p-6 hidden">
-                            <h3 class="text-xl font-bold mb-6 text-white">Generated Job Description</h3>
-                            <div id="generatedContent" class="mb-6"></div>
-                            <div class="flex space-x-4">
-                                <button id="approveBtn" class="btn-primary">
-                                    <i class="fas fa-check"></i>
-                                    Approve & Post to LinkedIn
-                                </button>
-                                <button id="regenerateBtn" class="btn-secondary">
-                                    <i class="fas fa-redo"></i>
-                                    Regenerate
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Preview Section -->
-                    <div class="space-y-6">
-                        <div class="preview-card">
-                            <h3 class="text-xl font-bold mb-6 text-white">LinkedIn Preview</h3>
-                            <div class="preview-content" id="previewContent">
-                                <div class="text-center text-gray-500 py-8">
-                                    <i class="fas fa-eye text-4xl mb-4"></i>
-                                    <p>Your job description preview will appear here</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Tips -->
-                        <div class="glass-effect rounded-2xl p-6">
-                            <h3 class="text-xl font-bold mb-4 text-white">💡 Tips for Better Job Posts</h3>
-                            <ul class="space-y-3 text-sm text-gray-300">
-                                <li class="flex items-start">
-                                    <i class="fas fa-check-circle text-green-400 mr-3 mt-1"></i>
-                                    <span>Be specific about required skills and experience</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fas fa-check-circle text-green-400 mr-3 mt-1"></i>
-                                    <span>Include company culture and benefits</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fas fa-check-circle text-green-400 mr-3 mt-1"></i>
-                                    <span>Use action-oriented language</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fas fa-check-circle text-green-400 mr-3 mt-1"></i>
-                                    <span>Keep it concise but comprehensive</span>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </main>
+        <div>
+          <label class="label-field" for="companyName">Company Name *</label>
+          <input type="text" id="companyName" class="form-input" placeholder="Your company name" required />
         </div>
+        <div>
+          <label class="label-field" for="location">Location</label>
+          <input type="text" id="location" class="form-input" placeholder="e.g., San Francisco or Remote" />
+        </div>
+        <div>
+          <label class="label-field" for="employmentType">Employment Type</label>
+          <select id="employmentType" class="form-input">
+            <option value="">Select employment type</option>
+            <option value="Full-time">Full-time</option>
+            <option value="Part-time">Part-time</option>
+            <option value="Contract">Contract</option>
+            <option value="Internship">Internship</option>
+          </select>
+        </div>
+        <div>
+          <label class="label-field" for="additionalRequirements">Additional Requirements (optional)</label>
+          <textarea id="additionalRequirements" class="form-textarea" placeholder="Skills, certifications, etc."></textarea>
+        </div>
+        <button type="button" id="generateBtn" class="btn-primary" style="width:100%;">
+          <i class="fas fa-magic"></i> Generate Job Description
+        </button>
+      </form>
     </div>
 
-    <script src="{{ url_for('static', filename='js/sidebar-profile.js') }}"></script>
-    <script>
-        let currentJobDescription = '';
-        let currentJobId = '';
+    <div id="generatedSection" class="app-glass hidden" style="padding:1.5rem;">
+      <h3 style="font-size:1.125rem;font-weight:600;color:#fff;margin-bottom:1rem;">Generated Job Description</h3>
+      <div id="generatedContent" class="mb-4"></div>
+      <div class="flex flex-wrap gap-4" style="gap:0.75rem;">
+        <button type="button" id="approveBtn" class="btn-primary"><i class="fas fa-check"></i> Approve &amp; Post to LinkedIn</button>
+        <button type="button" id="regenerateBtn" class="btn-secondary"><i class="fas fa-redo"></i> Regenerate</button>
+      </div>
+    </div>
+  </div>
 
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                window.location.href = '/logout';
-            }
-        }
+  <div style="display:flex;flex-direction:column;gap:1.5rem;">
+    <div class="preview-card">
+      <h3 style="font-size:1.125rem;font-weight:600;color:#fff;margin-bottom:1rem;">LinkedIn Preview</h3>
+      <div class="preview-content" id="previewContent">
+        <div class="preview-placeholder"><i class="fas fa-eye" style="font-size:2rem;margin-bottom:0.75rem;opacity:.5;"></i><p>Your job description preview will appear here</p></div>
+      </div>
+    </div>
+    <div class="app-glass" style="padding:1.5rem;">
+      <h3 style="font-size:1.125rem;font-weight:600;color:#fff;margin-bottom:0.75rem;">Tips for better job posts</h3>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:0.75rem;font-size:0.875rem;color:#94a3b8;">
+        <li style="display:flex;gap:0.5rem;align-items:flex-start;"><i class="fas fa-check-circle" style="color:#34d399;margin-top:2px;"></i><span>Be specific about required skills and experience</span></li>
+        <li style="display:flex;gap:0.5rem;align-items:flex-start;"><i class="fas fa-check-circle" style="color:#34d399;margin-top:2px;"></i><span>Include company culture and benefits</span></li>
+        <li style="display:flex;gap:0.5rem;align-items:flex-start;"><i class="fas fa-check-circle" style="color:#34d399;margin-top:2px;"></i><span>Use action-oriented language</span></li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
 
-        function showMessage(message, type = 'info') {
-            const messagesDiv = document.getElementById('messages');
-            const messageEl = document.createElement('div');
-            messageEl.className = type === 'error' ? 'error-message' : 'success-message';
-            messageEl.innerHTML = `
-                <div class="flex items-center">
-                    <i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'} mr-2"></i>
-                    <span>${message}</span>
-                </div>
-            `;
-            messagesDiv.appendChild(messageEl);
+{% block extra_scripts %}
+<script>
+let currentJobDescription = '';
+let currentJobId = '';
 
-            setTimeout(() => {
-                messageEl.remove();
-            }, 5000);
-        }
+function showMessage(message, type) {
+  const messagesDiv = document.getElementById('messages');
+  const messageEl = document.createElement('div');
+  messageEl.className = type === 'error' ? 'error-message' : 'success-message';
+  messageEl.innerHTML = '<div class="flex items-center" style="display:flex;align-items:center;gap:0.5rem;"><i class="fas fa-' + (type === 'error' ? 'exclamation-circle' : 'check-circle') + '"></i><span>' + message + '</span></div>';
+  messagesDiv.appendChild(messageEl);
+  setTimeout(function () { messageEl.remove(); }, 5000);
+}
 
-        function updatePreview(content) {
-            const previewContent = document.getElementById('previewContent');
-            if (content) {
-                previewContent.innerHTML = `
-                    <div class="space-y-4">
-                        <div class="border-b pb-4">
-                            <h2 class="text-2xl font-bold text-gray-800">${document.getElementById('jobTitle').value || 'Job Title'}</h2>
-                            <p class="text-gray-600">${document.getElementById('companyName').value || 'Company Name'}</p>
-                            <p class="text-gray-500 text-sm">${document.getElementById('location').value || 'Location'}</p>
-                        </div>
-                        <div class="prose max-w-none">
-                            ${content.replace(/\n/g, '<br>')}
-                        </div>
-                    </div>
-                `;
-            } else {
-                previewContent.innerHTML = `
-                    <div class="text-center text-gray-500 py-8">
-                        <i class="fas fa-eye text-4xl mb-4"></i>
-                        <p>Your job description preview will appear here</p>
-                    </div>
-                `;
-            }
-        }
+function updatePreview(content) {
+  const previewContent = document.getElementById('previewContent');
+  if (content) {
+    previewContent.innerHTML =
+      '<div style="padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,.08);">' +
+      '<h2 style="font-size:1.25rem;font-weight:700;color:#fff;">' + (document.getElementById('jobTitle').value || 'Job Title') + '</h2>' +
+      '<p style="color:#94a3b8;font-size:0.9rem;">' + (document.getElementById('companyName').value || 'Company') + '</p>' +
+      '<p style="color:#64748b;font-size:0.8rem;">' + (document.getElementById('location').value || '') + '</p></div>' +
+      '<div style="margin-top:1rem;color:#cbd5e1;font-size:0.875rem;line-height:1.6;">' + content.replace(/\n/g, '<br>') + '</div>';
+  } else {
+    previewContent.innerHTML = '<div class="preview-placeholder"><i class="fas fa-eye" style="font-size:2rem;margin-bottom:0.75rem;opacity:.5;"></i><p>Your job description preview will appear here</p></div>';
+  }
+}
 
-        document.getElementById('generateBtn').addEventListener('click', async () => {
-            const jobTitle = document.getElementById('jobTitle').value;
-            const companyName = document.getElementById('companyName').value;
+document.getElementById('generateBtn').addEventListener('click', async function () {
+  const jobTitle = document.getElementById('jobTitle').value;
+  const companyName = document.getElementById('companyName').value;
+  if (!jobTitle || !companyName) {
+    showMessage('Please fill in Job Title and Company Name', 'error');
+    return;
+  }
+  const generateBtn = document.getElementById('generateBtn');
+  const originalText = generateBtn.innerHTML;
+  generateBtn.innerHTML = '<span class="loading-spinner"></span> Generating...';
+  generateBtn.disabled = true;
+  try {
+    const response = await fetch('/generate-jd', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        role: jobTitle,
+        company_name: companyName,
+        location: document.getElementById('location').value,
+        employment_type: document.getElementById('employmentType').value,
+        additional_requirements: document.getElementById('additionalRequirements').value
+      })
+    });
+    const data = await response.json();
+    if (data.job_description) {
+      currentJobDescription = data.job_description;
+      currentJobId = data.job_id || '';
+      document.getElementById('generatedContent').innerHTML =
+        '<div style="background:rgba(0,0,0,.25);padding:1rem;border-radius:12px;border:1px solid rgba(255,255,255,.08);"><pre style="white-space:pre-wrap;font-size:0.85rem;color:#e2e8f0;margin:0;font-family:inherit;">' +
+        data.job_description.replace(/</g, '&lt;') +
+        '</pre></div>';
+      document.getElementById('generatedSection').classList.remove('hidden');
+      updatePreview(data.job_description);
+      showMessage('Job description generated successfully!', 'success');
+    } else {
+      showMessage(data.error || 'Failed to generate job description', 'error');
+    }
+  } catch (error) {
+    showMessage('Error: ' + error.message, 'error');
+  } finally {
+    generateBtn.innerHTML = originalText;
+    generateBtn.disabled = false;
+  }
+});
 
-            if (!jobTitle || !companyName) {
-                showMessage('Please fill in the required fields (Job Title and Company Name)', 'error');
-                return;
-            }
+document.getElementById('approveBtn').addEventListener('click', async function () {
+  if (!currentJobDescription) {
+    showMessage('No job description to approve', 'error');
+    return;
+  }
+  const approveBtn = document.getElementById('approveBtn');
+  const originalText = approveBtn.innerHTML;
+  approveBtn.innerHTML = '<span class="loading-spinner"></span> Posting...';
+  approveBtn.disabled = true;
+  try {
+    const response = await fetch('/post-jd', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        role: document.getElementById('jobTitle').value,
+        job_description: currentJobDescription,
+        job_id: currentJobId
+      })
+    });
+    const data = await response.json();
+    if (data.post_status === 'success') {
+      showMessage('Job posted to LinkedIn successfully!', 'success');
+      document.getElementById('jobForm').reset();
+      document.getElementById('generatedSection').classList.add('hidden');
+      updatePreview('');
+      currentJobDescription = '';
+      currentJobId = '';
+    } else {
+      showMessage(data.error || 'Failed to post', 'error');
+    }
+  } catch (error) {
+    showMessage('Error: ' + error.message, 'error');
+  } finally {
+    approveBtn.innerHTML = originalText;
+    approveBtn.disabled = false;
+  }
+});
 
-            const generateBtn = document.getElementById('generateBtn');
-            const originalText = generateBtn.innerHTML;
-            generateBtn.innerHTML = '<div class="loading-spinner mr-2"></div>Generating...';
-            generateBtn.disabled = true;
-
-            try {
-                const response = await fetch('/generate-jd', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        role: jobTitle,
-                        company_name: companyName,
-                        location: document.getElementById('location').value,
-                        employment_type: document.getElementById('employmentType').value,
-                        additional_requirements: document.getElementById('additionalRequirements').value
-                    })
-                });
-
-                const data = await response.json();
-
-                if (data.job_description) {
-                    currentJobDescription = data.job_description;
-                    currentJobId = data.job_id || '';
-                    document.getElementById('generatedContent').innerHTML = `
-                        <div class="bg-gray-800 p-4 rounded-lg">
-                            <pre class="whitespace-pre-wrap text-sm text-white">${data.job_description}</pre>
-                        </div>
-                    `;
-                    document.getElementById('generatedSection').classList.remove('hidden');
-                    updatePreview(data.job_description);
-                    showMessage('Job description generated successfully!', 'success');
-                } else {
-                    showMessage(data.error || 'Failed to generate job description', 'error');
-                }
-            } catch (error) {
-                showMessage('Error generating job description: ' + error.message, 'error');
-            } finally {
-                generateBtn.innerHTML = originalText;
-                generateBtn.disabled = false;
-            }
-        });
-
-        document.getElementById('approveBtn').addEventListener('click', async () => {
-            if (!currentJobDescription) {
-                showMessage('No job description to approve', 'error');
-                return;
-            }
-
-            const approveBtn = document.getElementById('approveBtn');
-            const originalText = approveBtn.innerHTML;
-            approveBtn.innerHTML = '<div class="loading-spinner mr-2"></div>Posting...';
-            approveBtn.disabled = true;
-
-            try {
-                const response = await fetch('/post-jd', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        role: document.getElementById('jobTitle').value,
-                        job_description: currentJobDescription,
-                        job_id: currentJobId
-                    })
-                });
-
-                const data = await response.json();
-
-                if (data.post_status === 'success') {
-                    showMessage('Job posted to LinkedIn successfully!', 'success');
-                    // Reset form
-                    document.getElementById('jobForm').reset();
-                    document.getElementById('generatedSection').classList.add('hidden');
-                    updatePreview('');
-                    currentJobDescription = '';
-                    currentJobId = '';
-                } else {
-                    showMessage(data.error || 'Failed to post job description', 'error');
-                }
-            } catch (error) {
-                showMessage('Error posting job description: ' + error.message, 'error');
-            } finally {
-                approveBtn.innerHTML = originalText;
-                approveBtn.disabled = false;
-            }
-        });
-
-        document.getElementById('regenerateBtn').addEventListener('click', () => {
-            document.getElementById('generateBtn').click();
-        });
-
-        // Add mobile menu toggle functionality
-        function toggleSidebar() {
-            const sidebar = document.querySelector('.sidebar');
-            sidebar.classList.toggle('open');
-        }
-
-        // Add mobile menu button for small screens
-        if (window.innerWidth <= 768) {
-            const header = document.querySelector('header');
-            const menuButton = document.createElement('button');
-            menuButton.innerHTML = '<i class="fas fa-bars"></i>';
-            menuButton.className = 'md:hidden p-2 rounded-lg bg-gray-700 text-white';
-            menuButton.onclick = toggleSidebar;
-            header.querySelector('.flex').prepend(menuButton);
-        }
-    </script>
-</body>
-
-</html>
+document.getElementById('regenerateBtn').addEventListener('click', function () {
+  document.getElementById('generateBtn').click();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,35 @@
+{# Set active_nav in parent template: dashboard | job_posting | candidates | scheduling | calendar | analytics | settings #}
+{% set active_nav = active_nav|default('dashboard') %}
+<aside class="sidebar" id="sidebar">
+  <div class="sb-logo">
+    <h1>HireFast</h1>
+    <p>AI-Powered HR Automation</p>
+  </div>
+
+  <nav class="sb-nav">
+    <a href="/dashboard" class="nav-item{% if active_nav == 'dashboard' %} active{% endif %}"><span class="hover-dot"></span>Dashboard</a>
+    <a href="/job-posting" class="nav-item{% if active_nav == 'job_posting' %} active{% endif %}"><span class="hover-dot"></span>Create Job Post</a>
+    <a href="/candidates" class="nav-item{% if active_nav == 'candidates' %} active{% endif %}"><span class="hover-dot"></span>Candidates</a>
+    <a href="/scheduling" class="nav-item{% if active_nav == 'scheduling' %} active{% endif %}"><span class="hover-dot"></span>Schedule Interviews</a>
+    <a href="/connect-calendar" class="nav-item{% if active_nav == 'calendar' %} active{% endif %}"><span class="hover-dot"></span>Connect Calendar</a>
+    <a href="/analytics" class="nav-item{% if active_nav == 'analytics' %} active{% endif %}"><span class="hover-dot"></span>Analytics</a>
+    <a href="/settings" class="nav-item{% if active_nav == 'settings' %} active{% endif %}"><span class="hover-dot"></span>Settings</a>
+  </nav>
+
+  <div class="sb-footer">
+    <div class="sb-user-row">
+      <div class="sb-avatar" id="sidebarAvatar">
+        <img id="sidebarAvatarImg" alt="" />
+        <span id="sidebarAvatarText">…</span>
+      </div>
+      <div class="sb-user-info">
+        <p class="name" id="sidebarName">…</p>
+        <p class="role" id="sidebarTitle">…</p>
+      </div>
+    </div>
+    <button type="button" class="logout-btn" onclick="logout()">
+      <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+      Logout
+    </button>
+  </div>
+</aside>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}HireFast{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app-shell.css') }}" />
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <div class="blob blob-l" aria-hidden="true"></div>
+  <div class="blob blob-r" aria-hidden="true"></div>
+  <div class="blob blob-c" aria-hidden="true"></div>
+  <div class="sb-overlay" id="sbOverlay" onclick="closeSidebar()"></div>
+
+  <div class="app">
+    {% include 'partials/app_sidebar.html' %}
+
+    <div class="main-wrap">
+      <header class="topbar">
+        <button type="button" class="menu-btn" onclick="toggleSidebar()" aria-label="Open menu">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <span class="topbar-title">{% block mobile_title %}HireFast{% endblock %}</span>
+      </header>
+
+      <main class="content">
+        <div class="grid-bg" aria-hidden="true"></div>
+        <div class="content-inner">
+          {% block page_header %}
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">{% block page_title %}Page{% endblock %}</h2>
+              <p class="page-sub">{% block page_sub %}{% endblock %}</p>
+            </div>
+            {% block page_header_extra %}{% endblock %}
+          </div>
+          {% endblock %}
+          {% block content %}{% endblock %}
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/sidebar-profile.js') }}"></script>
+  <script>
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('sbOverlay').classList.toggle('show');
+    }
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sbOverlay').classList.remove('show');
+    }
+    window.addEventListener('resize', function () {
+      if (window.innerWidth > 768) closeSidebar();
+    });
+    function logout() {
+      if (confirm('Are you sure you want to logout?')) window.location.href = '/logout';
+    }
+  </script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>
